@@ -1,4 +1,4 @@
-package model.participant;
+package run;
 
 public class RunChampionship {
 }
