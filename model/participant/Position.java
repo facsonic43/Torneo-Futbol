@@ -1,5 +1,5 @@
 package model.participant;
 
 public enum Position {
-    ARQUERO,DEFENSOR,MEDIOCAMPISTA,DELANTERO
+    GOALKEEPER,DEFENDER,MIDFIELDER,FORWARD
 }

@@ -1,7 +1,7 @@
 package model.participant;
 
 public class PlayerParticipation {
-    private boolean titular;
+    private boolean starting;
     int enterMinute;
     int exitMinute;
 }
