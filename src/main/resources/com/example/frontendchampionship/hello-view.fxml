@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/24"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.frontendchampionship.HelloController"
+            prefWidth="1400.0"
+            prefHeight="850.0"
+            style="-fx-background-color: #f4f6f8; -fx-font-family: 'Segoe UI';">
+
+    <!-- ==================== LEFT SIDEBAR ==================== -->
+
+    <left>
+        <VBox prefWidth="235.0"
+              spacing="8.0"
+              style="-fx-background-color: #172033;">
+
+            <padding>
+                <Insets top="24"
+                        right="16"
+                        bottom="20"
+                        left="16"/>
+            </padding>
+
+            <children>
+
+                <!-- Logo / Title -->
+
+                <VBox spacing="2.0"
+                      alignment="CENTER_LEFT">
+
+                    <Label text="CONTINENTAL"
+                           style="-fx-text-fill: #8fa8c7;
+                                  -fx-font-size: 12px;
+                                  -fx-font-weight: bold;"/>
+
+                    <Label text="CUP MANAGER"
+                           style="-fx-text-fill: white;
+                                  -fx-font-size: 22px;
+                                  -fx-font-weight: bold;"/>
+
+                </VBox>
+
+                <Separator style="-fx-opacity: 0.25;"/>
+
+
+                <!-- Navigation -->
+
+                <Button fx:id="dashboardButton"
+                        text="Dashboard"
+                        maxWidth="1.7976931348623157E308"
+                        prefHeight="42.0"
+                        alignment="CENTER_LEFT"
+                        style="-fx-background-color: #2f80ed;
+                               -fx-text-fill: white;
+                               -fx-font-size: 14px;
+                               -fx-font-weight: bold;
+                               -fx-background-radius: 7px;"/>
+
+                <Button fx:id="teamsButton"
+                        text="Teams"
+                        maxWidth="1.7976931348623157E308"
+                        prefHeight="42.0"
+                        alignment="CENTER_LEFT"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #d8e0ea;
+                               -fx-font-size: 14px;
+                               -fx-background-radius: 7px;"/>
+
+                <Button fx:id="matchesButton"
+                        text="Matches"
+                        maxWidth="1.7976931348623157E308"
+                        prefHeight="42.0"
+                        alignment="CENTER_LEFT"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #d8e0ea;
+                               -fx-font-size: 14px;
+                               -fx-background-radius: 7px;"/>
+
+                <Button fx:id="standingsButton"
+                        text="Group Standings"
+                        maxWidth="1.7976931348623157E308"
+                        prefHeight="42.0"
+                        alignment="CENTER_LEFT"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #d8e0ea;
+                               -fx-font-size: 14px;
+                               -fx-background-radius: 7px;"/>
+
+                <Button fx:id="bracketButton"
+                        text="Championship Bracket"
+                        maxWidth="1.7976931348623157E308"
+                        prefHeight="42.0"
+                        alignment="CENTER_LEFT"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #d8e0ea;
+                               -fx-font-size: 14px;
+                               -fx-background-radius: 7px;"/>
+
+                <Button fx:id="stadiumsButton"
+                        text="Stadiums &amp; Cities"
+                        maxWidth="1.7976931348623157E308"
+                        prefHeight="42.0"
+                        alignment="CENTER_LEFT"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #d8e0ea;
+                               -fx-font-size: 14px;
+                               -fx-background-radius: 7px;"/>
+
+                <Button fx:id="reportsButton"
+                        text="Reports &amp; Rankings"
+                        maxWidth="1.7976931348623157E308"
+                        prefHeight="42.0"
+                        alignment="CENTER_LEFT"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #d8e0ea;
+                               -fx-font-size: 14px;
+                               -fx-background-radius: 7px;"/>
+
+
+                <!-- Spacer -->
+
+                <VBox VBox.vgrow="ALWAYS"/>
+
+                <Separator style="-fx-opacity: 0.25;"/>
+
+
+                <!-- Bottom buttons -->
+
+                <Button fx:id="saveButton"
+                        text="Save Championship"
+                        maxWidth="1.7976931348623157E308"
+                        prefHeight="40.0"
+                        alignment="CENTER_LEFT"
+                        style="-fx-background-color: #24324a;
+                               -fx-text-fill: #d8e0ea;
+                               -fx-font-size: 13px;
+                               -fx-background-radius: 7px;"/>
+
+                <Button fx:id="exitButton"
+                        text="Exit"
+                        maxWidth="1.7976931348623157E308"
+                        prefHeight="40.0"
+                        alignment="CENTER_LEFT"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #d8e0ea;
+                               -fx-font-size: 13px;
+                               -fx-background-radius: 7px;"/>
+
+            </children>
+
+        </VBox>
+    </left>
+
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+
+    <center>
+
+        <ScrollPane fitToWidth="true"
+                    fitToHeight="true"
+                    hbarPolicy="NEVER"
+                    style="-fx-background-color: #f4f6f8;
+                           -fx-border-width: 0;">
+
+            <content>
+
+                <VBox spacing="22.0"
+                      style="-fx-background-color: #f4f6f8;">
+
+                    <padding>
+                        <Insets top="28"
+                                right="34"
+                                bottom="35"
+                                left="34"/>
+                    </padding>
+
+
+                    <!-- ==================== HEADER ==================== -->
+
+                    <HBox alignment="CENTER_LEFT"
+                          spacing="15.0">
+
+                        <VBox HBox.hgrow="ALWAYS"
+                              spacing="3.0">
+
+                            <Label text="Championship Dashboard"
+                                   style="-fx-text-fill: #172033;
+                                          -fx-font-size: 28px;
+                                          -fx-font-weight: bold;"/>
+
+                            <Label text="International Clubs Cup"
+                                   style="-fx-text-fill: #718096;
+                                          -fx-font-size: 14px;"/>
+
+                        </VBox>
+
+
+                        <VBox alignment="CENTER_RIGHT"
+                              spacing="2.0">
+
+                            <Label text="Tournament status"
+                                   style="-fx-text-fill: #718096;
+                                          -fx-font-size: 11px;"/>
+
+                            <Label fx:id="tournamentStatusLabel"
+                                   text="READY TO START"
+                                   style="-fx-text-fill: #1f8f55;
+                                          -fx-font-size: 13px;
+                                          -fx-font-weight: bold;"/>
+
+                        </VBox>
+
+                    </HBox>
+
+
+                    <!-- ==================== KPI CARDS ==================== -->
+
+                    <GridPane hgap="15.0"
+                              vgap="15.0">
+
+                        <columnConstraints>
+
+                            <ColumnConstraints percentWidth="25.0"/>
+
+                            <ColumnConstraints percentWidth="25.0"/>
+
+                            <ColumnConstraints percentWidth="25.0"/>
+
+                            <ColumnConstraints percentWidth="25.0"/>
+
+                        </columnConstraints>
+
+
+                        <children>
+
+                            <!-- Teams -->
+
+                            <VBox spacing="7.0"
+                                  prefHeight="105.0"
+                                  style="-fx-background-color: white;
+                                         -fx-background-radius: 10px;
+                                         -fx-border-color: #e3e8ee;
+                                         -fx-border-radius: 10px;
+                                         -fx-padding: 18px;">
+
+                                <Label text="Teams"
+                                       style="-fx-text-fill: #718096;
+                                              -fx-font-size: 12px;"/>
+
+                                <Label fx:id="teamsCountLabel"
+                                       text="16"
+                                       style="-fx-text-fill: #172033;
+                                              -fx-font-size: 27px;
+                                              -fx-font-weight: bold;"/>
+
+                                <Label text="4 groups · 4 teams each"
+                                       style="-fx-text-fill: #8b96a7;
+                                              -fx-font-size: 11px;"/>
+
+                            </VBox>
+
+
+                            <!-- Group Matches -->
+
+                            <VBox GridPane.columnIndex="1"
+                                  spacing="7.0"
+                                  prefHeight="105.0"
+                                  style="-fx-background-color: white;
+                                         -fx-background-radius: 10px;
+                                         -fx-border-color: #e3e8ee;
+                                         -fx-border-radius: 10px;
+                                         -fx-padding: 18px;">
+
+                                <Label text="Group Matches"
+                                       style="-fx-text-fill: #718096;
+                                              -fx-font-size: 12px;"/>
+
+                                <Label fx:id="groupMatchesLabel"
+                                       text="24"
+                                       style="-fx-text-fill: #172033;
+                                              -fx-font-size: 27px;
+                                              -fx-font-weight: bold;"/>
+
+                                <Label text="Single round-robin"
+                                       style="-fx-text-fill: #8b96a7;
+                                              -fx-font-size: 11px;"/>
+
+                            </VBox>
+
+
+                            <!-- Qualified -->
+
+                            <VBox GridPane.columnIndex="2"
+                                  spacing="7.0"
+                                  prefHeight="105.0"
+                                  style="-fx-background-color: white;
+                                         -fx-background-radius: 10px;
+                                         -fx-border-color: #e3e8ee;
+                                         -fx-border-radius: 10px;
+                                         -fx-padding: 18px;">
+
+                                <Label text="Qualified"
+                                       style="-fx-text-fill: #718096;
+                                              -fx-font-size: 12px;"/>
+
+                                <Label fx:id="qualifiedCountLabel"
+                                       text="0 / 8"
+                                       style="-fx-text-fill: #172033;
+                                              -fx-font-size: 27px;
+                                              -fx-font-weight: bold;"/>
+
+                                <Label text="Top 2 from each group"
+                                       style="-fx-text-fill: #8b96a7;
+                                              -fx-font-size: 11px;"/>
+
+                            </VBox>
+
+
+                            <!-- Current Stage -->
+
+                            <VBox GridPane.columnIndex="3"
+                                  spacing="7.0"
+                                  prefHeight="105.0"
+                                  style="-fx-background-color: white;
+                                         -fx-background-radius: 10px;
+                                         -fx-border-color: #e3e8ee;
+                                         -fx-border-radius: 10px;
+                                         -fx-padding: 18px;">
+
+                                <Label text="Current Stage"
+                                       style="-fx-text-fill: #718096;
+                                              -fx-font-size: 12px;"/>
+
+                                <Label fx:id="stageLabel"
+                                       text="Group Stage"
+                                       style="-fx-text-fill: #172033;
+                                              -fx-font-size: 22px;
+                                              -fx-font-weight: bold;"/>
+
+                                <Label text="Competition progress"
+                                       style="-fx-text-fill: #8b96a7;
+                                              -fx-font-size: 11px;"/>
+
+                            </VBox>
+
+                        </children>
+
+                    </GridPane>
+
+
+                    <!-- ==================== QUICK ACTIONS ==================== -->
+
+                    <VBox spacing="12.0">
+
+                        <Label text="Quick Actions"
+                               style="-fx-text-fill: #172033;
+                                      -fx-font-size: 18px;
+                                      -fx-font-weight: bold;"/>
+
+
+                        <GridPane hgap="12.0"
+                                  vgap="12.0">
+
+                            <columnConstraints>
+
+                                <ColumnConstraints percentWidth="33.33"/>
+
+                                <ColumnConstraints percentWidth="33.33"/>
+
+                                <ColumnConstraints percentWidth="33.34"/>
+
+                            </columnConstraints>
+
+
+                            <children>
+
+                                <Button fx:id="loadDataButton"
+                                        text="Load Tournament Data"
+                                        prefHeight="52.0"
+                                        maxWidth="1.7976931348623157E308"
+                                        style="-fx-background-color: white;
+                                               -fx-text-fill: #172033;
+                                               -fx-font-size: 13px;
+                                               -fx-font-weight: bold;
+                                               -fx-background-radius: 8px;
+                                               -fx-border-color: #dce2e9;
+                                               -fx-border-radius: 8px;"/>
+
+
+                                <Button fx:id="drawGroupsButton"
+                                        text="Draw Groups"
+                                        GridPane.columnIndex="1"
+                                        prefHeight="52.0"
+                                        maxWidth="1.7976931348623157E308"
+                                        style="-fx-background-color: #2f80ed;
+                                               -fx-text-fill: white;
+                                               -fx-font-size: 13px;
+                                               -fx-font-weight: bold;
+                                               -fx-background-radius: 8px;"/>
+
+
+                                <Button fx:id="simulateNextButton"
+                                        text="Simulate Next Match"
+                                        GridPane.columnIndex="2"
+                                        prefHeight="52.0"
+                                        maxWidth="1.7976931348623157E308"
+                                        style="-fx-background-color: white;
+                                               -fx-text-fill: #172033;
+                                               -fx-font-size: 13px;
+                                               -fx-font-weight: bold;
+                                               -fx-background-radius: 8px;
+                                               -fx-border-color: #dce2e9;
+                                               -fx-border-radius: 8px;"/>
+
+                            </children>
+
+                        </GridPane>
+
+                    </VBox>
+
+
+                    <!-- ==================== GROUP STAGE ==================== -->
+
+                    <VBox spacing="12.0">
+
+                        <HBox alignment="CENTER_LEFT">
+
+                            <Label text="Group Stage Overview"
+                                   style="-fx-text-fill: #172033;
+                                          -fx-font-size: 18px;
+                                          -fx-font-weight: bold;"/>
+
+                            <Region HBox.hgrow="ALWAYS"/>
+
+                            <Label text="Top 2 qualify for Quarter-finals"
+                                   style="-fx-text-fill: #718096;
+                                          -fx-font-size: 12px;"/>
+
+                        </HBox>
+
+
+                        <GridPane hgap="15.0"
+                                  vgap="15.0">
+
+                            <columnConstraints>
+
+                                <ColumnConstraints percentWidth="50.0"/>
+
+                                <ColumnConstraints percentWidth="50.0"/>
+
+                            </columnConstraints>
+
+
+                            <children>
+
+                                <!-- GROUP A -->
+
+                                <VBox spacing="8.0"
+                                      style="-fx-background-color: white;
+                                             -fx-background-radius: 10px;
+                                             -fx-border-color: #e3e8ee;
+                                             -fx-border-radius: 10px;
+                                             -fx-padding: 15px;">
+
+                                    <Label text="Group A"
+                                           style="-fx-text-fill: #172033;
+                                                  -fx-font-size: 15px;
+                                                  -fx-font-weight: bold;"/>
+
+                                    <TableView fx:id="groupATable"
+                                               prefHeight="180.0">
+
+                                        <columns>
+
+                                            <TableColumn text="#"
+                                                         prefWidth="38.0"/>
+
+                                            <TableColumn text="Team"
+                                                         prefWidth="150.0"/>
+
+                                            <TableColumn text="P"
+                                                         prefWidth="42.0"/>
+
+                                            <TableColumn text="GD"
+                                                         prefWidth="48.0"/>
+
+                                            <TableColumn text="Pts"
+                                                         prefWidth="50.0"/>
+
+                                        </columns>
+
+                                    </TableView>
+
+                                </VBox>
+
+
+                                <!-- GROUP B -->
+
+                                <VBox GridPane.columnIndex="1"
+                                      spacing="8.0"
+                                      style="-fx-background-color: white;
+                                             -fx-background-radius: 10px;
+                                             -fx-border-color: #e3e8ee;
+                                             -fx-border-radius: 10px;
+                                             -fx-padding: 15px;">
+
+                                    <Label text="Group B"
+                                           style="-fx-text-fill: #172033;
+                                                  -fx-font-size: 15px;
+                                                  -fx-font-weight: bold;"/>
+
+                                    <TableView fx:id="groupBTable"
+                                               prefHeight="180.0">
+
+                                        <columns>
+
+                                            <TableColumn text="#"
+                                                         prefWidth="38.0"/>
+
+                                            <TableColumn text="Team"
+                                                         prefWidth="150.0"/>
+
+                                            <TableColumn text="P"
+                                                         prefWidth="42.0"/>
+
+                                            <TableColumn text="GD"
+                                                         prefWidth="48.0"/>
+
+                                            <TableColumn text="Pts"
+                                                         prefWidth="50.0"/>
+
+                                        </columns>
+
+                                    </TableView>
+
+                                </VBox>
+
+
+                                <!-- GROUP C -->
+
+                                <VBox GridPane.rowIndex="1"
+                                      spacing="8.0"
+                                      style="-fx-background-color: white;
+                                             -fx-background-radius: 10px;
+                                             -fx-border-color: #e3e8ee;
+                                             -fx-border-radius: 10px;
+                                             -fx-padding: 15px;">
+
+                                    <Label text="Group C"
+                                           style="-fx-text-fill: #172033;
+                                                  -fx-font-size: 15px;
+                                                  -fx-font-weight: bold;"/>
+
+                                    <TableView fx:id="groupCTable"
+                                               prefHeight="180.0">
+
+                                        <columns>
+
+                                            <TableColumn text="#"
+                                                         prefWidth="38.0"/>
+
+                                            <TableColumn text="Team"
+                                                         prefWidth="150.0"/>
+
+                                            <TableColumn text="P"
+                                                         prefWidth="42.0"/>
+
+                                            <TableColumn text="GD"
+                                                         prefWidth="48.0"/>
+
+                                            <TableColumn text="Pts"
+                                                         prefWidth="50.0"/>
+
+                                        </columns>
+
+                                    </TableView>
+
+                                </VBox>
+
+
+                                <!-- GROUP D -->
+
+                                <VBox GridPane.columnIndex="1"
+                                      GridPane.rowIndex="1"
+                                      spacing="8.0"
+                                      style="-fx-background-color: white;
+                                             -fx-background-radius: 10px;
+                                             -fx-border-color: #e3e8ee;
+                                             -fx-border-radius: 10px;
+                                             -fx-padding: 15px;">
+
+                                    <Label text="Group D"
+                                           style="-fx-text-fill: #172033;
+                                                  -fx-font-size: 15px;
+                                                  -fx-font-weight: bold;"/>
+
+                                    <TableView fx:id="groupDTable"
+                                               prefHeight="180.0">
+
+                                        <columns>
+
+                                            <TableColumn text="#"
+                                                         prefWidth="38.0"/>
+
+                                            <TableColumn text="Team"
+                                                         prefWidth="150.0"/>
+
+                                            <TableColumn text="P"
+                                                         prefWidth="42.0"/>
+
+                                            <TableColumn text="GD"
+                                                         prefWidth="48.0"/>
+
+                                            <TableColumn text="Pts"
+                                                         prefWidth="50.0"/>
+
+                                        </columns>
+
+                                    </TableView>
+
+                                </VBox>
+
+                            </children>
+
+                        </GridPane>
+
+                    </VBox>
+
+
+                    <!-- ==================== RECENT MATCHES ==================== -->
+
+                    <VBox spacing="12.0">
+
+                        <HBox alignment="CENTER_LEFT">
+
+                            <Label text="Recent Matches"
+                                   style="-fx-text-fill: #172033;
+                                          -fx-font-size: 18px;
+                                          -fx-font-weight: bold;"/>
+
+                            <Region HBox.hgrow="ALWAYS"/>
+
+                            <Button fx:id="viewAllMatchesButton"
+                                    text="View all matches"
+                                    style="-fx-background-color: transparent;
+                                           -fx-text-fill: #2f80ed;
+                                           -fx-font-size: 12px;
+                                           -fx-font-weight: bold;"/>
+
+                        </HBox>
+
+
+                        <TableView fx:id="recentMatchesTable"
+                                   prefHeight="230.0">
+
+                            <columns>
+
+                                <TableColumn text="Date"
+                                             prefWidth="110.0"/>
+
+                                <TableColumn text="Stage"
+                                             prefWidth="120.0"/>
+
+                                <TableColumn text="Home Team"
+                                             prefWidth="210.0"/>
+
+                                <TableColumn text="Score"
+                                             prefWidth="90.0"/>
+
+                                <TableColumn text="Away Team"
+                                             prefWidth="210.0"/>
+
+                                <TableColumn text="Referee"
+                                             prefWidth="180.0"/>
+
+                                <TableColumn text="Status"
+                                             prefWidth="110.0"/>
+
+                            </columns>
+
+                        </TableView>
+
+                    </VBox>
+
+                </VBox>
+
+            </content>
+
+        </ScrollPane>
+
+    </center>
+
+</BorderPane>
