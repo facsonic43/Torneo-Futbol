@@ -3,47 +3,33 @@ package model.match;
 import java.util.Objects;
 
 public class Stadium {
+
+    private int id;
     private String name;
-    private City city;
-    private int capacity;
+    private int cityId;
 
-    public Stadium(String name, City city, int capacity) {
+    public Stadium(String name, int cityId) {
         this.name = name;
-        this.city = city;
-        this.capacity = capacity;
+        this.cityId = cityId;
     }
 
-    public String getName() {
-        return name;
+    public Stadium(int id, String name, int cityId) {
+        this.id = id;
+        this.name = name;
+        this.cityId = cityId;
     }
 
-    public City getCity() {
-        return city;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public int getCapacity() {
-        return capacity;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    @Override
-    public boolean equals(Object obj) {
-        boolean isEqual = false;
-        if (this == obj) {
-            isEqual = true;
-        } else if (obj != null && getClass() == obj.getClass()) {
-            Stadium other = (Stadium) obj;
-            isEqual = Objects.equals(name, other.name) && Objects.equals(city, other.city);
-        }
-        return isEqual;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, city);
-    }
+    public int getCityId() { return cityId; }
+    public void setCityId(int cityId) { this.cityId = cityId; }
 
     @Override
     public String toString() {
-        return name + " [" + city.getName() + ", Cap: " + capacity + "]";
+        return name;
     }
 }
