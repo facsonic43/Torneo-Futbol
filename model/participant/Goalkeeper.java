@@ -2,7 +2,7 @@ package model.participant;
 
 import java.time.LocalDate;
 
-public class Goalkeeper extends Player{
+public class Goalkeeper extends Player {
     private int speed;      //velocidad
     private int jumping;        //salto
     private int passing;        //pases
@@ -22,6 +22,11 @@ public class Goalkeeper extends Player{
 
     @Override
     public double getOverall() {
-        return (speed + jumping + passing + reflexes + oneOnOne + kicking)/6.0;
+        return (speed + jumping + passing + reflexes + oneOnOne + kicking) / 6.0;
+    }
+
+    @Override
+    public Position getPosition() {
+        return Position.GOALKEEPER;
     }
 }

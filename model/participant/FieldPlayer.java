@@ -26,10 +26,6 @@ public class FieldPlayer extends Player {
         this.passing = passing;
     }
 
-    public Position getPosition () {
-        return position;
-    }
-
     @Override
     public double getOverall() {
         return switch (this.getPosition()) {
@@ -66,5 +62,10 @@ public class FieldPlayer extends Player {
                     + speed
                     + passing)/8.0;
         };
+    }
+
+    @Override
+    public Position getPosition() {
+        return this.position;
     }
 }

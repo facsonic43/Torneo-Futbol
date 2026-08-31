@@ -1,6 +1,8 @@
 package model.participant;
 
 import exceptions.*;
+import model.match.Stadium;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,8 +15,9 @@ public class Team {
     private int editionsPlayed;
     private int internationalTitles;
     private int nationalTitles;
+    private Stadium stadium;
 
-    public Team(String name, Country country, int ranking, Coach coach, int editionsPlayed,int internationalTitles, int nationalTitles) {
+    public Team(String name, Country country, int ranking, Coach coach, int editionsPlayed,int internationalTitles, int nationalTitles,Stadium stadium) {
         this.name = name;
         this.country = country;
         this.ranking = ranking;
@@ -23,6 +26,7 @@ public class Team {
         this.internationalTitles = internationalTitles;
         this.nationalTitles = nationalTitles;
         this.squad = new ArrayList<>();
+        this.stadium = stadium;
     }
 
     public String getName() {
@@ -44,6 +48,8 @@ public class Team {
     public List<Player> getSquad() {
         return squad;
     }
+
+    public Stadium getStadium() { return stadium; }
 
     public void addPlayer(Player p){
         if(squad.size()<18)
