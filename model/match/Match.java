@@ -32,35 +32,99 @@ public abstract class Match {
     }
 
     public abstract boolean isKnockout();
-    public abstract boolean isTied();
+    public abstract boolean requiresTieBreak();
+    public abstract Team getWinner();
+    public abstract String getResolutionCriteria();
+
+    public boolean isTied() {
+        return this.homeGoals == this.awayGoals;
+    }
 
     public void addEvent(Event event) {
         this.events.add(event);
     }
 
-    public Team getHomeTeam() { return homeTeam; }
-    public Team getAwayTeam() { return awayTeam; }
-    public Referee getReferee() { return referee; }
-    public Stadium getStadium() { return stadium; }
-    public LocalDate getMatchDate() { return matchDate; }
+    public Team getHomeTeam() {
+        return homeTeam;
+    }
 
-    public int getHomeGoals() { return homeGoals; }
-    public void setHomeGoals(int homeGoals) { this.homeGoals = homeGoals; }
+    public Team getAwayTeam() {
+        return awayTeam;
+    }
 
-    public int getAwayGoals() { return awayGoals; }
-    public void setAwayGoals(int awayGoals) { this.awayGoals = awayGoals; }
+    public Referee getReferee() {
+        return referee;
+    }
 
-    public Integer getHomePenalties() { return homePenalties; }
-    public void setHomePenalties(Integer homePenalties) { this.homePenalties = homePenalties; }
+    public void setReferee(Referee referee) {
+        this.referee = referee;
+    }
 
-    public Integer getAwayPenalties() { return awayPenalties; }
-    public void setAwayPenalties(Integer awayPenalties) { this.awayPenalties = awayPenalties; }
+    public Stadium getStadium() {
+        return stadium;
+    }
 
-    public boolean isPlayed() { return played; }
-    public void setPlayed(boolean played) { this.played = played; }
+    public void setStadium(Stadium stadium) {
+        this.stadium = stadium;
+    }
 
-    public boolean isExtraTimePlayed() { return extraTimePlayed; }
-    public void setExtraTimePlayed(boolean extraTimePlayed) { this.extraTimePlayed = extraTimePlayed; }
+    public LocalDate getMatchDate() {
+        return matchDate;
+    }
 
-    public List<Event> getEvents() { return events; }
+    public void setMatchDate(LocalDate matchDate) {
+        this.matchDate = matchDate;
+    }
+
+    public int getHomeGoals() {
+        return homeGoals;
+    }
+
+    public void setHomeGoals(int homeGoals) {
+        this.homeGoals = homeGoals;
+    }
+
+    public int getAwayGoals() {
+        return awayGoals;
+    }
+
+    public void setAwayGoals(int awayGoals) {
+        this.awayGoals = awayGoals;
+    }
+
+    public Integer getHomePenalties() {
+        return homePenalties;
+    }
+
+    public void setHomePenalties(Integer homePenalties) {
+        this.homePenalties = homePenalties;
+    }
+
+    public Integer getAwayPenalties() {
+        return awayPenalties;
+    }
+
+    public void setAwayPenalties(Integer awayPenalties) {
+        this.awayPenalties = awayPenalties;
+    }
+
+    public boolean isPlayed() {
+        return played;
+    }
+
+    public void setPlayed(boolean played) {
+        this.played = played;
+    }
+
+    public boolean isExtraTimePlayed() {
+        return extraTimePlayed;
+    }
+
+    public void setExtraTimePlayed(boolean extraTimePlayed) {
+        this.extraTimePlayed = extraTimePlayed;
+    }
+
+    public List<Event> getEvents() {
+        return events;
+    }
 }
