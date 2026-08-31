@@ -11,4 +11,12 @@ public class Referee extends Person {
         this.matchesOfficiated = matchesOfficiated;
         this.yearsOfficiated = yearsOfficiated;
     }
+
+    //revisa si el arbitro es de misma nacion que uno de los dos equipos
+    //si los dos equipos son de la misma nacion, no hay restriccion de arbitro
+    public boolean canOfficiate(Team t1,Team t2){
+        if(t1.getCountry().equals(t2.getCountry()))
+            return true;
+        else return !t1.getCountry().equals(this.getNationality()) && !t2.getCountry().equals(this.getNationality());
+    }
 }

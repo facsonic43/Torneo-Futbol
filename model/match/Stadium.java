@@ -1,5 +1,7 @@
 package model.match;
 
+import java.util.Objects;
+
 public class Stadium {
 
     private int id;

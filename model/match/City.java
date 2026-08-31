@@ -1,5 +1,8 @@
 package model.match;
 
+import model.participant.Country;
+import java.util.Objects;
+
 public class City {
 
     private int id;

@@ -2,6 +2,7 @@ package model.participant;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.Objects;
 
 public abstract class Person {
     private String name;
@@ -39,7 +40,10 @@ public abstract class Person {
     }
 
     public int getAge() {
-        if (birthDate == null) return 0;
-        return Period.between(birthDate, LocalDate.now()).getYears();
+        int age = 0;
+        if (birthDate != null) {
+            age = Period.between(birthDate, LocalDate.now()).getYears();
+        }
+        return age;
     }
 }
