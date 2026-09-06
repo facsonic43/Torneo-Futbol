@@ -23,8 +23,50 @@ public class SecondLegMatch extends Match {
     }
 
     @Override
-    public boolean isTied() {
-        return false;
+    public boolean requiresTieBreak() {
+        return getGlobalHomeGoals() == getGlobalAwayGoals()
+                && homePenalties == null
+                && awayPenalties == null;
+    }
+
+    @Override
+    public Team getWinner() {
+        if (getGlobalHomeGoals() > getGlobalAwayGoals()) {
+            return homeTeam;
+        }
+
+        if (getGlobalAwayGoals() > getGlobalHomeGoals()) {
+            return awayTeam;
+        }
+
+        if (homePenalties != null && awayPenalties != null) {
+            if (homePenalties > awayPenalties) {
+                return homeTeam;
+            }
+
+            if (awayPenalties > homePenalties) {
+                return awayTeam;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public String getResolutionCriteria() {
+        if (!isPlayed()) {
+            return "NOT_PLAYED";
+        }
+
+        if (homePenalties != null && awayPenalties != null) {
+            return "PENALTIES";
+        }
+
+        if (getGlobalHomeGoals() != getGlobalAwayGoals()) {
+            return "AGGREGATE_SCORE";
+        }
+
+        return "UNRESOLVED";
     }
 
     public int getGlobalHomeGoals() {
