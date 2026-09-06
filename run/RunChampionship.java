@@ -4,11 +4,6 @@ import main.loader.TournamentData;
 import main.loader.TournamentDataLoader;
 import model.participant.Team;
 
-/*
- * Starts the application.
- * For now it tests the initial JSON load and displays the created teams
- * so we can verify the domain objects before starting the tournament logic.
- */
 public class RunChampionship {
 
     public static void main(String[] args) {

@@ -19,12 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/*
- * Carga los datos iniciales del torneo desde el archivo JSON.
- * Lee equipos, técnicos, jugadores y árbitros y crea manualmente los objetos del modelo.
- * De esta manera la lectura del archivo queda separada de las clases del dominio
- * y los datos pueden validarse antes de ser utilizados por el campeonato.
- */
+//Carga los datos iniciales del torneo desde el archivo JSON.
+
 public class TournamentDataLoader {
     private Map<String, Country> countries;
     private Set<String> documents;
