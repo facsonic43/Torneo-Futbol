@@ -1,5 +1,6 @@
 package run;
 
+import PDF.PDFGenerator;
 import main.loader.TournamentData;
 import main.loader.TournamentDataLoader;
 import model.participant.Team;
@@ -31,6 +32,8 @@ public class RunChampionship {
             }
 
             System.out.println("Total players: " + totalPlayers);
+
+            PDFGenerator pdf=new PDFGenerator();
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
