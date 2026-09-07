@@ -1,5 +1,7 @@
 package model.tournament;
 
+import model.participant.Person;
+import model.participant.Player;
 import model.participant.Referee;
 import model.participant.Team;
 
@@ -41,4 +43,15 @@ public class Tournament {
         return groups;
     }
 
+    public List<Team> getTeams() {
+        return teams;
+    }
+
+    public List<Referee> getReferees() {
+        return referees;
+    }
+
+    public List<Group> getGroups() {
+        return groups;
+    }
 }

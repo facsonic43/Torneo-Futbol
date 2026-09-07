@@ -13,4 +13,11 @@ public class Coach extends Person{
     public int getTitlesObtained() {
         return titlesObtained;
     }
+
+    @Override
+    protected String getAditionalInfo() {
+        StringBuilder sb=new StringBuilder();
+        sb.append("Tittles obtained: "+titlesObtained);
+        return sb.toString();
+    }
 }

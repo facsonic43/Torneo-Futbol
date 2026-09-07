@@ -80,4 +80,11 @@ public abstract class Player extends Person {
     public int getAssists() { return assists; }
     public int getSuspensionMatchesLeft() { return suspensionMatchesLeft; }
     public int getInjuryMatchesLeft() { return injuryMatchesLeft; }
+
+    @Override
+    protected String getAditionalInfo() {
+        StringBuilder sb=new StringBuilder();
+        sb.append("Matches played: "+matchesPlayed+"\tMinutes played: "+minutesPlayed+"\tYellow Cards: "+yellowCards+"\tRed Cards: "+redCards+"\tGoals: "+goals+"\tAssits: "+assists);
+        return sb.toString();
+    }
 }
