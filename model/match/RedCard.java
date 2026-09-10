@@ -4,7 +4,7 @@ import model.participant.Player;
 import model.participant.Team;
 
 public class RedCard extends Event {
-    private boolean directRed; // true = roja directa, false = doble amarilla
+    private boolean directRed; // true = straight red, false = double yellow
 
     public RedCard(int minute, Team team, Player player, boolean directRed) {
         super(minute, team, player);
@@ -17,7 +17,7 @@ public class RedCard extends Event {
 
     @Override
     public String getDescription() {
-        String motive = directRed ? "Roja Directa" : "Doble Amarilla / Roja";
-        return minute + "' Tarjeta Roja (" + motive + ") - " + player.getName() + " [" + team.getName() + "]";
+        String motive = directRed ? "Straight Red Card" : "Second Yellow / Red Card";
+        return minute + "' Red Card (" + motive + ") - " + player.getName() + " [" + team.getName() + "]";
     }
 }

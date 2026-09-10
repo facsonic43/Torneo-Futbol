@@ -4,7 +4,7 @@ import model.participant.Player;
 import model.participant.Team;
 
 public class Goal extends Event {
-    private Player assistPlayer; 
+    private Player assistPlayer;
 
     public Goal(int minute, Team team, Player scorer, Player assistPlayer) {
         super(minute, team, scorer);
@@ -18,8 +18,8 @@ public class Goal extends Event {
     @Override
     public String getDescription() {
         if (assistPlayer != null) {
-            return minute + "' GOL - " + player.getName() + " (Asistencia: " + assistPlayer.getName() + ") [" + team.getName() + "]";
+            return minute + "' GOAL - " + player.getName() + " (Assist: " + assistPlayer.getName() + ") [" + team.getName() + "]";
         }
-        return minute + "' GOL - " + player.getName() + " [" + team.getName() + "]";
+        return minute + "' GOAL - " + player.getName() + " [" + team.getName() + "]";
     }
 }

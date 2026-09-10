@@ -4,7 +4,7 @@ import model.participant.Player;
 import model.participant.Team;
 
 public class Injury extends Event {
-    private int matchesOut; 
+    private int matchesOut;
 
     public Injury(int minute, Team team, Player player, int matchesOut) {
         super(minute, team, player);
@@ -17,6 +17,6 @@ public class Injury extends Event {
 
     @Override
     public String getDescription() {
-        return minute + "' Lesión - " + player.getName() + " [" + team.getName() + "] (Baja por " + matchesOut + " fecha/s)";
+        return minute + "' Injury - " + player.getName() + " [" + team.getName() + "] (Out for " + matchesOut + " fixture/s)";
     }
 }

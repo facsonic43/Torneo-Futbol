@@ -12,11 +12,6 @@ public class FirstLegMatch extends Match {
     }
 
     @Override
-    public boolean isKnockout() {
-        return false;
-    }
-
-    @Override
     public boolean requiresTieBreak() {
         return false;
     }

@@ -7,39 +7,29 @@ import java.time.LocalDate;
 
 public class FinalMatch extends Match {
 
-    public FinalMatch(Team homeTeam, Team awayTeam, Referee referee, Stadium stadium, LocalDate matchDate) {
-        super(homeTeam, awayTeam, referee, stadium, matchDate);
-    }
-
-    @Override
-    public boolean isKnockout() {
-        return true;
+    public FinalMatch(Team homeTeam, Team awayTeam, Referee referee, Stadium stadium, LocalDate date) {
+        super(homeTeam, awayTeam, referee, stadium, date);
     }
 
     @Override
     public boolean requiresTieBreak() {
-        boolean tieBreakNeeded = false;
-        if (played && homeGoals == awayGoals) {
-            if (homePenalties == null || awayPenalties == null || homePenalties.equals(awayPenalties)) {
-                tieBreakNeeded = true;
-            }
-        }
-        return tieBreakNeeded;
+        // En una Final a partido único, si hay empate en los 90', requiere alargue / penales
+        return this.homeGoals == this.awayGoals;
     }
 
     @Override
     public Team getWinner() {
         Team winner = null;
-        if (played) {
-            if (homeGoals > awayGoals) {
-                winner = homeTeam;
-            } else if (awayGoals > homeGoals) {
-                winner = awayTeam;
-            } else if (homePenalties != null && awayPenalties != null) {
-                if (homePenalties > awayPenalties) {
-                    winner = homeTeam;
-                } else if (awayPenalties > homePenalties) {
-                    winner = awayTeam;
+        if (this.played) {
+            if (this.homeGoals > this.awayGoals) {
+                winner = this.homeTeam;
+            } else if (this.awayGoals > this.homeGoals) {
+                winner = this.awayTeam;
+            } else if (this.homePenalties != null && this.awayPenalties != null) {
+                if (this.homePenalties > this.awayPenalties) {
+                    winner = this.homeTeam;
+                } else if (this.awayPenalties > this.homePenalties) {
+                    winner = this.awayTeam;
                 }
             }
         }
@@ -48,14 +38,14 @@ public class FinalMatch extends Match {
 
     @Override
     public String getResolutionCriteria() {
-        String criteria = "Not Played";
-        if (played) {
-            if (homeGoals != awayGoals) {
-                criteria = "Regular Time (" + homeGoals + " - " + awayGoals + ")";
-            } else if (homePenalties != null && awayPenalties != null) {
-                criteria = "Penalty Shootout (" + homePenalties + " - " + awayPenalties + ")";
+        String criteria = "Match not played yet";
+        if (this.played) {
+            if (this.homePenalties != null && this.awayPenalties != null) {
+                criteria = "Decided by Penalty Shootout (" + this.homePenalties + " - " + this.awayPenalties + ")";
+            } else if (this.extraTimePlayed) {
+                criteria = "Decided in Extra Time (" + this.homeGoals + " - " + this.awayGoals + ")";
             } else {
-                criteria = "Tied - Pending Penalties";
+                criteria = "Decided in Regular Time (" + this.homeGoals + " - " + this.awayGoals + ")";
             }
         }
         return criteria;

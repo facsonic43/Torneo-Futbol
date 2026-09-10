@@ -45,7 +45,15 @@ public class Standing implements Comparable<Standing> {
         return played;
     }
 
+    public int getPlayedMatches() {
+        return played;
+    }
+
     public int getWon() {
+        return won;
+    }
+
+    public int getWonMatches() {
         return won;
     }
 
@@ -53,7 +61,15 @@ public class Standing implements Comparable<Standing> {
         return drawn;
     }
 
+    public int getTiedMatches() {
+        return drawn;
+    }
+
     public int getLost() {
+        return lost;
+    }
+
+    public int getLostMatches() {
         return lost;
     }
 
@@ -61,7 +77,15 @@ public class Standing implements Comparable<Standing> {
         return scored;
     }
 
+    public int getGoalsScored() {
+        return scored;
+    }
+
     public int getConceded() {
+        return conceded;
+    }
+
+    public int getGoalsConceded() {
         return conceded;
     }
 

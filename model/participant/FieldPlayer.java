@@ -28,8 +28,9 @@ public class FieldPlayer extends Player {
 
     @Override
     public double getOverall() {
-        return switch (this.getPosition()) {
-            case DEFENDER -> (dribbling * 0.05)
+        double rawOverall;
+        if (this.getPosition() == Position.DEFENDER) {
+            rawOverall = (dribbling * 0.05)
                     + (defensiveSkills * 0.35)
                     + (finishing * 0.05)
                     + (stamina * 0.10)
@@ -37,7 +38,8 @@ public class FieldPlayer extends Player {
                     + (heading * 0.20)
                     + (speed * 0.10)
                     + (passing * 0.10);
-            case MIDFIELDER -> (dribbling * 0.15)
+        } else if (this.getPosition() == Position.MIDFIELDER) {
+            rawOverall = (dribbling * 0.15)
                     + (defensiveSkills * 0.15)
                     + (finishing * 0.05)
                     + (stamina * 0.15)
@@ -45,7 +47,8 @@ public class FieldPlayer extends Player {
                     + (heading * 0.05)
                     + (speed * 0.05)
                     + (passing * 0.20);
-            case FORWARD -> (dribbling * 0.10)
+        } else if (this.getPosition() == Position.FORWARD) {
+            rawOverall = (dribbling * 0.10)
                     + (defensiveSkills * 0.05)
                     + (finishing * 0.30)
                     + (stamina * 0.10)
@@ -53,15 +56,17 @@ public class FieldPlayer extends Player {
                     + (heading * 0.15)
                     + (speed * 0.15)
                     + (passing * 0.10);
-            default -> (dribbling
+        } else {
+            rawOverall = (dribbling
                     + defensiveSkills
                     + finishing
                     + stamina
                     + vision
                     + heading
                     + speed
-                    + passing)/8.0;
-        };
+                    + passing) / 8.0;
+        }
+        return (double) Math.round(rawOverall);
     }
 
     @Override

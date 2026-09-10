@@ -22,7 +22,8 @@ public class Goalkeeper extends Player {
 
     @Override
     public double getOverall() {
-        return (speed + jumping + passing + reflexes + oneOnOne + kicking) / 6.0;
+        double rawOverall = (speed + jumping + passing + reflexes + oneOnOne + kicking) / 6.0;
+        return (double) Math.round(rawOverall);
     }
 
     @Override

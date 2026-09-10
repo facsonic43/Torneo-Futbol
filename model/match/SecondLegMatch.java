@@ -8,8 +8,8 @@ import java.time.LocalDate;
 public class SecondLegMatch extends Match {
     private FirstLegMatch firstLeg;
 
-    public SecondLegMatch(Team homeTeam, Team awayTeam, Referee referee, Stadium stadium, LocalDate matchDate, FirstLegMatch firstLeg) {
-        super(homeTeam, awayTeam, referee, stadium, matchDate);
+    public SecondLegMatch(Team homeTeam, Team awayTeam, Referee referee, Stadium stadium, LocalDate date, FirstLegMatch firstLeg) {
+        super(homeTeam, awayTeam, referee, stadium, date);
         this.firstLeg = firstLeg;
     }
 
@@ -17,102 +17,63 @@ public class SecondLegMatch extends Match {
         return firstLeg;
     }
 
-    @Override
-    public boolean isKnockout() {
-        return true;
+    // Total aggregate goals scored by homeTeam (Second Leg Home) across both legs
+    // Leg 1: played as Away -> firstLeg.getAwayGoals()
+    // Leg 2: played as Home -> this.homeGoals
+    public int getHomeTeamAggregateGoals() {
+        return firstLeg.getAwayGoals() + this.homeGoals;
     }
 
-    public int getHomeTeamPoints() {
-        int points = 0;
-        if (firstLeg != null && firstLeg.isPlayed()) {
-            if (firstLeg.getAwayGoals() > firstLeg.getHomeGoals()) {
-                points += 3;
-            } else if (firstLeg.getAwayGoals() == firstLeg.getHomeGoals()) {
-                points += 1;
-            }
-        }
-        if (played) {
-            if (homeGoals > awayGoals) {
-                points += 3;
-            } else if (homeGoals == awayGoals) {
-                points += 1;
-            }
-        }
-        return points;
+    // Total aggregate goals scored by awayTeam (Second Leg Away) across both legs
+    // Leg 1: played as Home -> firstLeg.getHomeGoals()
+    // Leg 2: played as Away -> this.awayGoals
+    public int getAwayTeamAggregateGoals() {
+        return firstLeg.getHomeGoals() + this.awayGoals;
     }
 
-    public int getAwayTeamPoints() {
-        int points = 0;
-        if (firstLeg != null && firstLeg.isPlayed()) {
-            if (firstLeg.getHomeGoals() > firstLeg.getAwayGoals()) {
-                points += 3;
-            } else if (firstLeg.getHomeGoals() == firstLeg.getAwayGoals()) {
-                points += 1;
-            }
-        }
-        if (played) {
-            if (awayGoals > homeGoals) {
-                points += 3;
-            } else if (awayGoals == homeGoals) {
-                points += 1;
-            }
-        }
-        return points;
+    // Away goals scored by homeTeam across the tie (scored in First Leg)
+    public int getHomeTeamAwayGoals() {
+        return firstLeg.getAwayGoals();
     }
 
-    public int getHomeTeamWeightedGoals() {
-        int firstLegAwayGoals = (firstLeg != null) ? firstLeg.getAwayGoals() : 0;
-        return (firstLegAwayGoals * 2) + this.homeGoals;
-    }
-
-    public int getAwayTeamWeightedGoals() {
-        int firstLegHomeGoals = (firstLeg != null) ? firstLeg.getHomeGoals() : 0;
-        return firstLegHomeGoals + (this.awayGoals * 2);
+    // Away goals scored by awayTeam across the tie (scored in Second Leg)
+    public int getAwayTeamAwayGoals() {
+        return this.awayGoals;
     }
 
     @Override
     public boolean requiresTieBreak() {
-        boolean tieBreakNeeded = false;
-        if (played && firstLeg != null && firstLeg.isPlayed()) {
-            int homePts = getHomeTeamPoints();
-            int awayPts = getAwayTeamPoints();
-            if (homePts == awayPts) {
-                int homeWeighted = getHomeTeamWeightedGoals();
-                int awayWeighted = getAwayTeamWeightedGoals();
-                if (homeWeighted == awayWeighted) {
-                    if (homePenalties == null || awayPenalties == null || homePenalties.equals(awayPenalties)) {
-                        tieBreakNeeded = true;
-                    }
-                }
-            }
-        }
-        return tieBreakNeeded;
+        // If aggregate goals are tied AND away goals are tied -> Penalty shootout
+        return getHomeTeamAggregateGoals() == getAwayTeamAggregateGoals()
+                && getHomeTeamAwayGoals() == getAwayTeamAwayGoals();
     }
 
     @Override
     public Team getWinner() {
         Team winner = null;
-        if (played && firstLeg != null && firstLeg.isPlayed()) {
-            int homePts = getHomeTeamPoints();
-            int awayPts = getAwayTeamPoints();
+        if (this.played) {
+            int homeAgg = getHomeTeamAggregateGoals();
+            int awayAgg = getAwayTeamAggregateGoals();
 
-            if (homePts > awayPts) {
-                winner = homeTeam;
-            } else if (awayPts > homePts) {
-                winner = awayTeam;
+            if (homeAgg > awayAgg) {
+                winner = this.homeTeam;
+            } else if (awayAgg > homeAgg) {
+                winner = this.awayTeam;
             } else {
-                int homeWeighted = getHomeTeamWeightedGoals();
-                int awayWeighted = getAwayTeamWeightedGoals();
+                // Tied on aggregate goals -> Tie-break by Away Goals
+                int homeAwayGoals = getHomeTeamAwayGoals();
+                int awayAwayGoals = getAwayTeamAwayGoals();
 
-                if (homeWeighted > awayWeighted) {
-                    winner = homeTeam;
-                } else if (awayWeighted > homeWeighted) {
-                    winner = awayTeam;
-                } else if (homePenalties != null && awayPenalties != null) {
-                    if (homePenalties > awayPenalties) {
-                        winner = homeTeam;
-                    } else if (awayPenalties > homePenalties) {
-                        winner = awayTeam;
+                if (homeAwayGoals > awayAwayGoals) {
+                    winner = this.homeTeam;
+                } else if (awayAwayGoals > homeAwayGoals) {
+                    winner = this.awayTeam;
+                } else if (this.homePenalties != null && this.awayPenalties != null) {
+                    // Tied on away goals -> Penalty shootout
+                    if (this.homePenalties > this.awayPenalties) {
+                        winner = this.homeTeam;
+                    } else if (this.awayPenalties > this.homePenalties) {
+                        winner = this.awayTeam;
                     }
                 }
             }
@@ -122,23 +83,23 @@ public class SecondLegMatch extends Match {
 
     @Override
     public String getResolutionCriteria() {
-        String criteria = "Not Played";
-        if (played && firstLeg != null && firstLeg.isPlayed()) {
-            int homePts = getHomeTeamPoints();
-            int awayPts = getAwayTeamPoints();
+        String criteria = "Series not played yet";
+        if (this.played) {
+            int homeAgg = getHomeTeamAggregateGoals();
+            int awayAgg = getAwayTeamAggregateGoals();
 
-            if (homePts != awayPts) {
-                criteria = "Points Aggregate (" + homePts + " vs " + awayPts + ")";
+            if (homeAgg != awayAgg) {
+                criteria = "Decided on Aggregate Score (" + homeAgg + " - " + awayAgg + ")";
             } else {
-                int homeWeighted = getHomeTeamWeightedGoals();
-                int awayWeighted = getAwayTeamWeightedGoals();
+                int homeAwayGoals = getHomeTeamAwayGoals();
+                int awayAwayGoals = getAwayTeamAwayGoals();
 
-                if (homeWeighted != awayWeighted) {
-                    criteria = "Away Goals Rule (" + homeWeighted + " vs " + awayWeighted + " weighted)";
-                } else if (homePenalties != null && awayPenalties != null) {
-                    criteria = "Penalty Shootout (" + homePenalties + " - " + awayPenalties + ")";
+                if (homeAwayGoals != awayAwayGoals) {
+                    criteria = "Decided by Away Goals Rule (Away Goals: " + homeAwayGoals + " vs " + awayAwayGoals + ", Aggregate: " + homeAgg + "-" + awayAgg + ")";
+                } else if (this.homePenalties != null && this.awayPenalties != null) {
+                    criteria = "Decided by Penalty Shootout (" + this.homePenalties + " - " + this.awayPenalties + ")";
                 } else {
-                    criteria = "Series Tied - Pending Penalties";
+                    criteria = "Tied series";
                 }
             }
         }

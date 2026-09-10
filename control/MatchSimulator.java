@@ -31,6 +31,9 @@ public class MatchSimulator {
         // Control de amonestados en ESTE partido (para detectar doble amarilla)
         Set<Player> matchYellows = new HashSet<>();
 
+        // Control de jugadores que ingresaron desde el banco (para que no vuelvan a salir en cambios tácticos)
+        Set<Player> subbedInPlayers = new HashSet<>();
+
         // Control de sustituciones realizadas
         int homeSubsCount = 0;
         int awaySubsCount = 0;
@@ -38,7 +41,7 @@ public class MatchSimulator {
 
         // 2. Simular 90 minutos reglamentarios
         simulateMinutesRange(1, 90, match, homePitch, awayPitch, homeSubs, awaySubs,
-                matchYellows, homeSubsCount, awaySubsCount, maxSubs);
+                matchYellows, subbedInPlayers, homeSubsCount, awaySubsCount, maxSubs);
 
         // 3. Evaluar prórroga si el tipo de partido lo exige
         if (match.requiresTieBreak()) {
@@ -46,7 +49,7 @@ public class MatchSimulator {
             maxSubs = 6; // Cambio adicional permitido en tiempo suplementario
 
             simulateMinutesRange(91, 120, match, homePitch, awayPitch, homeSubs, awaySubs,
-                    matchYellows, homeSubsCount, awaySubsCount, maxSubs);
+                    matchYellows, subbedInPlayers, homeSubsCount, awaySubsCount, maxSubs);
         }
 
         // 4. Si persiste la necesidad de desempate tras los 120', vamos a tanda de penales
@@ -64,6 +67,7 @@ public class MatchSimulator {
                                       List<Player> homePitch, List<Player> awayPitch,
                                       List<Player> homeSubs, List<Player> awaySubs,
                                       Set<Player> matchYellows,
+                                      Set<Player> subbedInPlayers,
                                       int homeSubsCount, int awaySubsCount, int maxSubs) {
 
         Team home = match.getHomeTeam();
@@ -71,11 +75,18 @@ public class MatchSimulator {
 
         double homePower = home.getTeamPower();
         double awayPower = away.getTeamPower();
-        double totalPower = homePower + awayPower;
 
-        // Probabilidad por minuto con ventaja de localía directa
-        double homeGoalChance = (homePower / totalPower) * 0.04;
-        double awayGoalChance = (awayPower / totalPower) * 0.03;
+        // Factor aleatorio de inspiración/rendimiento en el día del partido (entre 0.80 y 1.20)
+        double homeDayForm = 0.80 + (random.nextDouble() * 0.40);
+        double awayDayForm = 0.80 + (random.nextDouble() * 0.40);
+
+        double effectiveHomePower = homePower * homeDayForm;
+        double effectiveAwayPower = awayPower * awayDayForm;
+        double totalEffectivePower = effectiveHomePower + effectiveAwayPower;
+
+        // Probabilidades de gol por minuto ajustadas (con componente base para sorpresas)
+        double homeGoalChance = 0.005 + ((effectiveHomePower / totalEffectivePower) * 0.030);
+        double awayGoalChance = 0.005 + ((effectiveAwayPower / totalEffectivePower) * 0.028);
 
         for (int min = startMin; min <= endMin; min++) {
             double roll = random.nextDouble();
@@ -111,11 +122,12 @@ public class MatchSimulator {
             if (random.nextDouble() < 0.018) {
                 boolean isHome = random.nextBoolean();
                 List<Player> pitch = isHome ? homePitch : awayPitch;
+                List<Player> subs = isHome ? homeSubs : awaySubs;
                 Team team = isHome ? home : away;
 
                 if (!pitch.isEmpty()) {
                     Player foulPlayer = pitch.get(random.nextInt(pitch.size()));
-                    handleCard(min, team, foulPlayer, pitch, matchYellows, match);
+                    handleCard(min, team, foulPlayer, pitch, subs, matchYellows, subbedInPlayers, match);
                 }
             }
 
@@ -132,51 +144,176 @@ public class MatchSimulator {
                     injuredPlayer.injure(matchesOut);
                     match.addEvent(new Injury(min, team, injuredPlayer, matchesOut));
 
-                    // Si quedan cambios disponibles, entra un suplente por el lesionado
+                    // Si quedan cambios disponibles, entra un suplente acorde por el lesionado
                     if (!subs.isEmpty() && ((isHome && homeSubsCount < maxSubs) || (!isHome && awaySubsCount < maxSubs))) {
-                        Player incoming = subs.remove(0);
-                        pitch.remove(injuredPlayer);
-                        pitch.add(incoming);
-                        match.addEvent(new Substitution(min, team, injuredPlayer, incoming));
-                        if (isHome) homeSubsCount++; else awaySubsCount++;
+                        Player incoming = pickSubstituteFor(injuredPlayer, subs, pitch);
+                        if (incoming != null) {
+                            subs.remove(incoming);
+                            pitch.remove(injuredPlayer);
+                            pitch.add(incoming);
+                            subbedInPlayers.add(incoming);
+                            match.addEvent(new Substitution(min, team, injuredPlayer, incoming));
+                            if (isHome) {
+                                homeSubsCount++;
+                            } else {
+                                awaySubsCount++;
+                            }
+                        }
                     }
                 }
             }
 
-            // --- E) SUSTITUCIONES REGULARES (Minuto 55 en adelante) ---
+            // --- E) SUSTITUCIONES REGULARES (Minuto 55 en adelante, sólo jugadores de campo iniciales) ---
             if (min >= 55 && random.nextDouble() < 0.03) {
                 if (homeSubsCount < maxSubs && !homeSubs.isEmpty() && !homePitch.isEmpty()) {
-                    executeSub(min, home, homePitch, homeSubs, match);
-                    homeSubsCount++;
+                    boolean subMade = executeFieldSub(min, home, homePitch, homeSubs, subbedInPlayers, match);
+                    if (subMade) {
+                        homeSubsCount++;
+                    }
                 }
                 if (awaySubsCount < maxSubs && !awaySubs.isEmpty() && !awayPitch.isEmpty()) {
-                    executeSub(min, away, awayPitch, awaySubs, match);
-                    awaySubsCount++;
+                    boolean subMade = executeFieldSub(min, away, awayPitch, awaySubs, subbedInPlayers, match);
+                    if (subMade) {
+                        awaySubsCount++;
+                    }
                 }
             }
         }
     }
 
-    private void handleCard(int min, Team team, Player player, List<Player> pitch, Set<Player> matchYellows, Match match) {
+    private void handleCard(int min, Team team, Player player, List<Player> pitch, List<Player> subs,
+                            Set<Player> matchYellows, Set<Player> subbedInPlayers, Match match) {
         // Si ya tenía amarilla en este partido -> Doble amarilla = Expulsión inmediata
         if (matchYellows.contains(player)) {
             player.addRedCard();
             match.addEvent(new RedCard(min, team, player, false));
             pitch.remove(player);
+
+            // Si el expulsado fue el arquero, el DT se ve forzado a hacer entrar al arquero suplente
+            if (player.getPosition() == Position.GOALKEEPER) {
+                handleGoalkeeperExpulsion(min, team, pitch, subs, subbedInPlayers, match);
+            }
         } else {
-            // Primera amarilla del partido (si llega a 3 del torneo, Player maneja su sanción a partir del próximo)
+            // Primera amarilla del partido
             matchYellows.add(player);
             player.addYellowCard();
             match.addEvent(new YellowCard(min, team, player));
         }
     }
 
-    private void executeSub(int min, Team team, List<Player> pitch, List<Player> subs, Match match) {
-        Player out = pitch.get(random.nextInt(pitch.size()));
-        Player in = subs.remove(random.nextInt(subs.size()));
-        pitch.remove(out);
-        pitch.add(in);
-        match.addEvent(new Substitution(min, team, out, in));
+    private void handleGoalkeeperExpulsion(int min, Team team, List<Player> pitch, List<Player> subs,
+                                           Set<Player> subbedInPlayers, Match match) {
+        Player subGoalkeeper = null;
+        for (Player p : subs) {
+            if (subGoalkeeper == null && p.getPosition() == Position.GOALKEEPER) {
+                subGoalkeeper = p;
+            }
+        }
+
+        // Si hay arquero suplente en el banco, saca a un jugador de campo para que entre el arquero
+        if (subGoalkeeper != null) {
+            Player sacrificedFieldPlayer = null;
+            for (Player p : pitch) {
+                if (p.getPosition() == Position.FORWARD) {
+                    sacrificedFieldPlayer = p;
+                }
+            }
+            if (sacrificedFieldPlayer == null) {
+                for (Player p : pitch) {
+                    if (p.getPosition() == Position.MIDFIELDER) {
+                        sacrificedFieldPlayer = p;
+                    }
+                }
+            }
+            if (sacrificedFieldPlayer == null && !pitch.isEmpty()) {
+                sacrificedFieldPlayer = pitch.get(0);
+            }
+
+            if (sacrificedFieldPlayer != null) {
+                subs.remove(subGoalkeeper);
+                pitch.remove(sacrificedFieldPlayer);
+                pitch.add(subGoalkeeper);
+                subbedInPlayers.add(subGoalkeeper);
+                match.addEvent(new Substitution(min, team, sacrificedFieldPlayer, subGoalkeeper));
+            }
+        }
+    }
+
+    private boolean executeFieldSub(int min, Team team, List<Player> pitch, List<Player> subs,
+                                    Set<Player> subbedInPlayers, Match match) {
+        boolean executed = false;
+        // Solo jugadores de campo que NO hayan ingresado desde el banco en este partido
+        List<Player> eligibleStartersToExit = new ArrayList<>();
+        for (Player p : pitch) {
+            if (p.getPosition() != Position.GOALKEEPER && !subbedInPlayers.contains(p)) {
+                eligibleStartersToExit.add(p);
+            }
+        }
+
+        List<Player> fieldPlayersOnSubs = new ArrayList<>();
+        for (Player p : subs) {
+            if (p.getPosition() != Position.GOALKEEPER) {
+                fieldPlayersOnSubs.add(p);
+            }
+        }
+
+        if (!eligibleStartersToExit.isEmpty() && !fieldPlayersOnSubs.isEmpty()) {
+            Player out = eligibleStartersToExit.get(random.nextInt(eligibleStartersToExit.size()));
+
+            // Intentar reemplazar por un suplente de la misma posición preferentemente
+            Player in = null;
+            for (Player sub : fieldPlayersOnSubs) {
+                if (in == null && sub.getPosition() == out.getPosition()) {
+                    in = sub;
+                }
+            }
+            // Si no hay de la misma posición, tomar cualquier jugador de campo suplente
+            if (in == null) {
+                in = fieldPlayersOnSubs.get(random.nextInt(fieldPlayersOnSubs.size()));
+            }
+
+            subs.remove(in);
+            pitch.remove(out);
+            pitch.add(in);
+            subbedInPlayers.add(in); // Queda registrado como ingresado
+            match.addEvent(new Substitution(min, team, out, in));
+            executed = true;
+        }
+
+        return executed;
+    }
+
+    private Player pickSubstituteFor(Player injuredPlayer, List<Player> subs, List<Player> pitch) {
+        Player replacement = null;
+
+        if (injuredPlayer.getPosition() == Position.GOALKEEPER) {
+            // Si se lesiona el arquero, debe entrar el arquero suplente obligatoriamente
+            for (Player p : subs) {
+                if (replacement == null && p.getPosition() == Position.GOALKEEPER) {
+                    replacement = p;
+                }
+            }
+        } else {
+            // Si se lesiona un jugador de campo, busca reemplazo de campo
+            for (Player p : subs) {
+                if (replacement == null && p.getPosition() == injuredPlayer.getPosition()) {
+                    replacement = p;
+                }
+            }
+            if (replacement == null) {
+                for (Player p : subs) {
+                    if (replacement == null && p.getPosition() != Position.GOALKEEPER) {
+                        replacement = p;
+                    }
+                }
+            }
+        }
+
+        if (replacement == null && !subs.isEmpty()) {
+            replacement = subs.get(0);
+        }
+
+        return replacement;
     }
 
     private Player pickScorer(List<Player> pitch) {
@@ -194,7 +331,7 @@ public class MatchSimulator {
             }
         }
         if (weightedList.isEmpty()) {
-            return pitch.getFirst();
+            return pitch.get(0);
         }
         return weightedList.get(random.nextInt(weightedList.size()));
     }
@@ -221,8 +358,14 @@ public class MatchSimulator {
             boolean homeScore = random.nextDouble() < 0.75;
             boolean awayScore = random.nextDouble() < 0.75;
 
-            if (homeScore) { homePens++; homeTaker.addGoal(); }
-            if (awayScore) { awayPens++; awayTaker.addGoal(); }
+            if (homeScore) {
+                homePens++;
+                homeTaker.addGoal();
+            }
+            if (awayScore) {
+                awayPens++;
+                awayTaker.addGoal();
+            }
 
             match.addEvent(new PenaltyTaken(120, match.getHomeTeam(), homeTaker, homeScore));
             match.addEvent(new PenaltyTaken(120, match.getAwayTeam(), awayTaker, awayScore));
@@ -237,8 +380,14 @@ public class MatchSimulator {
             boolean homeScore = random.nextDouble() < 0.75;
             boolean awayScore = random.nextDouble() < 0.75;
 
-            if (homeScore) { homePens++; homeTaker.addGoal(); }
-            if (awayScore) { awayPens++; awayTaker.addGoal(); }
+            if (homeScore) {
+                homePens++;
+                homeTaker.addGoal();
+            }
+            if (awayScore) {
+                awayPens++;
+                awayTaker.addGoal();
+            }
 
             match.addEvent(new PenaltyTaken(120, match.getHomeTeam(), homeTaker, homeScore));
             match.addEvent(new PenaltyTaken(120, match.getAwayTeam(), awayTaker, awayScore));

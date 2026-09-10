@@ -2,8 +2,6 @@ package model.participant;
 
 import java.util.Objects;
 
-
-// compara los paises por su nombre para poder validar correctamente
 public class Country {
     private String name;
 
@@ -16,25 +14,24 @@ public class Country {
     }
 
     @Override
-    public String toString() {
-        return name;
-    }
-
-    @Override
     public boolean equals(Object obj) {
+        boolean isEqual = false;
         if (this == obj) {
-            return true;
+            isEqual = true;
+        } else if (obj != null && getClass() == obj.getClass()) {
+            Country other = (Country) obj;
+            isEqual = Objects.equals(name, other.name);
         }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-
-        Country country = (Country) obj;
-        return Objects.equals(name, country.name);
+        return isEqual;
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(name);
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

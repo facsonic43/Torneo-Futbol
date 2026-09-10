@@ -31,7 +31,6 @@ public abstract class Match {
         this.matchDate = matchDate;
     }
 
-    public abstract boolean isKnockout();
     public abstract boolean requiresTieBreak();
     public abstract Team getWinner();
     public abstract String getResolutionCriteria();
