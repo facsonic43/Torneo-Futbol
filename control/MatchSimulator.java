@@ -194,7 +194,7 @@ public class MatchSimulator {
             }
         }
         if (weightedList.isEmpty()) {
-            return pitch.get(0);
+            return pitch.getFirst();
         }
         return weightedList.get(random.nextInt(weightedList.size()));
     }

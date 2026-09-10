@@ -22,7 +22,7 @@ public class Standing implements Comparable<Standing> {
 
         if (gS > gC) {
             this.won++;
-        } else if (scored == gC) {
+        } else if (gS == gC) {
             this.drawn++;
         } else {
             this.lost++;
@@ -37,14 +37,33 @@ public class Standing implements Comparable<Standing> {
         return scored - conceded;
     }
 
-    public Team getTeam() { return team; }
-    public int getPlayed() { return played; }
-    public int getWon() { return won; }
-    public int getDrawn() { return drawn; }
-    public int getLost() { return lost; }
-    public int getScored() { return scored; }
-    public int getConceded() { return conceded; }
+    public Team getTeam() {
+        return team;
+    }
 
+    public int getPlayed() {
+        return played;
+    }
+
+    public int getWon() {
+        return won;
+    }
+
+    public int getDrawn() {
+        return drawn;
+    }
+
+    public int getLost() {
+        return lost;
+    }
+
+    public int getScored() {
+        return scored;
+    }
+
+    public int getConceded() {
+        return conceded;
+    }
 
     @Override
     public int compareTo(Standing t2) {
