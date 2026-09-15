@@ -15,7 +15,6 @@ public class People {
 
     public People(TournamentData data) {
         this.people =new ArrayList<>();
-        List<Person> people=new ArrayList<>();
         for (Referee referee: data.getReferees())
             people.add(referee);
         for (Team team: data.getTeams()) {
