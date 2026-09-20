@@ -22,7 +22,7 @@ public class Standing implements Comparable<Standing> {
 
         if (gS > gC) {
             this.won++;
-        } else if (scored == gC) {
+        } else if (gS == gC) {
             this.drawn++;
         } else {
             this.lost++;

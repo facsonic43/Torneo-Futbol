@@ -9,12 +9,9 @@ import java.util.List;
 public class Lineup {
     private List<Player> starters = new ArrayList<>();
     private List<Player> subs = new ArrayList<>();
-    private static final int MAX_GOALKEEPERS = 1;
-    private static final int MAX_DEFENDERS = 4;
-    private static final int MAX_MIDFIELDERS = 3;
-    private static final int MAX_FORWARDS = 3;
+    private final Formation formation;
 
-    public Lineup(Team team){
+    public Lineup(Team team, Team opponent){
         List<Player> availablePlayers = new ArrayList<>();
 
         for(Player p : team.getSquad()){
@@ -22,31 +19,68 @@ public class Lineup {
         }
         availablePlayers.sort(Comparator.comparing(Player::getOverall).reversed());
 
+        Formation preferredFormation = team.getCoach().chooseFormation(team, opponent);
+        this.formation = findCompatibleFormation(preferredFormation, availablePlayers);
+
         int g=0,d=0,m=0,f=0;
-        for(Player p : availablePlayers){       //433 de base : CONSULTAR A LOS PROFES
-                                                //OPCION 1: AÑADIR COMO ATRIBUTO tactic A LOS COACH
-                                                //OPCION 2: AÑADIR COMO ATRIBUTO tactic A LOS TEAM
-                                                //OPCION 3: DEJAR TODAS LAS FORMACIONES 433 POR DEFECTO
-            if(p.getPosition()==Position.GOALKEEPER && g<MAX_GOALKEEPERS){
+        for(Player p : availablePlayers){
+            if(p.getPosition()==Position.GOALKEEPER && g<1){
                 starters.add(p);
                 g++;
-            }else if(p.getPosition()==Position.DEFENDER && d<MAX_DEFENDERS){
+            }else if(p.getPosition()==Position.DEFENDER && d<formation.getDefenders()){
                 starters.add(p);
                 d++;
-            }else if(p.getPosition()==Position.MIDFIELDER && m<MAX_MIDFIELDERS){
+            }else if(p.getPosition()==Position.MIDFIELDER && m<formation.getMidfielders()){
                 starters.add(p);
                 m++;
-            }else if(p.getPosition()==Position.FORWARD && f<MAX_FORWARDS){
+            }else if(p.getPosition()==Position.FORWARD && f<formation.getForwards()){
                 starters.add(p);
                 f++;
             }else{
                 subs.add(p);
             }
         }
-        //si por alguna razon no se completa el 11, se rellena con jugadores del banco
-        while (starters.size() < 11 && !subs.isEmpty()) {
-            starters.add(subs.removeFirst());
+
+        if (starters.size() < 11) {
+            throw new IllegalStateException(
+                    "No hay jugadores disponibles para completar la formación "
+                            + formation.getLabel() + " de " + team.getName());
         }
+    }
+
+    private Formation findCompatibleFormation(Formation preferredFormation, List<Player> availablePlayers) {
+        if (canComplete(preferredFormation, availablePlayers)) {
+            return preferredFormation;
+        }
+
+        for (Formation alternative : Formation.values()) {
+            if (canComplete(alternative, availablePlayers)) {
+                return alternative;
+            }
+        }
+
+        throw new IllegalStateException("El plantel no puede completar ninguna formación disponible.");
+    }
+
+    private boolean canComplete(Formation formation, List<Player> availablePlayers) {
+        int goalkeepers = 0;
+        int defenders = 0;
+        int midfielders = 0;
+        int forwards = 0;
+
+        for (Player player : availablePlayers) {
+            switch (player.getPosition()) {
+                case GOALKEEPER -> goalkeepers++;
+                case DEFENDER -> defenders++;
+                case MIDFIELDER -> midfielders++;
+                case FORWARD -> forwards++;
+            }
+        }
+
+        return goalkeepers >= 1
+                && defenders >= formation.getDefenders()
+                && midfielders >= formation.getMidfielders()
+                && forwards >= formation.getForwards();
     }
 
     public List<Player> getStarters() {
@@ -55,5 +89,9 @@ public class Lineup {
 
     public List<Player> getSubs() {
         return subs;
+    }
+
+    public Formation getFormation() {
+        return formation;
     }
 }

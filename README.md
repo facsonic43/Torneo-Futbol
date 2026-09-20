@@ -1,16 +1,17 @@
 # Football Championship
 
-Java 24 / Maven project for `TPGrupal-2026-Campeonato Futbol.pdf`.
+Java 25 / Maven project for `TPGrupal-2026-Campeonato Futbol.pdf`.
 
 ## Reports, statistics and rankings (section E)
 
 Run `run.RunChampionship` in IntelliJ with the project root as the working directory.
-It loads `src/main/resources/torneo.json` and creates `Report.pdf` in that working
-directory. The PDF contains all eight reports from section E. A future user interface
-can call the same report API; no front-end is included yet.
+It loads `src/main/resources/torneo.json` and runs the championship simulation.
+Generate the PDF from the live `ReportData` instance with the report API shown below.
+`RunChampionship` intentionally does not create a PDF automatically, so the simulation
+flow from the main project stays independent of the reports module.
 
-Reports are implemented in `PDF` and `reports`; the championship models, simulator
-and loader are not modified by section E.
+Reports are implemented in `PDF` and `reports`, using a `ReportData` wrapper for
+report-specific information.
 
 ### Player photos and initial profiles
 
@@ -102,4 +103,4 @@ and player details.
   Incomplete or unresolved results remain pending until the championship provides
   the required matches and results.
 
-Build and run the automated checks with `mvn test` (JDK 24 required).
+Build and run the automated checks with `mvn test` (JDK 25 required).
