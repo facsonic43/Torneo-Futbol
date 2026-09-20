@@ -20,8 +20,9 @@ public class MatchSimulator {
         Team away = match.getAwayTeam();
 
         // 1. Armamos las formaciones de ambos equipos
-        Lineup homeLineup = new Lineup(home);
-        Lineup awayLineup = new Lineup(away);
+        Lineup homeLineup = new Lineup(home, away);
+        Lineup awayLineup = new Lineup(away, home);
+        match.setFormations(homeLineup.getFormation(), awayLineup.getFormation());
 
         List<Player> homePitch = new ArrayList<>(homeLineup.getStarters());
         List<Player> awayPitch = new ArrayList<>(awayLineup.getStarters());
@@ -32,8 +33,8 @@ public class MatchSimulator {
         Set<Player> matchYellows = new HashSet<>();
 
         // Control de sustituciones realizadas
-        int homeSubsCount = 0;
-        int awaySubsCount = 0;
+        int[] homeSubsCount = {0};
+        int[] awaySubsCount = {0};
         int maxSubs = 5;
 
         // 2. Simular 90 minutos reglamentarios
@@ -64,7 +65,7 @@ public class MatchSimulator {
                                       List<Player> homePitch, List<Player> awayPitch,
                                       List<Player> homeSubs, List<Player> awaySubs,
                                       Set<Player> matchYellows,
-                                      int homeSubsCount, int awaySubsCount, int maxSubs) {
+                                      int[] homeSubsCount, int[] awaySubsCount, int maxSubs) {
 
         Team home = match.getHomeTeam();
         Team away = match.getAwayTeam();
@@ -119,7 +120,23 @@ public class MatchSimulator {
                 }
             }
 
-            // --- D) LESIONES (0.2% de probabilidad por minuto) ---
+            // --- D) ROJAS DIRECTAS (0.4% de probabilidad por minuto) ---
+            if (random.nextDouble() < 0.004) {
+                boolean isHome = random.nextBoolean();
+                List<Player> pitch = isHome ? homePitch : awayPitch;
+                Team team = isHome ? home : away;
+
+                if (!pitch.isEmpty()) {
+                    Player foulPlayer = pitch.get(random.nextInt(pitch.size()));
+                    if (!matchYellows.contains(foulPlayer)) {
+                        foulPlayer.addRedCard();
+                        match.addEvent(new RedCard(min, team, foulPlayer, true));
+                        pitch.remove(foulPlayer);
+                    }
+                }
+            }
+
+            // --- E) LESIONES (0.2% de probabilidad por minuto) ---
             if (random.nextDouble() < 0.002) {
                 boolean isHome = random.nextBoolean();
                 List<Player> pitch = isHome ? homePitch : awayPitch;
@@ -128,30 +145,30 @@ public class MatchSimulator {
 
                 if (!pitch.isEmpty()) {
                     Player injuredPlayer = pitch.get(random.nextInt(pitch.size()));
-                    int matchesOut = (random.nextInt(100) < 70) ? 1 : 2; // 70% 1 fecha, 30% 2 fechas
+                    int matchesOut = (random.nextInt(100) < 70) ? 1 : 2;
                     injuredPlayer.injure(matchesOut);
                     match.addEvent(new Injury(min, team, injuredPlayer, matchesOut));
 
-                    // Si quedan cambios disponibles, entra un suplente por el lesionado
-                    if (!subs.isEmpty() && ((isHome && homeSubsCount < maxSubs) || (!isHome && awaySubsCount < maxSubs))) {
-                        Player incoming = subs.remove(0);
-                        pitch.remove(injuredPlayer);
-                        pitch.add(incoming);
-                        match.addEvent(new Substitution(min, team, injuredPlayer, incoming));
-                        if (isHome) homeSubsCount++; else awaySubsCount++;
+                    if (!subs.isEmpty() && ((isHome && homeSubsCount[0] < maxSubs) || (!isHome && awaySubsCount[0] < maxSubs))) {
+                        Player incoming = chooseSubstitute(subs, injuredPlayer);
+                        if (incoming != null) {
+                            pitch.remove(injuredPlayer);
+                            pitch.add(incoming);
+                            subs.remove(incoming);
+                            match.addEvent(new Substitution(min, team, injuredPlayer, incoming));
+                            if (isHome) homeSubsCount[0]++; else awaySubsCount[0]++;
+                        }
                     }
                 }
             }
 
-            // --- E) SUSTITUCIONES REGULARES (Minuto 55 en adelante) ---
-            if (min >= 55 && random.nextDouble() < 0.03) {
-                if (homeSubsCount < maxSubs && !homeSubs.isEmpty() && !homePitch.isEmpty()) {
-                    executeSub(min, home, homePitch, homeSubs, match);
-                    homeSubsCount++;
+            // --- F) SUSTITUCIONES REGULARES (Minuto 55 en adelante) ---
+            if (min >= 55 && random.nextDouble() < 0.12) {
+                if (homeSubsCount[0] < maxSubs && !homeSubs.isEmpty() && !homePitch.isEmpty()) {
+                    executeSub(min, home, homePitch, homeSubs, match, homeSubsCount);
                 }
-                if (awaySubsCount < maxSubs && !awaySubs.isEmpty() && !awayPitch.isEmpty()) {
-                    executeSub(min, away, awayPitch, awaySubs, match);
-                    awaySubsCount++;
+                if (awaySubsCount[0] < maxSubs && !awaySubs.isEmpty() && !awayPitch.isEmpty()) {
+                    executeSub(min, away, awayPitch, awaySubs, match, awaySubsCount);
                 }
             }
         }
@@ -171,25 +188,90 @@ public class MatchSimulator {
         }
     }
 
-    private void executeSub(int min, Team team, List<Player> pitch, List<Player> subs, Match match) {
-        Player out = pitch.get(random.nextInt(pitch.size()));
-        Player in = subs.remove(random.nextInt(subs.size()));
+    private void executeSub(int min, Team team, List<Player> pitch, List<Player> subs, Match match, int[] subsCount) {
+        Player out = choosePlayerToLeave(pitch);
+        if (out == null) {
+            return;
+        }
+
+        Player in = chooseSubstitute(subs, out);
+        if (in == null) {
+            return;
+        }
+
         pitch.remove(out);
         pitch.add(in);
+        subs.remove(in);
         match.addEvent(new Substitution(min, team, out, in));
+        subsCount[0]++;
+    }
+
+    private Player choosePlayerToLeave(List<Player> pitch) {
+        List<Player> candidates = new ArrayList<>(pitch);
+        candidates.sort((a, b) -> Double.compare(b.getOverall(), a.getOverall()));
+
+        for (Player player : candidates) {
+            if (player.getPosition() != Position.GOALKEEPER) {
+                return player;
+            }
+        }
+
+        return pitch.isEmpty() ? null : pitch.get(0);
+    }
+
+    private Player chooseSubstitute(List<Player> subs, Player outgoing) {
+        if (subs.isEmpty()) {
+            return null;
+        }
+
+        if (outgoing.getPosition() == Position.GOALKEEPER) {
+            for (Player candidate : subs) {
+                if (candidate.getPosition() == Position.GOALKEEPER) {
+                    return candidate;
+                }
+            }
+        }
+
+        List<Player> candidates = new ArrayList<>();
+        for (Player candidate : subs) {
+            if (candidate.getPosition() == outgoing.getPosition()) {
+                candidates.add(candidate);
+            }
+        }
+        if (!candidates.isEmpty()) {
+            return candidates.get(random.nextInt(candidates.size()));
+        }
+
+        for (Player candidate : subs) {
+            if (candidate.getPosition() == Position.MIDFIELDER || candidate.getPosition() == Position.DEFENDER) {
+                return candidate;
+            }
+        }
+
+        for (Player candidate : subs) {
+            if (candidate.getPosition() == Position.FORWARD) {
+                return candidate;
+            }
+        }
+
+        return subs.get(0);
     }
 
     private Player pickScorer(List<Player> pitch) {
         List<Player> weightedList = new ArrayList<>();
         for (Player p : pitch) {
+            int previousGoalsWeight = 1 + (p.getGoals() * 3);
+            int positionWeight;
             if (p.getPosition() == Position.FORWARD) {
-                weightedList.add(p);
-                weightedList.add(p);
-                weightedList.add(p);
+                positionWeight = 5;
             } else if (p.getPosition() == Position.MIDFIELDER) {
-                weightedList.add(p);
-                weightedList.add(p);
+                positionWeight = 2;
             } else if (p.getPosition() == Position.DEFENDER) {
+                positionWeight = 1;
+            } else {
+                positionWeight = 1;
+            }
+            for (int i = 0; i < positionWeight * previousGoalsWeight; i++) {
                 weightedList.add(p);
             }
         }
@@ -200,12 +282,25 @@ public class MatchSimulator {
     }
 
     private Player pickAssister(List<Player> pitch, Player scorer) {
-        if (random.nextBoolean() && pitch.size() > 1) {
-            Player candidate = pitch.get(random.nextInt(pitch.size()));
-            if (candidate != scorer && candidate.getPosition() != Position.GOALKEEPER) {
-                return candidate;
+        if (pitch.size() < 2) {
+            return null;
+        }
+
+        List<Player> candidates = new ArrayList<>();
+        for (Player p : pitch) {
+            if (p != scorer && p.getPosition() != Position.GOALKEEPER) {
+                candidates.add(p);
             }
         }
+
+        if (candidates.isEmpty()) {
+            return null;
+        }
+
+        if (random.nextDouble() < 0.68) {
+            return candidates.get(random.nextInt(candidates.size()));
+        }
+
         return null;
     }
 

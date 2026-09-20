@@ -13,6 +13,8 @@ public abstract class Match {
     protected Referee referee;
     protected Stadium stadium;
     protected LocalDate matchDate;
+    protected Formation homeFormation;
+    protected Formation awayFormation;
 
     protected int homeGoals = 0;
     protected int awayGoals = 0;
@@ -70,6 +72,19 @@ public abstract class Match {
 
     public LocalDate getMatchDate() {
         return matchDate;
+    }
+
+    public Formation getHomeFormation() {
+        return homeFormation;
+    }
+
+    public Formation getAwayFormation() {
+        return awayFormation;
+    }
+
+    public void setFormations(Formation homeFormation, Formation awayFormation) {
+        this.homeFormation = homeFormation;
+        this.awayFormation = awayFormation;
     }
 
     public void setMatchDate(LocalDate matchDate) {
