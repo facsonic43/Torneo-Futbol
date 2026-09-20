@@ -19,4 +19,11 @@ public class Referee extends Person {
             return true;
         else return !t1.getCountry().equals(this.getNationality()) && !t2.getCountry().equals(this.getNationality());
     }
+
+    @Override
+    protected String getAditionalInfo() {
+        StringBuilder sb=new StringBuilder();
+        sb.append("Matches officiated: "+matchesOfficiated+"\tYears officiated: "+yearsOfficiated);
+        return sb.toString();
+    }
 }

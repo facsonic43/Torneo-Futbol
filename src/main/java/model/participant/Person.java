@@ -46,4 +46,13 @@ public abstract class Person {
         }
         return age;
     }
+
+    public String getInformation(){
+        StringBuilder sb=new StringBuilder();
+        sb.append("Name: "+name+"\tID Number: "+idNumber+"\tID Type: "+idType+"\tBirth Date: "+birthDate+"\tNationality: "+nationality.getName()+"\n");
+        sb.append(getAditionalInfo());
+        return sb.toString();
+    }
+
+    protected abstract String getAditionalInfo();
 }
