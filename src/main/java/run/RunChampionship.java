@@ -32,9 +32,6 @@ public class RunChampionship {
             }
 
             System.out.println("Total players: " + totalPlayers);
-
-            PDFGenerator pdf=new PDFGenerator(data);
-
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
