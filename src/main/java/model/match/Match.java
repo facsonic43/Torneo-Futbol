@@ -1,18 +1,27 @@
 package model.match;
 
+import model.participant.Player;
+import model.participant.PlayerParticipation;
 import model.participant.Referee;
 import model.participant.Team;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-public abstract class Match {
+import java.io.Serializable;
+/*
+ * Clase base de todos los partidos del campeonato.
+ * Guarda equipos, resultado, árbitro, estadio, formaciones, titulares, incidencias
+ * y participaciones de jugadores para que cada tipo de partido resuelva su ganador.
+ */
+public abstract class Match implements Serializable{
     protected Team homeTeam;
     protected Team awayTeam;
     protected Referee referee;
     protected Stadium stadium;
     protected LocalDate matchDate;
+    protected Formation homeFormation;
+    protected Formation awayFormation;
 
     protected int homeGoals = 0;
     protected int awayGoals = 0;
@@ -20,8 +29,10 @@ public abstract class Match {
     protected Integer awayPenalties = null;
 
     protected boolean played = false;
-    protected boolean extraTimePlayed = false;
     protected List<Event> events = new ArrayList<>();
+    protected List<Player> homeStarters = new ArrayList<>();
+    protected List<Player> awayStarters = new ArrayList<>();
+    protected List<PlayerParticipation> playerParticipations = new ArrayList<>();
 
     public Match(Team homeTeam, Team awayTeam, Referee referee, Stadium stadium, LocalDate matchDate) {
         this.homeTeam = homeTeam;
@@ -32,16 +43,28 @@ public abstract class Match {
     }
 
     public abstract boolean isKnockout();
+
     public abstract boolean requiresTieBreak();
+
     public abstract Team getWinner();
+
     public abstract String getResolutionCriteria();
 
     public boolean isTied() {
-        return this.homeGoals == this.awayGoals;
+        return homeGoals == awayGoals;
     }
 
     public void addEvent(Event event) {
-        this.events.add(event);
+        events.add(event);
+    }
+
+    public void setStartingLineups(List<Player> homeStarters, List<Player> awayStarters) {
+        this.homeStarters = new ArrayList<>(homeStarters);
+        this.awayStarters = new ArrayList<>(awayStarters);
+    }
+
+    public void addPlayerParticipation(PlayerParticipation participation) {
+        playerParticipations.add(participation);
     }
 
     public Team getHomeTeam() {
@@ -74,6 +97,31 @@ public abstract class Match {
 
     public void setMatchDate(LocalDate matchDate) {
         this.matchDate = matchDate;
+    }
+
+    public Formation getHomeFormation() {
+        return homeFormation;
+    }
+
+    public Formation getAwayFormation() {
+        return awayFormation;
+    }
+
+    public void setFormations(Formation homeFormation, Formation awayFormation) {
+        this.homeFormation = homeFormation;
+        this.awayFormation = awayFormation;
+    }
+
+    public List<Player> getHomeStarters() {
+        return homeStarters;
+    }
+
+    public List<Player> getAwayStarters() {
+        return awayStarters;
+    }
+
+    public List<PlayerParticipation> getPlayerParticipations() {
+        return playerParticipations;
     }
 
     public int getHomeGoals() {
@@ -114,14 +162,6 @@ public abstract class Match {
 
     public void setPlayed(boolean played) {
         this.played = played;
-    }
-
-    public boolean isExtraTimePlayed() {
-        return extraTimePlayed;
-    }
-
-    public void setExtraTimePlayed(boolean extraTimePlayed) {
-        this.extraTimePlayed = extraTimePlayed;
     }
 
     public List<Event> getEvents() {

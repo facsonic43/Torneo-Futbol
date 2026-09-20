@@ -2,6 +2,11 @@ package model.participant;
 
 import java.time.LocalDate;
 
+/*
+ * Representa los datos y estadísticas comunes de todos los jugadores del torneo.
+ * También administra tarjetas, suspensiones, lesiones y goles de penal para poder
+ * construir correctamente los reportes y controlar la disponibilidad entre partidos.
+ */
 public abstract class Player extends Person {
     protected int matchesPlayed;
     protected int minutesPlayed;
@@ -9,6 +14,7 @@ public abstract class Player extends Person {
     protected int redCards;
     protected int goals;
     protected int assists;
+    protected int penaltyGoals;
 
     protected int suspensionMatchesLeft = 0;
     protected int injuryMatchesLeft = 0;
@@ -23,61 +29,111 @@ public abstract class Player extends Person {
         this.redCards = redCards;
         this.goals = goals;
         this.assists = assists;
+        this.penaltyGoals = 0;
     }
 
     public abstract double getOverall();
+
     public abstract Position getPosition();
 
     public boolean isAvailable() {
-        return this.suspensionMatchesLeft == 0 && this.injuryMatchesLeft == 0;
+        return suspensionMatchesLeft == 0 && injuryMatchesLeft == 0;
     }
 
     public boolean isInjured() {
-        return this.injuryMatchesLeft > 0;
+        return injuryMatchesLeft > 0;
     }
 
     public boolean isSuspended() {
-        return this.suspensionMatchesLeft > 0;
+        return suspensionMatchesLeft > 0;
     }
 
     public void injure(int matches) {
-        this.injuryMatchesLeft = matches;
+        injuryMatchesLeft = matches;
     }
 
     public void addYellowCard() {
-        this.yellowCards++;
-        this.tournamentYellowCards++;
-        if (this.tournamentYellowCards >= 3) {
-            this.suspensionMatchesLeft = 1;
-            this.tournamentYellowCards = 0;
+        yellowCards++;
+        tournamentYellowCards++;
+
+        if (tournamentYellowCards >= 3) {
+            suspensionMatchesLeft = 1;
+            tournamentYellowCards = 0;
         }
     }
 
     public void addRedCard() {
-        this.redCards++;
-        this.suspensionMatchesLeft = 1;
+        redCards++;
+        suspensionMatchesLeft = 1;
     }
 
     public void updateMatchAvailability() {
-        if (this.suspensionMatchesLeft > 0) {
-            this.suspensionMatchesLeft--;
+        if (suspensionMatchesLeft > 0) {
+            suspensionMatchesLeft--;
         }
-        if (this.injuryMatchesLeft > 0) {
-            this.injuryMatchesLeft--;
+
+        if (injuryMatchesLeft > 0) {
+            injuryMatchesLeft--;
         }
     }
 
-    public void addGoal() { this.goals++; }
-    public void addAssist() { this.assists++; }
-    public void addMatchesPlayed() { this.matchesPlayed++; }
-    public void addMinutesPlayed(int mins) { this.minutesPlayed += mins; }
+    public void addGoal() {
+        goals++;
+    }
 
-    public int getMatchesPlayed() { return matchesPlayed; }
-    public int getMinutesPlayed() { return minutesPlayed; }
-    public int getYellowCards() { return yellowCards; }
-    public int getRedCards() { return redCards; }
-    public int getGoals() { return goals; }
-    public int getAssists() { return assists; }
-    public int getSuspensionMatchesLeft() { return suspensionMatchesLeft; }
-    public int getInjuryMatchesLeft() { return injuryMatchesLeft; }
+    public void addPenaltyGoal() {
+        penaltyGoals++;
+    }
+
+    public void addAssist() {
+        assists++;
+    }
+
+    public void addMatchesPlayed() {
+        matchesPlayed++;
+    }
+
+    public void addMinutesPlayed(int minutes) {
+        minutesPlayed += minutes;
+    }
+
+    public int getMatchesPlayed() {
+        return matchesPlayed;
+    }
+
+    public int getMinutesPlayed() {
+        return minutesPlayed;
+    }
+
+    public int getYellowCards() {
+        return yellowCards;
+    }
+
+    public int getRedCards() {
+        return redCards;
+    }
+
+    public int getGoals() {
+        return goals;
+    }
+
+    public int getAssists() {
+        return assists;
+    }
+
+    public int getPenaltyGoals() {
+        return penaltyGoals;
+    }
+
+    public int getSuspensionMatchesLeft() {
+        return suspensionMatchesLeft;
+    }
+
+    public int getInjuryMatchesLeft() {
+        return injuryMatchesLeft;
+    }
+
+    public int getTournamentYellowCards() {
+        return tournamentYellowCards;
+    }
 }

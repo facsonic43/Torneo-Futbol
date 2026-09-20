@@ -2,8 +2,9 @@ package model.match;
 
 import model.participant.Player;
 import model.participant.Team;
+import java.io.Serializable;
 
-public abstract class Event {
+public abstract class Event implements Serializable{
     protected int minute;
     protected Team team;
     protected Player player;

@@ -1,10 +1,10 @@
 package model.participant;
 
 import java.util.Objects;
-
+import java.io.Serializable;
 
 // compara los paises por su nombre para poder validar correctamente
-public class Country {
+public class Country implements Serializable{
     private String name;
 
     public Country(String name) {

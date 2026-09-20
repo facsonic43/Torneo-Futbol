@@ -21,6 +21,6 @@ public class Substitution extends Event {
 
     @Override
     public String getDescription() {
-        return minute + "' Cambio [" + team.getName() + "]: Entra " + playerIn.getName() + " ⇆ Sale " + player.getName();
+        return minute + "' Cambio [" + team.getName() + "]: " + playerIn.getName() + " entra por " + player.getName();
     }
 }

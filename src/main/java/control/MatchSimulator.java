@@ -1,262 +1,268 @@
 package control;
 
-import model.match.*;
+import model.match.Lineup;
+import model.match.Match;
 import model.participant.Player;
-import model.participant.Position;
+import model.participant.PlayerParticipation;
 import model.participant.Team;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+/*
+ * Coordina la simulación completa de un partido.
+ * Delega las incidencias del juego a MatchEventSimulator
+ * y las tandas de penales a PenaltyShootoutSimulator.
+ */
 public class MatchSimulator {
 
-    private Random random = new Random();
+    private Random random;
+    private MatchEventSimulator eventSimulator;
+    private PenaltyShootoutSimulator penaltySimulator;
 
-    public void simulateMatch(Match match) {
-        Team home = match.getHomeTeam();
-        Team away = match.getAwayTeam();
+    public MatchSimulator() {
+        random = new Random();
 
-        // 1. Armamos las formaciones de ambos equipos
-        Lineup homeLineup = new Lineup(home);
-        Lineup awayLineup = new Lineup(away);
+        eventSimulator =
+                new MatchEventSimulator(
+                        random
+                );
 
-        List<Player> homePitch = new ArrayList<>(homeLineup.getStarters());
-        List<Player> awayPitch = new ArrayList<>(awayLineup.getStarters());
-        List<Player> homeSubs = new ArrayList<>(homeLineup.getSubs());
-        List<Player> awaySubs = new ArrayList<>(awayLineup.getSubs());
+        penaltySimulator =
+                new PenaltyShootoutSimulator(
+                        random
+                );
+    }
 
-        // Control de amonestados en ESTE partido (para detectar doble amarilla)
-        Set<Player> matchYellows = new HashSet<>();
+    // Permite repetir siempre la misma simulación durante los tests.
+    public MatchSimulator(long seed) {
+        random = new Random(seed);
 
-        // Control de sustituciones realizadas
-        int homeSubsCount = 0;
-        int awaySubsCount = 0;
+        eventSimulator =
+                new MatchEventSimulator(
+                        random
+                );
+
+        penaltySimulator =
+                new PenaltyShootoutSimulator(
+                        random
+                );
+    }
+
+    public void simulateMatch(
+            Match match) {
+
+        Team home =
+                match.getHomeTeam();
+
+        Team away =
+                match.getAwayTeam();
+
+        Lineup homeLineup =
+                new Lineup(
+                        home,
+                        away
+                );
+
+        Lineup awayLineup =
+                new Lineup(
+                        away,
+                        home
+                );
+
+        match.setFormations(
+                homeLineup.getFormation(),
+                awayLineup.getFormation()
+        );
+
+        match.setStartingLineups(
+                homeLineup.getStarters(),
+                awayLineup.getStarters()
+        );
+
+        List<Player> homePitch =
+                new ArrayList<>(
+                        homeLineup.getStarters()
+                );
+
+        List<Player> awayPitch =
+                new ArrayList<>(
+                        awayLineup.getStarters()
+                );
+
+        List<Player> homeSubs =
+                new ArrayList<>(
+                        homeLineup.getSubs()
+                );
+
+        List<Player> awaySubs =
+                new ArrayList<>(
+                        awayLineup.getSubs()
+                );
+
+        Player[] homeGoalkeeper = {
+                eventSimulator.findActiveGoalkeeper(
+                        homePitch
+                )
+        };
+
+        Player[] awayGoalkeeper = {
+                eventSimulator.findActiveGoalkeeper(
+                        awayPitch
+                )
+        };
+
+        Map<Player, PlayerParticipation> participations =
+                new HashMap<>();
+
+        registerStartingPlayers(
+                home,
+                homePitch,
+                participations,
+                match
+        );
+
+        registerStartingPlayers(
+                away,
+                awayPitch,
+                participations,
+                match
+        );
+
+        updatePreviousAbsences(
+                home
+        );
+
+        updatePreviousAbsences(
+                away
+        );
+
+        Set<Player> matchYellows =
+                new HashSet<>();
+
+        int[] homeSubsCount = {
+                0
+        };
+
+        int[] awaySubsCount = {
+                0
+        };
+
         int maxSubs = 5;
 
-        // 2. Simular 90 minutos reglamentarios
-        simulateMinutesRange(1, 90, match, homePitch, awayPitch, homeSubs, awaySubs,
-                matchYellows, homeSubsCount, awaySubsCount, maxSubs);
+        eventSimulator.simulateMinutesRange(
+                1,
+                90,
+                match,
+                homePitch,
+                awayPitch,
+                homeSubs,
+                awaySubs,
+                homeGoalkeeper,
+                awayGoalkeeper,
+                matchYellows,
+                homeSubsCount,
+                awaySubsCount,
+                maxSubs,
+                participations
+        );
 
-        // 3. Evaluar prórroga si el tipo de partido lo exige
         if (match.requiresTieBreak()) {
-            match.setExtraTimePlayed(true);
-            maxSubs = 6; // Cambio adicional permitido en tiempo suplementario
-
-            simulateMinutesRange(91, 120, match, homePitch, awayPitch, homeSubs, awaySubs,
-                    matchYellows, homeSubsCount, awaySubsCount, maxSubs);
+            penaltySimulator.simulate(
+                    match,
+                    homePitch,
+                    awayPitch
+            );
         }
 
-        // 4. Si persiste la necesidad de desempate tras los 120', vamos a tanda de penales
-        if (match.requiresTieBreak()) {
-            simulatePenaltyShootout(match, homePitch, awayPitch);
-        }
+        match.setPlayed(
+                true
+        );
 
-        // 5. Cierre del encuentro y registro de minutos/partidos
-        match.setPlayed(true);
-        int totalMinutes = match.isExtraTimePlayed() ? 120 : 90;
-        registerPlayerStats(homePitch, awayPitch, totalMinutes);
-    }
+        registerPlayerStats(
+                participations
+        );
 
-    private void simulateMinutesRange(int startMin, int endMin, Match match,
-                                      List<Player> homePitch, List<Player> awayPitch,
-                                      List<Player> homeSubs, List<Player> awaySubs,
-                                      Set<Player> matchYellows,
-                                      int homeSubsCount, int awaySubsCount, int maxSubs) {
-
-        Team home = match.getHomeTeam();
-        Team away = match.getAwayTeam();
-
-        double homePower = home.getTeamPower();
-        double awayPower = away.getTeamPower();
-        double totalPower = homePower + awayPower;
-
-        // Probabilidad por minuto con ventaja de localía directa
-        double homeGoalChance = (homePower / totalPower) * 0.04;
-        double awayGoalChance = (awayPower / totalPower) * 0.03;
-
-        for (int min = startMin; min <= endMin; min++) {
-            double roll = random.nextDouble();
-
-            // --- A) GOL LOCAL ---
-            if (roll < homeGoalChance && !homePitch.isEmpty()) {
-                Player scorer = pickScorer(homePitch);
-                Player assist = pickAssister(homePitch, scorer);
-
-                scorer.addGoal();
-                if (assist != null) {
-                    assist.addAssist();
-                }
-
-                match.setHomeGoals(match.getHomeGoals() + 1);
-                match.addEvent(new Goal(min, home, scorer, assist));
-            }
-            // --- B) GOL VISITANTE ---
-            else if (roll < (homeGoalChance + awayGoalChance) && !awayPitch.isEmpty()) {
-                Player scorer = pickScorer(awayPitch);
-                Player assist = pickAssister(awayPitch, scorer);
-
-                scorer.addGoal();
-                if (assist != null) {
-                    assist.addAssist();
-                }
-
-                match.setAwayGoals(match.getAwayGoals() + 1);
-                match.addEvent(new Goal(min, away, scorer, assist));
-            }
-
-            // --- C) TARJETAS (1.8% de probabilidad por minuto) ---
-            if (random.nextDouble() < 0.018) {
-                boolean isHome = random.nextBoolean();
-                List<Player> pitch = isHome ? homePitch : awayPitch;
-                Team team = isHome ? home : away;
-
-                if (!pitch.isEmpty()) {
-                    Player foulPlayer = pitch.get(random.nextInt(pitch.size()));
-                    handleCard(min, team, foulPlayer, pitch, matchYellows, match);
-                }
-            }
-
-            // --- D) LESIONES (0.2% de probabilidad por minuto) ---
-            if (random.nextDouble() < 0.002) {
-                boolean isHome = random.nextBoolean();
-                List<Player> pitch = isHome ? homePitch : awayPitch;
-                List<Player> subs = isHome ? homeSubs : awaySubs;
-                Team team = isHome ? home : away;
-
-                if (!pitch.isEmpty()) {
-                    Player injuredPlayer = pitch.get(random.nextInt(pitch.size()));
-                    int matchesOut = (random.nextInt(100) < 70) ? 1 : 2; // 70% 1 fecha, 30% 2 fechas
-                    injuredPlayer.injure(matchesOut);
-                    match.addEvent(new Injury(min, team, injuredPlayer, matchesOut));
-
-                    // Si quedan cambios disponibles, entra un suplente por el lesionado
-                    if (!subs.isEmpty() && ((isHome && homeSubsCount < maxSubs) || (!isHome && awaySubsCount < maxSubs))) {
-                        Player incoming = subs.remove(0);
-                        pitch.remove(injuredPlayer);
-                        pitch.add(incoming);
-                        match.addEvent(new Substitution(min, team, injuredPlayer, incoming));
-                        if (isHome) homeSubsCount++; else awaySubsCount++;
-                    }
-                }
-            }
-
-            // --- E) SUSTITUCIONES REGULARES (Minuto 55 en adelante) ---
-            if (min >= 55 && random.nextDouble() < 0.03) {
-                if (homeSubsCount < maxSubs && !homeSubs.isEmpty() && !homePitch.isEmpty()) {
-                    executeSub(min, home, homePitch, homeSubs, match);
-                    homeSubsCount++;
-                }
-                if (awaySubsCount < maxSubs && !awaySubs.isEmpty() && !awayPitch.isEmpty()) {
-                    executeSub(min, away, awayPitch, awaySubs, match);
-                    awaySubsCount++;
-                }
-            }
+        if (match.getReferee() != null) {
+            match.getReferee()
+                    .addMatchOfficiated();
         }
     }
 
-    private void handleCard(int min, Team team, Player player, List<Player> pitch, Set<Player> matchYellows, Match match) {
-        // Si ya tenía amarilla en este partido -> Doble amarilla = Expulsión inmediata
-        if (matchYellows.contains(player)) {
-            player.addRedCard();
-            match.addEvent(new RedCard(min, team, player, false));
-            pitch.remove(player);
-        } else {
-            // Primera amarilla del partido (si llega a 3 del torneo, Player maneja su sanción a partir del próximo)
-            matchYellows.add(player);
-            player.addYellowCard();
-            match.addEvent(new YellowCard(min, team, player));
+    /*
+     * Se mantiene público porque ya lo utiliza TournamentSimulationTest.
+     * Internamente la responsabilidad ahora pertenece a PenaltyShootoutSimulator.
+     */
+    public void simulatePenaltyShootout(
+            Match match,
+            List<Player> homePitch,
+            List<Player> awayPitch) {
+
+        penaltySimulator.simulate(
+                match,
+                homePitch,
+                awayPitch
+        );
+    }
+
+    private void registerStartingPlayers(
+            Team team,
+            List<Player> starters,
+            Map<Player, PlayerParticipation> participations,
+            Match match) {
+
+        for (Player player :
+                starters) {
+
+            PlayerParticipation participation =
+                    new PlayerParticipation(
+                            player,
+                            team,
+                            true,
+                            0
+                    );
+
+            participations.put(
+                    player,
+                    participation
+            );
+
+            match.addPlayerParticipation(
+                    participation
+            );
         }
     }
 
-    private void executeSub(int min, Team team, List<Player> pitch, List<Player> subs, Match match) {
-        Player out = pitch.get(random.nextInt(pitch.size()));
-        Player in = subs.remove(random.nextInt(subs.size()));
-        pitch.remove(out);
-        pitch.add(in);
-        match.addEvent(new Substitution(min, team, out, in));
+    private void registerPlayerStats(
+            Map<Player, PlayerParticipation> participations) {
+
+        for (PlayerParticipation participation :
+                participations.values()) {
+
+            Player player =
+                    participation.getPlayer();
+
+            player.addMatchesPlayed();
+
+            player.addMinutesPlayed(
+                    participation
+                            .getMinutesPlayed()
+            );
+        }
     }
 
-    private Player pickScorer(List<Player> pitch) {
-        List<Player> weightedList = new ArrayList<>();
-        for (Player p : pitch) {
-            if (p.getPosition() == Position.FORWARD) {
-                weightedList.add(p);
-                weightedList.add(p);
-                weightedList.add(p);
-            } else if (p.getPosition() == Position.MIDFIELDER) {
-                weightedList.add(p);
-                weightedList.add(p);
-            } else if (p.getPosition() == Position.DEFENDER) {
-                weightedList.add(p);
-            }
-        }
-        if (weightedList.isEmpty()) {
-            return pitch.get(0);
-        }
-        return weightedList.get(random.nextInt(weightedList.size()));
-    }
+    private void updatePreviousAbsences(
+            Team team) {
 
-    private Player pickAssister(List<Player> pitch, Player scorer) {
-        if (random.nextBoolean() && pitch.size() > 1) {
-            Player candidate = pitch.get(random.nextInt(pitch.size()));
-            if (candidate != scorer && candidate.getPosition() != Position.GOALKEEPER) {
-                return candidate;
-            }
-        }
-        return null;
-    }
+        for (Player player :
+                team.getSquad()) {
 
-    public void simulatePenaltyShootout(Match match, List<Player> homePitch, List<Player> awayPitch) {
-        int homePens = 0;
-        int awayPens = 0;
-
-        // Serie de 5 penales
-        for (int i = 0; i < 5; i++) {
-            Player homeTaker = homePitch.get(i % homePitch.size());
-            Player awayTaker = awayPitch.get(i % awayPitch.size());
-
-            boolean homeScore = random.nextDouble() < 0.75;
-            boolean awayScore = random.nextDouble() < 0.75;
-
-            if (homeScore) { homePens++; homeTaker.addGoal(); }
-            if (awayScore) { awayPens++; awayTaker.addGoal(); }
-
-            match.addEvent(new PenaltyTaken(120, match.getHomeTeam(), homeTaker, homeScore));
-            match.addEvent(new PenaltyTaken(120, match.getAwayTeam(), awayTaker, awayScore));
-        }
-
-        // Muerte súbita en caso de persistir el empate
-        int round = 5;
-        while (homePens == awayPens) {
-            Player homeTaker = homePitch.get(round % homePitch.size());
-            Player awayTaker = awayPitch.get(round % awayPitch.size());
-
-            boolean homeScore = random.nextDouble() < 0.75;
-            boolean awayScore = random.nextDouble() < 0.75;
-
-            if (homeScore) { homePens++; homeTaker.addGoal(); }
-            if (awayScore) { awayPens++; awayTaker.addGoal(); }
-
-            match.addEvent(new PenaltyTaken(120, match.getHomeTeam(), homeTaker, homeScore));
-            match.addEvent(new PenaltyTaken(120, match.getAwayTeam(), awayTaker, awayScore));
-            round++;
-        }
-
-        match.setHomePenalties(homePens);
-        match.setAwayPenalties(awayPens);
-    }
-
-    private void registerPlayerStats(List<Player> homePitch, List<Player> awayPitch, int minutes) {
-        for (Player p : homePitch) {
-            p.addMatchesPlayed();
-            p.addMinutesPlayed(minutes);
-        }
-        for (Player p : awayPitch) {
-            p.addMatchesPlayed();
-            p.addMinutesPlayed(minutes);
+            player.updateMatchAvailability();
         }
     }
 }
