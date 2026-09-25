@@ -42,6 +42,8 @@ public class ChampionshipStatistics {
     private final List<RefereeStats> referees;
     private final int playedMatchCount;
     private final int incompleteMatchCount;
+    private final boolean completeStartingLineups;
+    private final boolean completeGoalInformation;
 
     public ChampionshipStatistics(TournamentData data) {
         this(new ReportData(data));
@@ -62,6 +64,8 @@ public class ChampionshipStatistics {
         data.getGroups().forEach(group -> matches.addAll(group.getMatches()));
         int played = 0;
         int incomplete = 0;
+        boolean lineupsComplete = true;
+        boolean goalInformationComplete = true;
         for (Match match : matches) {
             if (!match.isPlayed()) continue;
             played++;
@@ -74,11 +78,16 @@ public class ChampionshipStatistics {
             addPlayerParticipations(match, details, playerTotals);
             boolean missingGoalInformation = addEvents(match, details, teamTotals, playerTotals);
             long recordedGoals = match.getEvents().stream().filter(event -> event instanceof Goal).count();
-            if (!details.hasStartingPlayers() || missingGoalInformation
-                    || recordedGoals != match.getHomeGoals() + match.getAwayGoals()) incomplete++;
+            boolean missingLineup = !details.hasStartingPlayers();
+            boolean scoreMismatch = recordedGoals != match.getHomeGoals() + match.getAwayGoals();
+            if (missingLineup) lineupsComplete = false;
+            if (missingGoalInformation || scoreMismatch) goalInformationComplete = false;
+            if (missingLineup || missingGoalInformation || scoreMismatch) incomplete++;
         }
         playedMatchCount = played;
         incompleteMatchCount = incomplete;
+        completeStartingLineups = lineupsComplete;
+        completeGoalInformation = goalInformationComplete;
         players = playerTotals.values().stream().map(PlayerAccumulator::snapshot).toList();
         teams = teamTotals.values().stream().map(TeamAccumulator::snapshot).toList();
         referees = refereeTotals.entrySet().stream()
@@ -90,6 +99,12 @@ public class ChampionshipStatistics {
 
     /** Encuentros cuyos datos no permiten reconstruir todas las estadísticas. */
     public int getIncompleteMatchCount() { return incompleteMatchCount; }
+
+    /** True when every completed match includes its starting lineups. */
+    public boolean hasCompleteStartingLineups() { return completeStartingLineups; }
+
+    /** True when every completed match has reconciled scores and goal details. */
+    public boolean hasCompleteGoalInformation() { return completeGoalInformation; }
 
     public List<PlayerStats> getTopScorers() {
         return players.stream().filter(stats -> stats.goals() > 0)

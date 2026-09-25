@@ -242,6 +242,8 @@ class ChampionshipStatisticsTest {
 
         ChampionshipStatistics incomplete = new ChampionshipStatistics(data);
         assertEquals(1, incomplete.getIncompleteMatchCount());
+        assertFalse(incomplete.hasCompleteStartingLineups());
+        assertFalse(incomplete.hasCompleteGoalInformation());
         assertEquals(0, incomplete.getPlayerStats(scorer).minutes());
         assertEquals(0, incomplete.getPlayerStats(scorer).penaltyGoals());
         assertEquals(0, incomplete.getPlayerStats(goalkeeper).goalsConceded());
@@ -252,6 +254,8 @@ class ChampionshipStatisticsTest {
         ChampionshipStatistics complete = new ChampionshipStatistics(data);
 
         assertEquals(0, complete.getIncompleteMatchCount());
+        assertTrue(complete.hasCompleteStartingLineups());
+        assertTrue(complete.hasCompleteGoalInformation());
         assertEquals(90, complete.getPlayerStats(scorer).minutes());
         assertEquals(1, complete.getPlayerStats(scorer).penaltyGoals());
         assertEquals(1, complete.getPlayerStats(goalkeeper).goalsConceded());

@@ -1,5 +1,6 @@
 package run;
 
+import PDF.PDFGenerator;
 import control.MatchSimulator;
 import dao.CityDAO;
 import dao.StadiumDAO;
@@ -14,7 +15,10 @@ import model.participant.Team;
 import model.tournament.Group;
 import model.tournament.Standing;
 import model.tournament.Tournament;
+import reports.ReportData;
+import reports.ReportOptions;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -52,6 +56,11 @@ public class RunChampionship {
 
             MatchSimulator simulator = new MatchSimulator();
             tournament.simulateGroupStage(groups, simulator);
+
+            ReportData reportData = ReportData.fromInitialData(data);
+            groups.forEach(reportData::addGroup);
+            PDFGenerator.generate(reportData, Path.of("Report.pdf"), ReportOptions.defaults());
+            System.out.println("PDF generado correctamente: Report.pdf");
 
             System.out.println("====================================");
             System.out.println("FASE DE GRUPOS - TABLAS DE POSICIONES");

@@ -114,8 +114,8 @@ public class PDFGenerator {
         }
         if (statistics.getIncompleteMatchCount() > 0) {
             PdfReportStyle.note(document, "Additional report details are missing for " + statistics.getIncompleteMatchCount()
-                    + " completed matches. Minutes, penalty goals and goalkeeper statistics show only the known totals; "
-                    + "they remain incomplete until starting lineups and goal details are supplied.");
+                    + " completed matches. Values that require starting lineups or goal information are shown as Not available "
+                    + "until those details are supplied.");
         }
     }
 
@@ -129,7 +129,8 @@ public class PDFGenerator {
             PlayerStats row = players.get(i);
             if (row.goals() != previous) rank = i + 1;
             previous = row.goals();
-            PdfReportStyle.row(table, rank, row.player().getName(), row.team().getName(), row.goals(), row.penaltyGoals());
+            PdfReportStyle.row(table, rank, row.player().getName(), row.team().getName(), row.goals(),
+                    statistics.hasCompleteGoalInformation() ? row.penaltyGoals() : "Not available");
         }
         if (players.isEmpty()) PdfReportStyle.empty(table, 5, "No goals have been scored in this championship.");
         document.add(table);
@@ -156,6 +157,12 @@ public class PDFGenerator {
         PdfReportStyle.heading(document, "IV. Most minutes played");
         PdfReportStyle.note(document, "Participation includes starters and substitutes. Minutes end at substitution, dismissal or the final whistle.");
         Table table = PdfReportStyle.table(new float[]{0.5f, 2.7f, 2.7f, 1, 1}, "Rank", "Player", "Team", "Matches", "Minutes");
+        if (!statistics.hasCompleteStartingLineups()) {
+            PdfReportStyle.empty(table, 5,
+                    "Not available: starting lineups were not supplied for one or more completed matches.");
+            document.add(table);
+            return;
+        }
         List<PlayerStats> players = statistics.getMinutesRanking();
         int previous = -1, rank = 0;
         for (int i = 0; i < players.size(); i++) {

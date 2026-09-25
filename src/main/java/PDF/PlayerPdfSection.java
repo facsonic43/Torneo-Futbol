@@ -18,6 +18,16 @@ final class PlayerPdfSection {
         PdfReportStyle.note(document, "Position: "
                 + (options.position() == null ? "All" : PdfReportStyle.position(options.position()))
                 + ". Player: " + (options.player() == null ? "All" : options.player().getName()) + ".");
+        boolean hasCompleteStartingLineups = statistics.hasCompleteStartingLineups();
+        boolean hasCompleteGoalInformation = statistics.hasCompleteGoalInformation();
+        if (!hasCompleteStartingLineups) {
+            PdfReportStyle.note(document,
+                    "Matches and minutes are Not available until starting lineups are supplied for every completed match.");
+        }
+        if (!hasCompleteGoalInformation) {
+            PdfReportStyle.note(document,
+                    "Penalty goals, assists and goalkeeper statistics are Not available until goal information is supplied.");
+        }
         List<PlayerStats> players = statistics.getPlayers(options.position(), options.player());
         if (players.isEmpty()) {
             document.add(new Paragraph("No players match the selected filters."));
@@ -35,12 +45,24 @@ final class PlayerPdfSection {
                     + " | Overall rating: " + PdfReportStyle.number(player.getOverall())).setFontSize(9));
             Table totals = PdfReportStyle.table(new float[]{1, 1, 1, 1, 1, 1, 1},
                     "Matches", "Minutes", "Goals", "Pen. goals", "Assists", "Yellows", "Reds");
-            PdfReportStyle.row(totals, row.matches(), row.minutes(), row.goals(), row.penaltyGoals(), row.assists(), row.yellowCards(), row.redCards());
+            PdfReportStyle.row(totals,
+                    hasCompleteStartingLineups ? row.matches() : "Not available",
+                    hasCompleteStartingLineups ? row.minutes() : "Not available",
+                    row.goals(),
+                    hasCompleteGoalInformation ? row.penaltyGoals() : "Not available",
+                    hasCompleteGoalInformation ? row.assists() : "Not available",
+                    row.yellowCards(), row.redCards());
             card.add(new Paragraph("This championship").simulateBold().setFontSize(9).setMarginBottom(3));
             card.add(totals);
             if (player.getPosition() == Position.GOALKEEPER) {
-                card.add(new Paragraph("Goals conceded: " + row.goalsConceded()
-                        + " | Goals conceded per match: " + PdfReportStyle.number(row.averageGoalsConceded())).simulateBold().setFontSize(9));
+                if (hasCompleteStartingLineups && hasCompleteGoalInformation) {
+                    card.add(new Paragraph("Goals conceded: " + row.goalsConceded()
+                            + " | Goals conceded per match: " + PdfReportStyle.number(row.averageGoalsConceded()))
+                            .simulateBold().setFontSize(9));
+                } else {
+                    card.add(new Paragraph("Goals conceded: Not available | Goals conceded per match: Not available")
+                            .simulateBold().setFontSize(9));
+                }
             }
             card.add(new Paragraph(skills(data, player)).setFontSize(9).setMarginBottom(4));
             card.add(new Paragraph("Available: " + (player.isAvailable() ? "Yes" : "No")
