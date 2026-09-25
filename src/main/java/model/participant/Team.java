@@ -6,7 +6,9 @@ import model.match.Stadium;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Team {
+import java.io.Serializable;
+
+public class Team implements Serializable{
     private String name;
     private Country country;
     private int ranking;

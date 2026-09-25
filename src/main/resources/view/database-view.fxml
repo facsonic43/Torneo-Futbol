@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="gui.controller.DatabaseController"
+      spacing="16"
+      styleClass="page-content">
+
+    <HBox alignment="CENTER_LEFT"
+          styleClass="panel">
+
+        <VBox spacing="4">
+
+            <Label text="DATABASE MANAGEMENT"
+                   styleClass="section-title"/>
+
+            <Label text="Cities and stadiums stored in PostgreSQL"
+                   styleClass="muted-text"/>
+
+        </VBox>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Label fx:id="cityCount"
+               text="0 CITIES"
+               styleClass="purple-chip"/>
+
+        <Region prefWidth="10"/>
+
+        <Label fx:id="stadiumCount"
+               text="0 STADIUMS"
+               styleClass="purple-chip"/>
+
+    </HBox>
+
+
+    <HBox spacing="16"
+          VBox.vgrow="ALWAYS">
+
+        <VBox spacing="10"
+              HBox.hgrow="ALWAYS"
+              styleClass="panel">
+
+            <Label text="CITIES"
+                   styleClass="section-title"/>
+
+            <ListView fx:id="cityList"
+                      VBox.vgrow="ALWAYS"
+                      styleClass="dark-list"/>
+
+            <Label text="CITY NAME"
+                   styleClass="small-text"/>
+
+            <TextField fx:id="cityNameField"
+                       promptText="City name"
+                       styleClass="dark-field"/>
+
+            <Label text="COUNTRY"
+                   styleClass="small-text"/>
+
+            <TextField fx:id="cityCountryField"
+                       promptText="Country"
+                       styleClass="dark-field"/>
+
+            <HBox spacing="8">
+
+                <Button text="ADD"
+                        styleClass="primary-button"
+                        onAction="#handleAddCity"/>
+
+                <Button text="UPDATE"
+                        styleClass="secondary-button"
+                        onAction="#handleUpdateCity"/>
+
+                <Button text="DELETE"
+                        styleClass="danger-button"
+                        onAction="#handleDeleteCity"/>
+
+                <Button text="CLEAR"
+                        styleClass="utility-button"
+                        onAction="#handleClearCity"/>
+
+            </HBox>
+
+        </VBox>
+
+
+        <VBox spacing="10"
+              HBox.hgrow="ALWAYS"
+              styleClass="panel">
+
+            <Label text="STADIUMS"
+                   styleClass="section-title"/>
+
+            <ListView fx:id="stadiumList"
+                      VBox.vgrow="ALWAYS"
+                      styleClass="dark-list"/>
+
+            <Label text="STADIUM NAME"
+                   styleClass="small-text"/>
+
+            <TextField fx:id="stadiumNameField"
+                       promptText="Stadium name"
+                       styleClass="dark-field"/>
+
+            <Label text="CITY"
+                   styleClass="small-text"/>
+
+            <ComboBox fx:id="stadiumCityCombo"
+                      maxWidth="Infinity"
+                      promptText="Select city"/>
+
+            <HBox spacing="8">
+
+                <Button text="ADD"
+                        styleClass="primary-button"
+                        onAction="#handleAddStadium"/>
+
+                <Button text="UPDATE"
+                        styleClass="secondary-button"
+                        onAction="#handleUpdateStadium"/>
+
+                <Button text="DELETE"
+                        styleClass="danger-button"
+                        onAction="#handleDeleteStadium"/>
+
+                <Button text="CLEAR"
+                        styleClass="utility-button"
+                        onAction="#handleClearStadium"/>
+
+            </HBox>
+
+        </VBox>
+
+    </HBox>
+
+    <Label fx:id="databaseStatus"
+           text="Database ready."
+           styleClass="muted-text"/>
+
+</VBox>

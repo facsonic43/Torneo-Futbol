@@ -1,8 +1,9 @@
 package model.match;
 
 import java.util.Objects;
+import java.io.Serializable;
 
-public class Stadium {
+public class Stadium implements Serializable{
 
     private int id;
     private String name;

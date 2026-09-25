@@ -3,8 +3,9 @@ package model.participant;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.Objects;
+import java.io.Serializable;
 
-public abstract class Person {
+public abstract class Person implements Serializable{
     private String name;
     private int idNumber;
     private String idType;

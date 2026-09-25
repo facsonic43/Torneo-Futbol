@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="gui.controller.MatchDayController"
+      spacing="16"
+      styleClass="match-day-wrapper">
+
+    <!-- LISTA DE PARTIDOS -->
+
+    <VBox prefWidth="560"
+          minWidth="450"
+          spacing="12"
+          styleClass="panel">
+
+        <HBox alignment="CENTER_LEFT">
+
+            <VBox spacing="3">
+                <Label text="CURRENT ROUND"
+                       styleClass="small-label"/>
+
+                <Label fx:id="currentRoundLabel"
+                       text="-"
+                       styleClass="section-title-large"/>
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Label fx:id="phaseProgressLabel"
+                   text="0 / 0 MATCHES"
+                   styleClass="status-chip"/>
+
+        </HBox>
+
+        <ScrollPane fitToWidth="true"
+                    HBox.hgrow="ALWAYS"
+                    VBox.vgrow="ALWAYS"
+                    styleClass="match-list-scroll">
+
+            <VBox fx:id="matchesBox"
+                  spacing="7"
+                  styleClass="match-list-box"/>
+
+        </ScrollPane>
+
+        <Button fx:id="simulateRoundButton"
+                text="SIMULATE MATCHDAY"
+                maxWidth="Infinity"
+                styleClass="secondary-action-button"
+                onAction="#handleSimulateRound"/>
+
+        <Button fx:id="simulatePhaseButton"
+                text="SIMULATE REMAINING PHASE"
+                maxWidth="Infinity"
+                styleClass="phase-action-button"
+                onAction="#handleSimulatePhase"/>
+
+    </VBox>
+
+
+    <!-- PARTIDO SELECCIONADO -->
+
+    <VBox spacing="14"
+          HBox.hgrow="ALWAYS"
+          styleClass="panel">
+
+        <HBox alignment="CENTER_LEFT">
+
+            <VBox spacing="4">
+
+                <Label text="SELECTED MATCH"
+                       styleClass="small-label"/>
+
+                <Label fx:id="selectedMatchTitle"
+                       text="No match selected"
+                       styleClass="selected-match-title"/>
+
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Label fx:id="selectedScore"
+                   text="VS"
+                   styleClass="selected-score"/>
+
+        </HBox>
+
+        <HBox spacing="18"
+              styleClass="selected-match-info">
+
+            <Label fx:id="selectedDate"
+                   text="DATE  -"
+                   styleClass="match-detail"/>
+
+            <Label fx:id="selectedStadium"
+                   text="STADIUM  -"
+                   styleClass="match-detail"/>
+
+            <Label fx:id="selectedReferee"
+                   text="REFEREE  -"
+                   styleClass="match-detail"/>
+
+        </HBox>
+
+        <Label fx:id="selectedResolution"
+               text="STATUS  -"
+               styleClass="ready-chip"/>
+
+        <Button fx:id="playSelectedButton"
+                text="PLAY SELECTED MATCH"
+                maxWidth="Infinity"
+                styleClass="continue-button"
+                onAction="#handlePlaySelected"/>
+
+        <Label text="MATCH EVENTS"
+               styleClass="section-title"/>
+
+        <ScrollPane fitToWidth="true"
+                    VBox.vgrow="ALWAYS"
+                    styleClass="events-scroll">
+
+            <VBox fx:id="eventsBox"
+                  spacing="7"
+                  styleClass="events-box"/>
+
+        </ScrollPane>
+
+        <Label fx:id="localStatus"
+               text="Select a match to continue."
+               styleClass="status-text"/>
+
+    </VBox>
+
+</HBox>
