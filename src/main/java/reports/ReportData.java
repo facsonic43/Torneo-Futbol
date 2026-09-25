@@ -67,7 +67,11 @@ public final class ReportData {
     }
 
     public ReportMatchDetails getMatchDetails(Match match) {
-        return matchDetails.computeIfAbsent(Objects.requireNonNull(match), ignored -> new ReportMatchDetails());
+        ReportMatchDetails details = matchDetails.computeIfAbsent(Objects.requireNonNull(match), ignored -> new ReportMatchDetails());
+        if (!details.hasStartingPlayers() && match.hasRecordedStartingPlayers()) {
+            details.setStartingPlayers(match.getHomeStartingPlayers(), match.getAwayStartingPlayers());
+        }
+        return details;
     }
 
     public void setRefereeExperience(Referee referee, int years) {
