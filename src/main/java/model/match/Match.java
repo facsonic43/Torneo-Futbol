@@ -1,5 +1,6 @@
 package model.match;
 
+import model.participant.Player;
 import model.participant.Referee;
 import model.participant.Team;
 
@@ -23,6 +24,8 @@ public abstract class Match {
 
     protected boolean played = false;
     protected boolean extraTimePlayed = false;
+    protected List<Player> homeStartingPlayers = List.of();
+    protected List<Player> awayStartingPlayers = List.of();
     protected List<Event> events = new ArrayList<>();
 
     public Match(Team homeTeam, Team awayTeam, Referee referee, Stadium stadium, LocalDate matchDate) {
@@ -141,5 +144,22 @@ public abstract class Match {
 
     public List<Event> getEvents() {
         return events;
+    }
+
+    public void setStartingPlayers(List<Player> homeStartingPlayers, List<Player> awayStartingPlayers) {
+        this.homeStartingPlayers = List.copyOf(homeStartingPlayers);
+        this.awayStartingPlayers = List.copyOf(awayStartingPlayers);
+    }
+
+    public List<Player> getHomeStartingPlayers() {
+        return homeStartingPlayers;
+    }
+
+    public List<Player> getAwayStartingPlayers() {
+        return awayStartingPlayers;
+    }
+
+    public boolean hasRecordedStartingPlayers() {
+        return !homeStartingPlayers.isEmpty() || !awayStartingPlayers.isEmpty();
     }
 }

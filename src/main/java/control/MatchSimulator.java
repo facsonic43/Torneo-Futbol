@@ -23,6 +23,7 @@ public class MatchSimulator {
         Lineup homeLineup = new Lineup(home, away);
         Lineup awayLineup = new Lineup(away, home);
         match.setFormations(homeLineup.getFormation(), awayLineup.getFormation());
+        match.setStartingPlayers(List.copyOf(homeLineup.getStarters()), List.copyOf(awayLineup.getStarters()));
 
         List<Player> homePitch = new ArrayList<>(homeLineup.getStarters());
         List<Player> awayPitch = new ArrayList<>(awayLineup.getStarters());

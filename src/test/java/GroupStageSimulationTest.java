@@ -8,6 +8,8 @@ import model.participant.Team;
 import model.tournament.Group;
 import model.tournament.Tournament;
 import org.junit.jupiter.api.Test;
+import reports.ChampionshipStatistics;
+import reports.ReportData;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -57,5 +59,30 @@ public class GroupStageSimulationTest {
                 assertTrue(match.isPlayed());
             }
         }
+    }
+
+    @Test
+    void simulatedMatchesShouldNotBeMarkedAsIncompleteForMissingReportMetadata() {
+        TournamentDataLoader loader = new TournamentDataLoader();
+        var data = loader.load("torneo.json");
+        Tournament tournament = new Tournament();
+        List<Group> groups = tournament.drawGroups(data.getTeams());
+        tournament.generateGroupMatches(groups, data.getReferees(), List.of(new Stadium("Estadio test", 1)));
+
+        MatchSimulator simulator = new MatchSimulator();
+        for (Group group : groups) {
+            for (GroupMatch match : group.getMatches()) {
+                simulator.simulateMatch(match);
+            }
+        }
+
+        ReportData reportData = ReportData.fromInitialData(data);
+        groups.forEach(reportData::addGroup);
+        ChampionshipStatistics stats = new ChampionshipStatistics(reportData);
+
+        assertTrue(stats.getPlayedMatchCount() > 0);
+        assertEquals(0, stats.getIncompleteMatchCount());
+        assertTrue(stats.hasCompleteStartingLineups());
+        assertTrue(stats.hasCompleteGoalInformation());
     }
 }

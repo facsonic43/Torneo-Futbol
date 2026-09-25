@@ -146,6 +146,30 @@ class PDFGeneratorTest {
         }
     }
 
+    @Test
+    void registeredTotalsMatchTheChampionshipSnapshot() throws Exception {
+        ReportData data = fixture();
+        Team home = data.getTeams().getFirst();
+        Team away = data.getTeams().get(1);
+        Match match = new GroupMatch(home, away, data.getReferees().getFirst(), null, LocalDate.of(2026, 1, 1));
+        Player scorer = home.getSquad().getFirst();
+        Goal goal = new Goal(10, home, scorer, null);
+        data.getMatchDetails(match).setStartingPlayers(List.of(scorer), List.of());
+        data.getMatchDetails(match).setGoalDetails(goal, false, false, null);
+        match.addEvent(goal);
+        match.setHomeGoals(1);
+        match.setPlayed(true);
+        data.addMatch(match);
+
+        Path output = directory.resolve("totals-sync.pdf");
+        PDFGenerator.generate(data, output, new ReportOptions(null, null, directory));
+
+        try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
+            String text = text(pdf);
+            assertTrue(text.contains("Registered player totals - Matches: 1, minutes: 90, goals: 1, assists: 0, yellows: 0, reds: 0"));
+        }
+    }
+
     private static ReportData fixture() {
         Country country = new Country("Argentina");
         Coach coach = new Coach("Coach One", 101, "DU", LocalDate.of(1970, 1, 1), country, 3);

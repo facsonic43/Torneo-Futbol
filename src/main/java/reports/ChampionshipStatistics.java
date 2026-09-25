@@ -206,7 +206,9 @@ public class ChampionshipStatistics {
             TeamAccumulator team = teams.get(event.getTeam());
             if (event instanceof Goal goal) {
                 ReportMatchDetails.GoalDetails goalDetails = details.getGoalDetails(goal);
-                if (goalDetails == null) incomplete = true;
+                boolean matchHasRecordedStarters = match.hasRecordedStartingPlayers() || details.hasStartingPlayers();
+                boolean canInferGoalContext = matchHasRecordedStarters && !events.isEmpty();
+                if (goalDetails == null && !canInferGoalContext) incomplete = true;
                 boolean ownGoal = goalDetails != null ? goalDetails.ownGoal()
                         : player != null && player.team != goal.getTeam();
                 boolean penalty = goalDetails != null && goalDetails.penalty();
@@ -226,7 +228,7 @@ public class ChampionshipStatistics {
                 }
                 PlayerAccumulator keeper = players.get(receivingKeeper);
                 if (keeper != null) keeper.goalsConceded++;
-                else incomplete = true;
+                else if (!canInferGoalContext) incomplete = true;
             } else if (event instanceof YellowCard) {
                 if (player != null) player.yellowCards++;
                 if (team != null) team.yellowCards++;

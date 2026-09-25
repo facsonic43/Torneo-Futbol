@@ -68,10 +68,10 @@ final class PlayerPdfSection {
             card.add(new Paragraph("Available: " + (player.isAvailable() ? "Yes" : "No")
                     + " | Suspension remaining: " + player.getSuspensionMatchesLeft() + " matches"
                     + " | Injury recovery: " + player.getInjuryMatchesLeft() + " matches").setFontSize(8));
-            card.add(new Paragraph("Registered player totals - Matches: " + player.getMatchesPlayed()
-                    + ", minutes: " + player.getMinutesPlayed() + ", goals: " + player.getGoals()
-                    + ", assists: " + player.getAssists() + ", yellows: " + player.getYellowCards()
-                    + ", reds: " + player.getRedCards()).setFontSize(8));
+            card.add(new Paragraph("Registered player totals - Matches: " + row.matches()
+                    + ", minutes: " + row.minutes() + ", goals: " + row.goals()
+                    + ", assists: " + row.assists() + ", yellows: " + row.yellowCards()
+                    + ", reds: " + row.redCards()).setFontSize(8));
             document.add(card);
         }
     }
