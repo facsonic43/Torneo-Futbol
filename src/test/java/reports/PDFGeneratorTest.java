@@ -106,16 +106,44 @@ class PDFGeneratorTest {
         Team home = data.getTeams().getFirst();
         Team away = data.getTeams().get(1);
         Match match = new GroupMatch(home, away, data.getReferees().getFirst(), null, LocalDate.of(2026, 1, 1));
+        match.addEvent(new Goal(20, home, home.getSquad().getFirst(), null));
+        match.setHomeGoals(1);
         match.setPlayed(true);
         data.addMatch(match);
         Path output = directory.resolve("incomplete.pdf");
         PDFGenerator.generate(data, output, new ReportOptions(null, null, directory));
         try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
-            assertTrue(text(pdf).contains("Additional report details are missing for 1 completed matches"));
+            String text = text(pdf);
+            assertTrue(text.contains("Additional report details are missing for 1 completed matches"));
+            assertTrue(text.contains("Not available: starting lineups were not supplied for one or more completed matches"));
+            String profiles = text.substring(text.lastIndexOf("VIII. Player information"));
+            assertTrue(profiles.contains("Goals conceded: Not available | Goals conceded per match: Not available"));
+            assertTrue(profiles.contains("Not available Not available 1 Not available Not available 0 0"));
         }
         Player stranger = keeper("Unknown", 999);
         assertThrows(IllegalArgumentException.class,
                 () -> PDFGenerator.generate(data, output, new ReportOptions(null, stranger, directory)));
+    }
+
+    @Test
+    void retainsLegitimateZeroesWhenMatchDetailsAreComplete() throws Exception {
+        ReportData data = fixture();
+        Team home = data.getTeams().getFirst();
+        Team away = data.getTeams().get(1);
+        Match match = new GroupMatch(home, away, data.getReferees().getFirst(), null, LocalDate.of(2026, 1, 1));
+        data.getMatchDetails(match).setStartingPlayers(home.getSquad(), away.getSquad());
+        match.setPlayed(true);
+        data.addMatch(match);
+
+        Path output = directory.resolve("complete-details.pdf");
+        PDFGenerator.generate(data, output, new ReportOptions(null, null, directory));
+
+        try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
+            String text = text(pdf);
+            assertFalse(text.contains("Not available: starting lineups were not supplied for one or more completed matches"));
+            assertTrue(text.contains("Goals conceded: 0 | Goals conceded per match: 0.00"));
+            assertTrue(text.contains("Keeper One Alpha 1 90"));
+        }
     }
 
     private static ReportData fixture() {
