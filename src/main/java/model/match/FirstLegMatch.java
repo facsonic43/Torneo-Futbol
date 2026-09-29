@@ -13,7 +13,7 @@ public class FirstLegMatch extends Match {
 
     @Override
     public boolean isKnockout() {
-        return true;
+        return false;
     }
 
     @Override
@@ -23,27 +23,27 @@ public class FirstLegMatch extends Match {
 
     @Override
     public Team getWinner() {
-        if (!isPlayed() || isTied()) {
-            return null;
+        Team winner = null;
+        if (played) {
+            if (homeGoals > awayGoals) {
+                winner = homeTeam;
+            } else if (awayGoals > homeGoals) {
+                winner = awayTeam;
+            }
         }
-
-        if (homeGoals > awayGoals) {
-            return homeTeam;
-        }
-
-        return awayTeam;
+        return winner;
     }
 
     @Override
     public String getResolutionCriteria() {
-        if (!isPlayed()) {
-            return "NOT_PLAYED";
+        String criteria = "Not Played";
+        if (played) {
+            if (homeGoals == awayGoals) {
+                criteria = "First Leg Draw";
+            } else {
+                criteria = "First Leg Advantage";
+            }
         }
-
-        if (isTied()) {
-            return "DRAW";
-        }
-
-        return "REGULAR_TIME";
+        return criteria;
     }
 }

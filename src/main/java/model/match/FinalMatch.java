@@ -18,46 +18,46 @@ public class FinalMatch extends Match {
 
     @Override
     public boolean requiresTieBreak() {
-        return isTied() && homePenalties == null && awayPenalties == null;
+        boolean tieBreakNeeded = false;
+        if (played && homeGoals == awayGoals) {
+            if (homePenalties == null || awayPenalties == null || homePenalties.equals(awayPenalties)) {
+                tieBreakNeeded = true;
+            }
+        }
+        return tieBreakNeeded;
     }
 
     @Override
     public Team getWinner() {
-        if (homeGoals > awayGoals) {
-            return homeTeam;
-        }
-
-        if (awayGoals > homeGoals) {
-            return awayTeam;
-        }
-
-        if (homePenalties != null && awayPenalties != null) {
-            if (homePenalties > awayPenalties) {
-                return homeTeam;
-            }
-
-            if (awayPenalties > homePenalties) {
-                return awayTeam;
+        Team winner = null;
+        if (played) {
+            if (homeGoals > awayGoals) {
+                winner = homeTeam;
+            } else if (awayGoals > homeGoals) {
+                winner = awayTeam;
+            } else if (homePenalties != null && awayPenalties != null) {
+                if (homePenalties > awayPenalties) {
+                    winner = homeTeam;
+                } else if (awayPenalties > homePenalties) {
+                    winner = awayTeam;
+                }
             }
         }
-
-        return null;
+        return winner;
     }
 
     @Override
     public String getResolutionCriteria() {
-        if (!isPlayed()) {
-            return "NOT_PLAYED";
+        String criteria = "Not Played";
+        if (played) {
+            if (homeGoals != awayGoals) {
+                criteria = "Regular Time (" + homeGoals + " - " + awayGoals + ")";
+            } else if (homePenalties != null && awayPenalties != null) {
+                criteria = "Penalty Shootout (" + homePenalties + " - " + awayPenalties + ")";
+            } else {
+                criteria = "Tied - Pending Penalties";
+            }
         }
-
-        if (homePenalties != null && awayPenalties != null) {
-            return "PENALTIES";
-        }
-
-        if (!isTied()) {
-            return "REGULAR_TIME";
-        }
-
-        return "UNRESOLVED";
+        return criteria;
     }
 }

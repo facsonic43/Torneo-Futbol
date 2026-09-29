@@ -40,7 +40,7 @@ public class Referee extends Person {
     public int getYearsOfficiated() {
         return yearsOfficiated;
     }
-}
+
 
     @Override
     protected String getAditionalInfo() {

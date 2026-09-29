@@ -1,6 +1,6 @@
 package reports;
 
-import PDF.PDFGenerator;
+import reports.pdf.PDFGenerator;
 import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor;
 import main.loader.TournamentData;
@@ -106,8 +106,7 @@ class PDFGeneratorTest {
         Team home = data.getTeams().getFirst();
         Team away = data.getTeams().get(1);
         Match match = new GroupMatch(home, away, data.getReferees().getFirst(), null, LocalDate.of(2026, 1, 1));
-        match.addEvent(new Goal(20, home, home.getSquad().getFirst(), null));
-        match.setHomeGoals(1);
+        match.addEvent(new Goal(20, home, home.getSquad().getFirst(), null, false, false, null));        match.setHomeGoals(1);
         match.setPlayed(true);
         data.addMatch(match);
         Path output = directory.resolve("incomplete.pdf");
@@ -153,8 +152,7 @@ class PDFGeneratorTest {
         Team away = data.getTeams().get(1);
         Match match = new GroupMatch(home, away, data.getReferees().getFirst(), null, LocalDate.of(2026, 1, 1));
         Player scorer = home.getSquad().getFirst();
-        Goal goal = new Goal(10, home, scorer, null);
-        data.getMatchDetails(match).setStartingPlayers(List.of(scorer), List.of());
+        Goal goal = new Goal(10, home, scorer, null, false, false, null);        data.getMatchDetails(match).setStartingPlayers(List.of(scorer), List.of());
         data.getMatchDetails(match).setGoalDetails(goal, false, false, null);
         match.addEvent(goal);
         match.setHomeGoals(1);

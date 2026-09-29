@@ -30,8 +30,6 @@ public abstract class Match implements Serializable{
 
     protected boolean played = false;
     protected boolean extraTimePlayed = false;
-    protected List<Player> homeStartingPlayers = List.of();
-    protected List<Player> awayStartingPlayers = List.of();
     protected List<Event> events = new ArrayList<>();
     protected List<Player> homeStarters = new ArrayList<>();
     protected List<Player> awayStarters = new ArrayList<>();
@@ -115,18 +113,6 @@ public abstract class Match implements Serializable{
         this.matchDate = matchDate;
     }
 
-    public Formation getHomeFormation() {
-        return homeFormation;
-    }
-
-    public Formation getAwayFormation() {
-        return awayFormation;
-    }
-
-    public void setFormations(Formation homeFormation, Formation awayFormation) {
-        this.homeFormation = homeFormation;
-        this.awayFormation = awayFormation;
-    }
 
     public List<Player> getHomeStarters() {
         return homeStarters;
@@ -176,6 +162,14 @@ public abstract class Match implements Serializable{
         return played;
     }
 
+    public boolean isExtraTimePlayed() {
+        return extraTimePlayed;
+    }
+
+    public void setExtraTimePlayed(boolean extraTimePlayed) {
+        this.extraTimePlayed = extraTimePlayed;
+    }
+
     public void setPlayed(boolean played) {
         this.played = played;
     }
@@ -183,22 +177,10 @@ public abstract class Match implements Serializable{
     public List<Event> getEvents() {
         return events;
     }
-}
 
-    public void setStartingPlayers(List<Player> homeStartingPlayers, List<Player> awayStartingPlayers) {
-        this.homeStartingPlayers = List.copyOf(homeStartingPlayers);
-        this.awayStartingPlayers = List.copyOf(awayStartingPlayers);
-    }
 
-    public List<Player> getHomeStartingPlayers() {
-        return homeStartingPlayers;
-    }
-
-    public List<Player> getAwayStartingPlayers() {
-        return awayStartingPlayers;
-    }
-
+    // Indica si ya se registraron los titulares de al menos un equipo.
     public boolean hasRecordedStartingPlayers() {
-        return !homeStartingPlayers.isEmpty() || !awayStartingPlayers.isEmpty();
+        return !homeStarters.isEmpty() || !awayStarters.isEmpty();
     }
 }
