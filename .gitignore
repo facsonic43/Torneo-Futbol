@@ -4,7 +4,6 @@ target/
 out/
 *.class
 *.jar
-reports/
 saves/
 **/database.properties
 Report.pdf
