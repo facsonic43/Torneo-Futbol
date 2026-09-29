@@ -133,17 +133,6 @@ public abstract class Player extends Person {
         return injuryMatchesLeft;
     }
 
-    public int getTournamentYellowCards() {
-        return tournamentYellowCards;
-    public int getMatchesPlayed() { return matchesPlayed; }
-    public int getMinutesPlayed() { return minutesPlayed; }
-    public int getYellowCards() { return yellowCards; }
-    public int getRedCards() { return redCards; }
-    public int getGoals() { return goals; }
-    public int getAssists() { return assists; }
-    public int getSuspensionMatchesLeft() { return suspensionMatchesLeft; }
-    public int getInjuryMatchesLeft() { return injuryMatchesLeft; }
-
     @Override
     protected String getAditionalInfo() {
         StringBuilder sb=new StringBuilder();

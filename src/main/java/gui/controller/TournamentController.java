@@ -16,7 +16,7 @@ import model.participant.Team;
 import model.tournament.Group;
 import model.tournament.Standing;
 import model.tournament.Tournament;
-import report.ReportService;
+import reports.ReportService;
 import service.TournamentDashboardService;
 import service.TournamentSessionService;
 

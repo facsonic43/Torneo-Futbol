@@ -25,7 +25,8 @@ class ChampionshipStatisticsTest {
         ReportData data = new ReportData(new TournamentData(List.of(home, away), List.of(referee)));
         Match pending = match(home, away, referee);
         data.getMatchDetails(pending).setStartingPlayers(List.of(historicalScorer), List.of());
-        pending.addEvent(new Goal(10, home, historicalScorer, null));
+        // Antes: pending.addEvent(new Goal(10, home, historicalScorer, null));
+        pending.addEvent(new Goal(10, home, historicalScorer, null, false, false, null));
         pending.setHomeGoals(1);
         data.addMatch(pending);
 
@@ -57,10 +58,10 @@ class ChampionshipStatisticsTest {
         Match match = match(home, away, null);
         ReportMatchDetails details = data.getMatchDetails(match);
         details.setStartingPlayers(List.of(scorer, assister, keeperHome), List.of(opponent, keeperAway));
-        Goal opening = new Goal(10, home, scorer, assister);
-        Goal equalizer = new Goal(20, away, opponent, null);
-        Goal penalty = new Goal(40, home, scorer, assister);
-        Goal ownGoal = new Goal(70, home, opponent, scorer);
+        Goal opening = new Goal(10, home, scorer, assister, false, false, keeperAway);
+        Goal equalizer = new Goal(20, away, opponent, null, false, false, keeperHome);
+        Goal penalty = new Goal(40, home, scorer, assister, true, false, keeperAway);
+        Goal ownGoal = new Goal(70, home, opponent, scorer, false, true, keeperHome);
         details.setGoalDetails(opening, false, false, null);
         details.setGoalDetails(equalizer, false, false, keeperHome);
         details.setGoalDetails(penalty, true, false, keeperAway);
@@ -234,8 +235,7 @@ class ChampionshipStatisticsTest {
         away.addPlayer(goalkeeper);
         ReportData data = new ReportData(new TournamentData(List.of(home, away), List.of()));
         Match match = match(home, away, null);
-        Goal goal = new Goal(20, home, scorer, null);
-        match.addEvent(goal);
+        Goal goal = new Goal(20, home, scorer, null, false, false, null);        match.addEvent(goal);
         match.setHomeGoals(1);
         match.setPlayed(true);
         data.addMatch(match);
@@ -292,9 +292,9 @@ class ChampionshipStatisticsTest {
         assertEquals(List.of(injured), details.getHomeStarters());
         assertEquals(90, details.getPlayerMinutes(match).get(injured));
         assertThrows(UnsupportedOperationException.class, () -> details.getHomeStarters().clear());
-        assertNull(details.getGoalDetails(new Goal(10, home, injured, null)));
+        assertNull(details.getGoalDetails(new Goal(10, home, injured, null, false, false, null)));
         assertThrows(IllegalArgumentException.class, () ->
-                details.setGoalDetails(new Goal(10, home, injured, null), true, true, null));
+                details.setGoalDetails(new Goal(10, home, injured, null, false, false, null), true, true, null));
     }
 
     @Test

@@ -88,22 +88,17 @@
                 <version>3.2.5</version>
             </plugin>
 
+            <!-- Interfaz gráfica: mvn javafx:run -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
-
                 <configuration>
                     <mainClass>run.RunGui</mainClass>
                 </configuration>
             </plugin>
 
-        </plugins>
-
-    </dependencies>
-
-    <build>
-        <plugins>
+            <!-- Simulación por consola: mvn exec:java -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -113,6 +108,7 @@
                 </configuration>
             </plugin>
         </plugins>
+
     </build>
 
 </project>

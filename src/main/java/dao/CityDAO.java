@@ -14,48 +14,9 @@ import java.util.List;
  */
 public class CityDAO {
 
-    public void add(
-            City city)
-            throws SQLException {
-
-        String sql =
-                "INSERT INTO ciudad (nombre, pais) "
-                        + "VALUES (?, ?)";
-
-        try (PreparedStatement statement =
-                     DatabaseConnection
-                             .getConnection()
-                             .prepareStatement(
-                                     sql,
-                                     Statement.RETURN_GENERATED_KEYS
-                             )) {
-
-            statement.setString(
-                    1,
-                    city.getName()
-            );
-
-            statement.setString(
-                    2,
-                    city.getCountry()
-            );
-
-            statement.executeUpdate();
-
-            try (ResultSet result =
-                         statement.getGeneratedKeys()) {
-
-                if (result.next()) {
-
-                    city.setId(
-                            result.getInt(
-                                    1
-                            )
-                    );
-                }
     public void add(City city) throws SQLException {
         if (exists(city.getName(), city.getCountry(), 0)) {
-            throw new DuplicateLocationException("Ya existe una ciudad con ese nombre y país.");
+            throw new DuplicateLocationException("A city with this name and country already exists.");
         }
 
         String sql = "INSERT INTO ciudad (nombre, pais) VALUES (?, ?)";
@@ -114,67 +75,7 @@ public class CityDAO {
 
         return cities;
     }
-
-    public void update(
-            City city)
-            throws SQLException {
-
-        String sql =
-                "UPDATE ciudad "
-                        + "SET nombre = ?, pais = ? "
-                        + "WHERE id_ciudad = ?";
-
-        try (PreparedStatement statement =
-                     DatabaseConnection
-                             .getConnection()
-                             .prepareStatement(
-                                     sql
-                             )) {
-
-            statement.setString(
-                    1,
-                    city.getName()
-            );
-
-            statement.setString(
-                    2,
-                    city.getCountry()
-            );
-
-            statement.setInt(
-                    3,
-                    city.getId()
-            );
-
-            statement.executeUpdate();
-        }
-    }
-
-    public void delete(
-            int cityId)
-            throws SQLException {
-
-        String sql =
-                "DELETE FROM ciudad "
-                        + "WHERE id_ciudad = ?";
-
-        try (PreparedStatement statement =
-                     DatabaseConnection
-                             .getConnection()
-                             .prepareStatement(
-                                     sql
-                             )) {
-
-            statement.setInt(
-                    1,
-                    cityId
-            );
-
-            statement.executeUpdate();
     public void update(City city) throws SQLException {
-        if (exists(city.getName(), city.getCountry(), city.getId())) {
-            throw new DuplicateLocationException("Ya existe otra ciudad con ese nombre y país.");
-        }
 
         String sql = "UPDATE ciudad SET nombre = ?, pais = ? WHERE id_ciudad = ?";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql)) {

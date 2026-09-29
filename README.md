@@ -41,18 +41,25 @@ are included automatically from registered groups; register standalone and knock
 matches with `addMatch`. The wrapper's match snapshot removes duplicate references.
 
 ```java
-import PDF.PDFGenerator;
+
 import reports.ReportData;
-import reports.ReportOptions;
 
 import java.nio.file.Path;
 
 ReportData reportData = ReportData.fromInitialData(tournamentData);
-reportData.addGroup(group);
-reportData.addMatch(match);
+reportData.
+
+addGroup(group);
+reportData.
+
+addMatch(match);
 
 // Run after the championship has played or updated matches; handle IOException.
-PDFGenerator.generate(reportData, Path.of("UpdatedReport.pdf"), ReportOptions.defaults());
+PDFGenerator.
+
+generate(reportData, Path.of("UpdatedReport.pdf"),ReportOptions.
+
+defaults());
 ```
 
 For a filtered export, pass `new ReportOptions(position, player, photosDirectory)`.

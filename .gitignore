@@ -6,3 +6,5 @@ out/
 *.jar
 reports/
 saves/
+**/database.properties
+Report.pdf
