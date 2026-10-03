@@ -1,864 +1,932 @@
+/* =========================================================
+   VARIABLES GLOBALES & DESIGN TOKENS (SOLO COLORES)
+   ========================================================= */
+
+:root {
+    /* Tema Oscuro por defecto (Deep Slate & Violet Accent) */
+    -bg-app: #07101f;
+    -bg-nav: #080f1e;
+    -bg-header: #0c1628;
+    -bg-panel: #0e192c;
+    -bg-panel-secondary: #121f34;
+    -bg-input: #091322;
+    -bg-hover: #17253b;
+    -bg-selected: #24224a;
+
+    -border-subtle: #243047;
+    -border-card: #29364f;
+    -border-focus: #b82be1;
+
+    -text-main: #f5f7fa;
+    -text-secondary: #b5bfd1;
+    -text-muted: #728099;
+    -text-disabled: #475569;
+
+    -accent-primary: #a835dd;
+    -accent-primary-gradient: linear-gradient(to right, #6b21a8, #db2777);
+    -accent-hover: #c026d3;
+    -accent-text: #f472b6;
+
+    -badge-bg: #1c273e;
+    -badge-text: #b7c4dd;
+
+    -status-success-bg: #064e3b;
+    -status-success-text: #6ee7b7;
+    -status-danger-bg: #4c1d24;
+    -status-danger-text: #fda4af;
+
+    -accent-gold: #facc15;
+    -accent-cyan-bg: #0e3742;
+    -accent-cyan-text: #38bdf8;
+}
+
+/* Modo Claro: Se sobreescriben solo las variables de color */
+.light-theme {
+    -bg-app: #f1f5f9;
+    -bg-nav: #ffffff;
+    -bg-header: #e2e8f0;
+    -bg-panel: #ffffff;
+    -bg-panel-secondary: #f8fafc;
+    -bg-input: #ffffff;
+    -bg-hover: #e2e8f0;
+    -bg-selected: #ccfbf1;
+
+    -border-subtle: #cbd5e1;
+    -border-card: #cbd5e1;
+    -border-focus: #0d9488;
+
+    -text-main: #0f172a;
+    -text-secondary: #334155;
+    -text-muted: #64748b;
+    -text-disabled: #94a3b8;
+
+    -accent-primary: #0d9488;
+    -accent-primary-gradient: linear-gradient(to right, #0f766e, #0d9488);
+    -accent-hover: #115e59;
+    -accent-text: #0f766e;
+
+    -badge-bg: #e2e8f0;
+    -badge-text: #334155;
+
+    -status-success-bg: #dcfce7;
+    -status-success-text: #166534;
+    -status-danger-bg: #ffe4e6;
+    -status-danger-text: #9f1239;
+
+    -accent-gold: #b45309;
+    -accent-cyan-bg: #e0f2fe;
+    -accent-cyan-text: #0369a1;
+}
+
+/* =========================================================
+   BASE & CONTENEDORES
+   ========================================================= */
+
 .root {
-    -fx-font-family: "Segoe UI";
+    -fx-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -fx-font-size: 13px;
 }
 
 .app-root,
 .module-root,
-.content-host {
-    -fx-background-color: #07101f;
+.content-host,
+.page-content,
+.match-day-wrapper {
+    -fx-background-color: -bg-app;
 }
 
+.page-content,
+.match-day-wrapper {
+    -fx-padding: 16px 20px;
+}
+
+.panel {
+    -fx-background-color: -bg-panel;
+    -fx-background-radius: 10;
+    -fx-border-color: -border-card;
+    -fx-border-radius: 10;
+    -fx-border-width: 1px;
+    -fx-padding: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 10, 0, 0, 3);
+}
+
+.info-card {
+    -fx-background-color: -bg-panel-secondary;
+    -fx-background-radius: 6;
+    -fx-border-color: -border-subtle;
+    -fx-border-radius: 6;
+    -fx-border-width: 1px;
+    -fx-padding: 10px 12px;
+}
 
 /* =========================================================
-   TOP NAVIGATION
+   TOP NAVIGATION & HEADER
    ========================================================= */
 
 .top-navigation {
-    -fx-background-color: #080f1e;
-    -fx-padding: 14 22;
-    -fx-border-color: transparent transparent #263149 transparent;
+    -fx-background-color: -bg-nav;
+    -fx-padding: 10px 24px;
+    -fx-border-color: transparent transparent -border-subtle transparent;
     -fx-border-width: 0 0 1 0;
-}
-
-.brand {
-    -fx-padding: 0 25 0 0;
-}
-
-.brand-title {
-    -fx-text-fill: white;
-    -fx-font-weight: 900;
-    -fx-font-size: 15px;
-}
-
-.brand-subtitle {
-    -fx-text-fill: #70809b;
-    -fx-font-size: 9px;
 }
 
 .nav-button {
     -fx-background-color: transparent;
-    -fx-text-fill: #c0c8d8;
-    -fx-font-weight: 800;
-    -fx-padding: 17 15;
-    -fx-border-width: 0 0 3 0;
+    -fx-text-fill: -text-secondary;
+    -fx-font-weight: 700;
+    -fx-padding: 10px 14px;
+    -fx-border-width: 0 0 3px 0;
     -fx-border-color: transparent;
     -fx-cursor: hand;
 }
 
 .nav-button:hover {
-    -fx-text-fill: white;
-    -fx-background-color: #111b2d;
+    -fx-text-fill: -text-main;
+    -fx-background-color: -bg-hover;
+    -fx-background-radius: 6 6 0 0;
 }
 
 .nav-button-active {
-    -fx-text-fill: #f34ed9;
-    -fx-border-color: transparent transparent #b82be1 transparent;
+    -fx-text-fill: -accent-text;
+    -fx-border-color: transparent transparent -accent-primary transparent;
 }
 
-
-/* =========================================================
-   HEADER
-   ========================================================= */
-
 .page-header {
-    -fx-background-color: #0c1628;
-    -fx-padding: 17 28;
-    -fx-border-color: transparent transparent #263149 transparent;
+    -fx-background-color: -bg-header;
+    -fx-padding: 14px 24px;
+    -fx-border-color: transparent transparent -border-subtle transparent;
     -fx-border-width: 0 0 1 0;
 }
 
 .page-title {
-    -fx-text-fill: white;
-    -fx-font-weight: 900;
-    -fx-font-size: 23px;
+    -fx-text-fill: -text-main;
+    -fx-font-weight: 800;
+    -fx-font-size: 20px;
 }
 
 .page-subtitle {
-    -fx-text-fill: #8793aa;
+    -fx-text-fill: -text-muted;
     -fx-font-size: 12px;
 }
 
-
 /* =========================================================
-   COMMON
+   TIPOGRAFÍA Y LABELS
    ========================================================= */
-
-.page-content {
-    -fx-background-color: #07101f;
-    -fx-padding: 18;
-}
-
-.panel {
-    -fx-background-color: #0e192c;
-    -fx-background-radius: 10;
-    -fx-border-color: #29364f;
-    -fx-border-radius: 10;
-    -fx-padding: 16;
-}
 
 .section-title,
 .section-title-large {
-    -fx-text-fill: #f4f6fa;
-    -fx-font-size: 18px;
-    -fx-font-weight: 900;
-}
-
-.section-caption {
-    -fx-text-fill: #aab4c8;
-    -fx-font-size: 11px;
-    -fx-font-weight: 900;
-}
-
-.small-text,
-.small-label {
-    -fx-text-fill: #77849c;
-    -fx-font-size: 10px;
+    -fx-text-fill: -text-main;
+    -fx-font-size: 16px;
     -fx-font-weight: 800;
 }
 
+.section-caption,
+.small-text,
+.small-label {
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+}
+
 .muted-text,
-.muted-label {
-    -fx-text-fill: #7d8aa3;
+.muted-label,
+.status-text {
+    -fx-text-fill: -text-muted;
     -fx-font-size: 11px;
 }
 
 .info-value {
-    -fx-text-fill: #e7ebf2;
-    -fx-font-size: 12px;
+    -fx-text-fill: -text-main;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
 }
 
 .metric-value {
-    -fx-text-fill: #e94bd8;
-    -fx-font-size: 20px;
-    -fx-font-weight: 900;
-}
-
-.accent-text {
-    -fx-text-fill: #ef4ddc;
-    -fx-font-weight: 900;
-}
-
-.info-card {
-    -fx-background-color: #121f34;
-    -fx-background-radius: 7;
-    -fx-padding: 12;
-}
-
-.status-text {
-    -fx-text-fill: #75839a;
-    -fx-font-size: 11px;
-}
-
-
-/* =========================================================
-   BUTTONS
-   ========================================================= */
-
-.primary-button,
-.continue-button {
-    -fx-background-color:
-            linear-gradient(
-                    to right,
-                    #7528e5,
-                    #e83c86
-            );
-
-    -fx-text-fill: white;
-    -fx-font-weight: 900;
-    -fx-background-radius: 7;
-    -fx-padding: 11 18;
-    -fx-cursor: hand;
-}
-
-.primary-button:hover,
-.continue-button:hover {
-    -fx-opacity: 0.9;
-}
-
-.secondary-button,
-.secondary-action-button {
-    -fx-background-color: #17243a;
-    -fx-text-fill: #d6dce7;
-    -fx-border-color: #36435d;
-    -fx-border-radius: 7;
-    -fx-background-radius: 7;
-    -fx-font-weight: 800;
-    -fx-padding: 10 15;
-    -fx-cursor: hand;
-}
-
-.phase-action-button {
-    -fx-background-color: #6825c1;
-    -fx-text-fill: white;
-    -fx-background-radius: 7;
-    -fx-font-weight: 900;
-    -fx-padding: 11 15;
-    -fx-cursor: hand;
-}
-
-.utility-button {
-    -fx-background-color: #111c30;
-    -fx-text-fill: #d5dbe6;
-    -fx-border-color: #313e58;
-    -fx-border-radius: 7;
-    -fx-background-radius: 7;
-    -fx-font-weight: 800;
-    -fx-padding: 10 15;
-    -fx-cursor: hand;
-}
-
-.danger-button {
-    -fx-background-color: #4b202c;
-    -fx-text-fill: #ff8796;
-    -fx-background-radius: 7;
-    -fx-font-weight: 900;
-    -fx-padding: 10 15;
-    -fx-cursor: hand;
-}
-
-.button:disabled {
-    -fx-opacity: 0.35;
-}
-
-
-/* =========================================================
-   LIST VIEW
-   ========================================================= */
-
-.dark-list {
-    -fx-background-color: #0a1425;
-    -fx-control-inner-background: #0a1425;
-    -fx-border-color: #27344d;
-    -fx-border-radius: 7;
-    -fx-background-radius: 7;
-}
-
-.dark-list .list-cell {
-    -fx-background-color: #0a1425;
-    -fx-text-fill: #bcc5d5;
-    -fx-padding: 10 12;
-}
-
-.dark-list .list-cell:odd {
-    -fx-background-color: #0d1829;
-}
-
-.dark-list .list-cell:selected {
-    -fx-background-color: #6625bc;
-    -fx-text-fill: white;
-}
-
-.dark-list .list-cell:hover {
-    -fx-background-color: #17253b;
-}
-
-
-/* =========================================================
-   TABLE VIEW
-   ========================================================= */
-
-.dark-table {
-    -fx-background-color: #091424;
-    -fx-control-inner-background: #091424;
-    -fx-table-cell-border-color: #202c43;
-    -fx-border-color: #28344c;
-}
-
-.dark-table .column-header-background {
-    -fx-background-color: #111d31;
-}
-
-.dark-table .column-header {
-    -fx-background-color: #111d31;
-    -fx-border-color: transparent transparent #2c3952 transparent;
-}
-
-.dark-table .column-header .label {
-    -fx-text-fill: #9da8bc;
-    -fx-font-weight: 900;
-}
-
-.dark-table .table-row-cell {
-    -fx-background-color: #0c1728;
-}
-
-.dark-table .table-row-cell:odd {
-    -fx-background-color: #101c2f;
-}
-
-.dark-table .table-row-cell:selected {
-    -fx-background-color: #26284a;
-}
-
-.dark-table .table-cell {
-    -fx-text-fill: #d2d8e2;
-    -fx-border-color: transparent;
-}
-
-
-/* =========================================================
-   OVERVIEW
-   ========================================================= */
-
-.group-button {
-    -fx-background-color: #111e33;
-    -fx-text-fill: #c2cada;
-    -fx-background-radius: 6;
-    -fx-alignment: center-left;
-    -fx-padding: 10;
-    -fx-font-weight: 800;
-    -fx-cursor: hand;
-}
-
-.group-button:hover {
-    -fx-background-color: #202d46;
-}
-
-.group-button-active {
-    -fx-background-color: #6729bd;
-    -fx-text-fill: white;
-}
-
-.table-header {
-    -fx-background-color: #091322;
-    -fx-background-radius: 6;
-    -fx-padding: 9 12;
-}
-
-.table-header .label {
-    -fx-text-fill: #78849a;
-    -fx-font-size: 10px;
-    -fx-font-weight: 900;
-}
-
-.standing-qualified,
-.standing-normal {
-    -fx-background-radius: 6;
-    -fx-padding: 10 12;
-}
-
-.standing-qualified {
-    -fx-background-color: #18253c;
-    -fx-border-color: transparent transparent transparent #a835dd;
-    -fx-border-width: 0 0 0 3;
-}
-
-.standing-normal {
-    -fx-background-color: #101b2e;
-}
-
-.standing-qualified .label,
-.standing-normal .label {
-    -fx-text-fill: #c2cada;
-}
-
-.stat-card {
-    -fx-background-color: #101a2d;
-    -fx-border-color: #2d3951;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 14;
-    -fx-spacing: 7;
-}
-
-.card-caption {
-    -fx-text-fill: #df4bd4;
-    -fx-font-size: 10px;
-    -fx-font-weight: 900;
-}
-
-.card-value {
-    -fx-text-fill: white;
-    -fx-font-size: 13px;
-    -fx-font-weight: 800;
-}
-
-
-/* =========================================================
-   TEAM PROFILE
-   ========================================================= */
-
-.team-title {
-    -fx-text-fill: #f5f6fa;
+    -fx-text-fill: -accent-text;
     -fx-font-size: 22px;
     -fx-font-weight: 900;
 }
 
-.player-title {
-    -fx-text-fill: #f5f6fa;
-    -fx-font-size: 20px;
-    -fx-font-weight: 900;
+.accent-text {
+    -fx-text-fill: -accent-text;
+    -fx-font-weight: 700;
 }
+
+.team-title,
+.player-title {
+    -fx-text-fill: -text-main;
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+}
+
+/* =========================================================
+   BOTONES
+   ========================================================= */
+
+.button {
+    -fx-cursor: hand;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-font-weight: 700;
+    -fx-padding: 8px 14px;
+}
+
+.primary-button,
+.continue-button {
+    -fx-background-color: -accent-primary-gradient;
+    -fx-text-fill: white;
+}
+
+.primary-button:hover,
+.continue-button:hover {
+    -fx-opacity: 0.92;
+}
+
+.phase-action-button {
+    -fx-background-color: -accent-primary;
+    -fx-text-fill: white;
+}
+
+.phase-action-button:hover {
+    -fx-opacity: 0.92;
+}
+
+.secondary-button,
+.secondary-action-button,
+.utility-button {
+    -fx-background-color: -bg-panel-secondary;
+    -fx-text-fill: -text-secondary;
+    -fx-border-color: -border-card;
+    -fx-border-width: 1px;
+}
+
+.secondary-button:hover,
+.secondary-action-button:hover,
+.utility-button:hover {
+    -fx-background-color: -bg-hover;
+    -fx-text-fill: -text-main;
+    -fx-border-color: -border-subtle;
+}
+
+.danger-button {
+    -fx-background-color: -status-danger-bg;
+    -fx-text-fill: -status-danger-text;
+    -fx-border-color: transparent;
+}
+
+.danger-button:hover {
+    -fx-opacity: 0.85;
+}
+
+.button:disabled {
+    -fx-opacity: 0.4;
+}
+
+/* =========================================================
+   BADGES & CHIPS
+   ========================================================= */
 
 .purple-chip,
 .status-chip {
-    -fx-background-color: #202a44;
-    -fx-text-fill: #b7c4dd;
+    -fx-background-color: -badge-bg;
+    -fx-text-fill: -badge-text;
     -fx-background-radius: 6;
-    -fx-padding: 6 10;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-padding: 5px 9px;
 }
 
 .green-chip,
 .ready-chip {
-    -fx-background-color: #173a28;
-    -fx-text-fill: #65db81;
+    -fx-background-color: -status-success-bg;
+    -fx-text-fill: -status-success-text;
     -fx-background-radius: 6;
-    -fx-padding: 7 10;
-    -fx-font-weight: 900;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-padding: 5px 9px;
 }
 
 .goalkeeper-info {
-    -fx-background-color: #142b34;
-    -fx-text-fill: #5bd5ca;
+    -fx-background-color: -accent-cyan-bg;
+    -fx-text-fill: -accent-cyan-text;
     -fx-background-radius: 6;
-    -fx-padding: 10;
+    -fx-padding: 8px 10px;
+    -fx-font-weight: 600;
 }
-
 
 /* =========================================================
-   BRACKET
+   INPUTS & FORM CONTROLS
    ========================================================= */
 
-.bracket-container {
-    -fx-background-color: #091322;
-    -fx-background-radius: 10;
-    -fx-border-color: #28354d;
-    -fx-border-radius: 10;
-    -fx-padding: 22;
-}
-
-.bracket-stage {
-    -fx-text-fill: #abb5c8;
-    -fx-font-size: 11px;
-    -fx-font-weight: 900;
-}
-
-.bracket-card {
-    -fx-background-color: #131f33;
-    -fx-border-color: #35415a;
-    -fx-border-radius: 7;
-    -fx-background-radius: 7;
-    -fx-padding: 11;
-}
-
-.bracket-caption {
-    -fx-text-fill: #df49d5;
-    -fx-font-size: 10px;
-    -fx-font-weight: 900;
-}
-
-.bracket-team {
-    -fx-text-fill: #edf0f5;
-    -fx-font-weight: 800;
-}
-
-.bracket-score {
-    -fx-text-fill: #e4d555;
-    -fx-font-size: 20px;
-    -fx-font-weight: 900;
-}
-
-.champion-text {
-    -fx-text-fill: #efd85b;
-    -fx-font-size: 18px;
-    -fx-font-weight: 900;
-}
-
-
-/* =========================================================
-   REPORTS
-   ========================================================= */
-
-.report-area {
-    -fx-control-inner-background: #091322;
-    -fx-background-color: #091322;
-    -fx-text-fill: #c7cfdd;
-    -fx-highlight-fill: #6827bc;
-    -fx-font-family: "Consolas";
-    -fx-font-size: 12px;
-}
-
-
-/* =========================================================
-   DATABASE
-   ========================================================= */
-
-.dark-field {
-    -fx-background-color: #091322;
-    -fx-text-fill: white;
-    -fx-prompt-text-fill: #5f6d83;
-    -fx-border-color: #303d57;
+.dark-field,
+.text-field {
+    -fx-background-color: -bg-input;
+    -fx-text-fill: -text-main;
+    -fx-prompt-text-fill: -text-muted;
+    -fx-border-color: -border-card;
+    -fx-border-width: 1px;
     -fx-border-radius: 6;
     -fx-background-radius: 6;
-    -fx-padding: 10;
+    -fx-padding: 8px 10px;
+}
+
+.dark-field:focused,
+.text-field:focused {
+    -fx-border-color: -border-focus;
+    -fx-background-color: -bg-input;
 }
 
 .combo-box {
-    -fx-background-color: #101d30;
-    -fx-border-color: #303d57;
+    -fx-background-color: -bg-input;
+    -fx-border-color: -border-card;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 2px 4px;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: -text-main;
+    -fx-background-color: transparent;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: -bg-panel;
+    -fx-border-color: -border-card;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 12, 0, 0, 4);
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: -bg-hover;
+}
+
+/* =========================================================
+   LIST VIEW & TABLE VIEW
+   ========================================================= */
+
+.dark-list,
+.dark-table {
+    -fx-background-color: -bg-input;
+    -fx-control-inner-background: -bg-input;
+    -fx-border-color: -border-card;
+    -fx-border-width: 1px;
     -fx-border-radius: 6;
     -fx-background-radius: 6;
 }
 
-.combo-box .list-cell {
-    -fx-text-fill: #d1d7e1;
-    -fx-background-color: #101d30;
+/* Base de las celdas */
+.dark-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-secondary;
+    -fx-padding: 9px 12px;
 }
 
+/* Fondo solo a las celdas con datos (pares e impares) */
+.dark-list .list-cell:filled {
+    -fx-background-color: -bg-input;
+}
+
+.dark-list .list-cell:filled:odd {
+    -fx-background-color: derive(-bg-input, 2%);
+}
+
+/* Hover y selección EXCLUSIVOS para celdas con datos */
+.dark-list .list-cell:filled:hover {
+    -fx-background-color: -bg-hover;
+    -fx-text-fill: -text-main;
+}
+
+.dark-list .list-cell:filled:selected {
+    -fx-background-color: -accent-primary;
+    -fx-text-fill: white;
+}
+
+/* Celdas vacías completamente invisibles e inactivas */
+.dark-list .list-cell:empty {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.dark-table .column-header-background,
+.dark-table .column-header {
+    -fx-background-color: -bg-panel-secondary;
+    -fx-border-color: transparent transparent -border-card transparent;
+}
+
+.dark-table .column-header .label {
+    -fx-text-fill: -text-muted;
+    -fx-font-weight: 700;
+    -fx-font-size: 11px;
+}
+
+.dark-table .table-row-cell {
+    -fx-background-color: -bg-input;
+    -fx-border-color: transparent transparent -border-subtle transparent;
+    -fx-border-width: 1px;
+}
+
+.dark-table .table-row-cell:odd {
+    -fx-background-color: derive(-bg-input, 2%);
+}
+
+.dark-table .table-row-cell:hover {
+    -fx-background-color: -bg-hover;
+}
+
+.dark-table .table-row-cell:selected {
+    -fx-background-color: -bg-selected;
+}
+
+.dark-table .table-cell {
+    -fx-text-fill: -text-main;
+    -fx-padding: 6px 8px;
+}
 
 /* =========================================================
-   MATCH DAY
+   SCROLLBAR MINIMALISTA
    ========================================================= */
 
-.match-day-wrapper {
-    -fx-background-color: #07101f;
-    -fx-padding: 18;
-}
-
+.scroll-pane,
 .match-list-scroll,
-.events-scroll,
-.main-scroll {
+.events-scroll {
     -fx-background-color: transparent;
     -fx-background: transparent;
     -fx-border-color: transparent;
 }
 
-.match-list-scroll > .viewport,
-.events-scroll > .viewport,
-.main-scroll > .viewport {
+.scroll-pane > .viewport {
     -fx-background-color: transparent;
 }
 
-.match-list-box,
-.events-box {
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
     -fx-background-color: transparent;
-    -fx-padding: 3;
+    -fx-pref-width: 8px;
 }
+
+.scroll-bar .thumb {
+    -fx-background-color: -border-card;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: -text-muted;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+/* =========================================================
+   COMPONENTES DE MATCH DAY, BRACKET Y TOURNAMENT
+   ========================================================= */
 
 .match-list-item {
-    -fx-background-color: #121c2e;
-    -fx-text-fill: #aeb6c7;
-    -fx-background-radius: 7;
-    -fx-border-radius: 7;
-    -fx-border-color: #29334a;
-    -fx-padding: 13 14;
-    -fx-font-size: 12px;
+    -fx-background-color: -bg-panel-secondary;
+    -fx-text-fill: -text-secondary;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: -border-card;
+    -fx-border-width: 1px;
+    -fx-padding: 10px 14px;
     -fx-font-weight: 700;
-    -fx-alignment: center-left;
     -fx-cursor: hand;
 }
 
 .match-list-item:hover {
-    -fx-background-color: #1a263c;
+    -fx-background-color: -bg-hover;
 }
 
 .match-list-playable {
-    -fx-border-color: #7c32da;
-    -fx-text-fill: #f3f5f9;
+    -fx-border-color: -accent-primary;
+    -fx-text-fill: -text-main;
 }
 
 .match-list-finished {
-    -fx-border-color: #265d3a;
-    -fx-text-fill: #72d68b;
-}
-
-.match-list-locked {
-    -fx-opacity: 0.58;
+    -fx-border-color: -status-success-bg;
+    -fx-text-fill: -status-success-text;
 }
 
 .match-list-selected {
-    -fx-background-color: #222c46;
-    -fx-border-color: #dd43d1;
-    -fx-border-width: 1.5;
+    -fx-background-color: -bg-hover;
+    -fx-border-color: -accent-text;
+    -fx-border-width: 1.5px;
 }
 
 .selected-match-title {
-    -fx-text-fill: #f4f6fa;
-    -fx-font-size: 20px;
-    -fx-font-weight: 900;
+    -fx-text-fill: -text-main;
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
 }
 
 .selected-score {
-    -fx-text-fill: #ed52dc;
-    -fx-font-size: 30px;
+    -fx-text-fill: -accent-text;
+    -fx-font-size: 28px;
     -fx-font-weight: 900;
 }
 
 .selected-match-info {
-    -fx-background-color: #0a1221;
-    -fx-background-radius: 8;
-    -fx-padding: 12;
+    -fx-background-color: -bg-input;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: -border-subtle;
+    -fx-border-width: 1px;
+    -fx-padding: 10px 14px;
 }
 
 .match-detail {
-    -fx-text-fill: #9ba5b8;
+    -fx-text-fill: -text-muted;
     -fx-font-size: 11px;
 }
 
 .event-row {
-    -fx-background-color: #121c2e;
+    -fx-background-color: -bg-panel-secondary;
     -fx-background-radius: 6;
-    -fx-border-color: #273249;
     -fx-border-radius: 6;
-    -fx-text-fill: #c7cdd9;
-    -fx-padding: 9 11;
-    -fx-font-size: 12px;
+    -fx-border-color: -border-subtle;
+    -fx-border-width: 1px;
+    -fx-text-fill: -text-secondary;
+    -fx-padding: 8px 10px;
 }
 
-.penalty-result {
-    -fx-background-color: #34213d;
+.stat-card {
+    -fx-background-color: -bg-panel;
+    -fx-border-color: -border-card;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 14px;
+    -fx-spacing: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 8, 0, 0, 2);
+}
+
+.card-caption {
+    -fx-text-fill: -accent-text;
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+}
+
+.card-value {
+    -fx-text-fill: -text-main;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+}
+
+.bracket-container {
+    -fx-background-color: -bg-input;
+    -fx-background-radius: 10;
+    -fx-border-color: -border-card;
+    -fx-border-radius: 10;
+    -fx-border-width: 1px;
+    -fx-padding: 20px;
+}
+
+.bracket-card {
+    -fx-background-color: -bg-panel-secondary;
+    -fx-border-color: -border-subtle;
+    -fx-border-radius: 6;
     -fx-background-radius: 6;
-    -fx-text-fill: #ef66dd;
-    -fx-font-size: 13px;
-    -fx-font-weight: 900;
-    -fx-padding: 10;
+    -fx-padding: 10px;
 }
 
+.bracket-score,
+.champion-text {
+    -fx-text-fill: -accent-gold;
+    -fx-font-size: 18px;
+    -fx-font-weight: 900;
+}
 
-/* =========================================================
-   BOTTOM STATUS
-   ========================================================= */
+.bracket-stage {
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+
+.group-button {
+    -fx-background-color: -bg-panel-secondary;
+    -fx-text-fill: -text-secondary;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 8px 12px;
+    -fx-font-weight: 700;
+    -fx-cursor: hand;
+}
+
+.group-button:hover {
+    -fx-background-color: -bg-hover;
+}
+
+.group-button-active {
+    -fx-background-color: -accent-primary;
+    -fx-text-fill: white;
+}
+
+.table-header {
+    -fx-background-color: -bg-input;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 8px 12px;
+}
+
+.table-header .label {
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+}
+
+.standing-qualified {
+    -fx-background-color: -bg-panel-secondary;
+    -fx-border-color: transparent transparent transparent -accent-primary;
+    -fx-border-width: 0 0 0 3px;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 8px 12px;
+}
+
+.standing-normal {
+    -fx-background-color: -bg-input;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 8px 12px;
+}
+
+.standing-qualified .label,
+.standing-normal .label {
+    -fx-text-fill: -text-secondary;
+}
+
+.report-area {
+    -fx-control-inner-background: -bg-input;
+    -fx-background-color: -bg-input;
+    -fx-text-fill: -text-main;
+    -fx-highlight-fill: -accent-primary;
+    -fx-font-family: "Consolas", monospace;
+    -fx-border-color: -border-card;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
 
 .status-bar {
-    -fx-background-color: #080f1e;
-    -fx-text-fill: #687790;
-    -fx-padding: 7 20;
-    -fx-border-color: #28334a transparent transparent transparent;
+    -fx-background-color: -bg-nav;
+    -fx-text-fill: -text-muted;
+    -fx-padding: 6px 20px;
+    -fx-border-color: -border-subtle transparent transparent transparent;
+    -fx-border-width: 1px 0 0 0;
 }
-
-
+.blocked-chip {
+    -fx-background-color: -status-danger-bg;
+    -fx-text-fill: -status-danger-text;
+    -fx-background-radius: 6;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-padding: 5px 9px;
+}
 /* =========================================================
-   LIGHT THEME
+   TABLA DE JUGADORES (FIRST TEAM) MODERNA
    ========================================================= */
 
-.light-theme.app-root,
-.light-theme .module-root,
-.light-theme .content-host,
-.light-theme .page-content,
-.light-theme .match-day-wrapper {
-    -fx-background-color: #f3f6f7;
+.player-name-cell {
+    -fx-font-weight: 800;
+    -fx-text-fill: -text-main;
 }
 
-.light-theme .top-navigation,
-.light-theme .status-bar {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #d6e0e2;
+.table-stat-cell {
+    -fx-alignment: CENTER;
+    -fx-text-fill: -text-secondary;
+    -fx-font-weight: 600;
 }
 
-.light-theme .page-header {
-    -fx-background-color: #eaf0f1;
-    -fx-border-color: #d6e0e2;
+/* Badge de Posición en la tabla */
+/* =========================================================
+   BADGES DE POSICIÓN Y OVERALL (COLORES CHILLONES / NEÓN)
+   ========================================================= */
+
+.pos-badge {
+    -fx-background-radius: 5;
+    -fx-padding: 3 8;
+    -fx-font-size: 11px;
+    -fx-font-weight: 900;
+    -fx-alignment: CENTER;
 }
 
-.light-theme .brand-title,
-.light-theme .page-title,
-.light-theme .section-title,
-.light-theme .section-title-large,
-.light-theme .team-title,
-.light-theme .player-title,
-.light-theme .selected-match-title,
-.light-theme .card-value,
-.light-theme .bracket-team {
-    -fx-text-fill: #1c3038;
+/* Arqueros: Celeste chillón / Cyan neón con letra azul muy oscura */
+.pos-gk {
+    -fx-background-color: #EE8B11;
+    -fx-text-fill: #432705;
 }
 
-.light-theme .brand-subtitle,
-.light-theme .page-subtitle,
-.light-theme .small-text,
-.light-theme .small-label,
-.light-theme .muted-text,
-.light-theme .muted-label,
-.light-theme .section-caption,
-.light-theme .status-text,
-.light-theme .bracket-stage,
-.light-theme .match-detail {
-    -fx-text-fill: #61747a;
+/* Defensas: Amarillo chillón con letra marrón/ocre oscura */
+.pos-def {
+    -fx-background-color: #E9F029;
+    -fx-text-fill: #414305;
 }
 
-.light-theme .metric-value,
-.light-theme .accent-text,
-.light-theme .card-caption,
-.light-theme .bracket-caption,
-.light-theme .selected-score {
-    -fx-text-fill: #087e83;
+/* Mediocampistas: Rosa chillón / Magenta neón con letra bordó/ciruela oscura */
+.pos-mid {
+    -fx-background-color: #F466E9;
+    -fx-text-fill: #3b001a;
 }
 
-.light-theme .nav-button {
-    -fx-text-fill: #40565d;
+/* Delanteros: Rojo chillón / Carmesí brillante con letra carmesí oscura */
+.pos-fwd {
+    -fx-background-color: #EE1111;
+    -fx-text-fill: #430505;
 }
 
-.light-theme .nav-button:hover {
-    -fx-text-fill: #17383d;
-    -fx-background-color: #edf4f4;
+/* Overall (OVR): Verde Lima chillón con letra verde bosque profunda */
+.ovr-badge {
+    -fx-background-color: #53A63C;
+    -fx-text-fill: #063800;
+    -fx-font-weight: 900;
+    -fx-background-radius: 5;
+    -fx-padding: 3 8;
+    -fx-alignment: CENTER;
+}
+/* =========================================================
+   HEADER DE CLUB (TEAMS TAB)
+   ========================================================= */
+
+.team-header-panel {
+    -fx-background-color: -bg-panel;
+    -fx-background-radius: 10;
+    -fx-border-color: -border-card;
+    -fx-border-radius: 10;
+    -fx-border-width: 1px;
+    -fx-padding: 20px 24px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.15), 10, 0, 0, 3);
 }
 
-.light-theme .nav-button-active {
-    -fx-text-fill: #087e83;
-    -fx-border-color: transparent transparent #087e83 transparent;
+.team-header-title {
+    -fx-text-fill: -text-main;
+    -fx-font-size: 28px;
+    -fx-font-weight: 900;
 }
 
-.light-theme .panel,
-.light-theme .stat-card,
-.light-theme .bracket-container {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #d6e0e2;
+.team-header-country {
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
 }
 
-.light-theme .info-card,
-.light-theme .bracket-card,
-.light-theme .selected-match-info,
-.light-theme .table-header,
-.light-theme .standing-qualified,
-.light-theme .standing-normal {
-    -fx-background-color: #f5f8f8;
+.ranking-badge {
+    -fx-background-color: -badge-bg;
+    -fx-text-fill: -accent-text;
+    -fx-border-color: -border-subtle;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-font-size: 12px;
+    -fx-font-weight: 800;
+    -fx-padding: 5px 12px;
 }
 
-.light-theme .standing-qualified .label,
-.light-theme .standing-normal .label,
-.light-theme .info-value,
-.light-theme .bracket-team {
-    -fx-text-fill: #30464d;
+/* Tarjeta métrica destacada para Squad Rating */
+.metric-card-highlight {
+    -fx-background-color: -bg-panel-secondary;
+    -fx-background-radius: 8;
+    -fx-border-color: -border-card;
+    -fx-border-radius: 8;
+    -fx-border-width: 1px;
+    -fx-padding: 12px 20px;
+    -fx-alignment: CENTER;
 }
 
-.light-theme .standing-qualified {
-    -fx-border-color: transparent transparent transparent #087e83;
+.metric-card-highlight .metric-value {
+    -fx-font-size: 32px;
+    -fx-font-weight: 900;
 }
 
-.light-theme .group-button-active,
-.light-theme .dark-list .list-cell:selected,
-.light-theme .dark-list .list-cell:hover,
-.light-theme .dark-table .table-row-cell:selected {
-    -fx-background-color: #dcefee;
-    -fx-text-fill: #14585c;
+/* Tarjeta de información para Head Coach */
+.coach-card {
+    -fx-background-color: -bg-panel-secondary;
+    -fx-background-radius: 8;
+    -fx-border-color: -border-card;
+    -fx-border-radius: 8;
+    -fx-border-width: 1px;
+    -fx-padding: 12px 20px;
+    -fx-min-width: 220px;
 }
 
-.light-theme .primary-button,
-.light-theme .continue-button,
-.light-theme .phase-action-button {
-    -fx-background-color: #087e83;
+.coach-name-label {
+    -fx-text-fill: -text-main;
+    -fx-font-size: 15px;
+    -fx-font-weight: 800;
+}
+
+.coach-detail-label {
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+.team-name-cell {
+    -fx-text-fill: -text-secondary;
+    -fx-font-weight: 600;
+}
+/* =========================================================
+   REPORTES VISUALES
+   ========================================================= */
+
+.report-content-host {
+    -fx-background-color: transparent;
+}
+
+/* Badge de Ranking (1°, 2°, 3° puestos destacados) */
+.rank-badge {
+    -fx-font-weight: 900;
+    -fx-font-size: 11px;
+    -fx-padding: 3 8;
+    -fx-background-radius: 4;
+    -fx-alignment: CENTER;
+}
+
+.rank-gold {
+    -fx-background-color: #facc15;
+    -fx-text-fill: #451a03;
+}
+
+.rank-silver {
+    -fx-background-color: #e2e8f0;
+    -fx-text-fill: #1e293b;
+}
+
+.rank-bronze {
+    -fx-background-color: #f97316;
+    -fx-text-fill: #431407;
+}
+
+.rank-normal {
+    -fx-background-color: -badge-bg;
+    -fx-text-fill: -text-secondary;
+}
+
+/* Chips de tarjetas amarillas y rojas */
+.card-yellow-chip {
+    -fx-background-color: #eab308;
+    -fx-text-fill: #422006;
+    -fx-font-weight: 900;
+    -fx-background-radius: 4;
+    -fx-padding: 2 7;
+}
+
+.card-red-chip {
+    -fx-background-color: #ef4444;
     -fx-text-fill: #ffffff;
+    -fx-font-weight: 900;
+    -fx-background-radius: 4;
+    -fx-padding: 2 7;
+}
+/* =========================================================
+   OVERVIEW - GRUPOS EN PARALELO Y HEADER UNIFICADO
+   ========================================================= */
+
+/* Contenedor con scroll horizontal suave para los grupos */
+.groups-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 4 0;
 }
 
-.light-theme .primary-button:hover,
-.light-theme .continue-button:hover,
-.light-theme .phase-action-button:hover {
-    -fx-background-color: #076d72;
+.groups-scroll-pane > .viewport {
+    -fx-background-color: transparent;
 }
 
-.light-theme .utility-button,
-.light-theme .secondary-button,
-.light-theme .secondary-action-button,
-.light-theme .group-button {
-    -fx-background-color: #edf2f3;
-    -fx-text-fill: #354d54;
-    -fx-border-color: #ccd9dc;
+/* Tarjeta individual de cada grupo */
+.group-card {
+    -fx-background-color: -bg-panel;
+    -fx-border-color: -border-card;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 14 16;
+    -fx-min-width: 320px;
+    -fx-pref-width: 340px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 8, 0, 0, 2);
 }
 
-.light-theme .group-button:hover {
-    -fx-background-color: #e1ebec;
+.group-card-header {
+    -fx-padding: 0 0 8 0;
+    -fx-border-color: -border-subtle;
+    -fx-border-width: 0 0 1px 0;
 }
 
-.light-theme .group-button-active,
-.light-theme .group-button-active:hover {
-    -fx-background-color: #dcefee;
-    -fx-text-fill: #14585c;
+.group-card-title {
+    -fx-text-fill: -text-main;
+    -fx-font-size: 15px;
+    -fx-font-weight: 900;
 }
 
-.light-theme .danger-button {
-    -fx-background-color: #fbe9e8;
-    -fx-text-fill: #a43838;
-}
-
-.light-theme .purple-chip,
-.light-theme .status-chip {
-    -fx-background-color: #e8eff0;
-    -fx-text-fill: #496168;
-}
-
-.light-theme .green-chip,
-.light-theme .ready-chip {
-    -fx-background-color: #e2f2e9;
-    -fx-text-fill: #287348;
-}
-
-.light-theme .goalkeeper-info {
-    -fx-background-color: #e1f1f0;
-    -fx-text-fill: #176c6d;
-}
-
-.light-theme .dark-list,
-.light-theme .dark-list .list-cell,
-.light-theme .dark-list .list-cell:odd,
-.light-theme .dark-table,
-.light-theme .dark-table .table-row-cell,
-.light-theme .dark-table .table-row-cell:odd,
-.light-theme .dark-field,
-.light-theme .report-area,
-.light-theme .combo-box,
-.light-theme .combo-box .list-cell {
-    -fx-background-color: #ffffff;
-    -fx-control-inner-background: #ffffff;
-    -fx-text-fill: #2b4148;
-    -fx-border-color: #ccd9dc;
-}
-
-.light-theme .dark-table .column-header-background,
-.light-theme .dark-table .column-header {
-    -fx-background-color: #edf2f3;
-    -fx-border-color: transparent transparent #ccd9dc transparent;
-}
-
-.light-theme .dark-table .column-header .label,
-.light-theme .dark-table .table-cell,
-.light-theme .dark-list .list-cell {
-    -fx-text-fill: #354d54;
-}
-
-.light-theme .dark-table .table-row-cell:selected .table-cell {
-    -fx-text-fill: #14585c;
-}
-
-.light-theme .dark-field {
-    -fx-prompt-text-fill: #829398;
-}
-
-.light-theme .match-list-item,
-.light-theme .event-row {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #d6e0e2;
-    -fx-text-fill: #354d54;
-}
-
-.light-theme .match-list-item:hover {
-    -fx-background-color: #f0f6f6;
-}
-
-.light-theme .match-list-playable {
-    -fx-border-color: #25888b;
-    -fx-text-fill: #28595b;
-}
-
-.light-theme .match-list-finished {
-    -fx-border-color: #5a9b72;
-    -fx-text-fill: #36734d;
-}
-
-.light-theme .match-list-selected {
-    -fx-background-color: #dcefee;
-    -fx-border-color: #087e83;
-    -fx-text-fill: #14585c;
-}
-
-.light-theme .penalty-result {
-    -fx-background-color: #e8eff0;
-    -fx-text-fill: #087e83;
-}
-
-.light-theme .bracket-score,
-.light-theme .champion-text {
-    -fx-text-fill: #9a6b13;
-}
-
-.light-theme .status-bar {
-    -fx-text-fill: #61747a;
+/* Encabezado de columnas de la mini tabla del grupo */
+.group-table-head {
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
 }
