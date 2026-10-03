@@ -13,162 +13,87 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.control.ScrollPane?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="gui.controller.TournamentController"
            styleClass="module-root">
-
-
     <!-- ===================================================
-         OVERVIEW
-         =================================================== -->
-
+             OVERVIEW PANE
+             =================================================== -->
     <VBox fx:id="overviewPane"
-          spacing="16"
+          spacing="18"
           styleClass="page-content">
 
-        <HBox spacing="16">
+        <!-- GRUPOS EN PARALELO (ARRIBA) -->
+        <VBox spacing="10">
+            <Label text="GROUP STAGE STANDINGS"
+                   styleClass="section-caption"/>
 
-            <VBox prefWidth="220"
-                  spacing="10"
-                  styleClass="panel">
+            <ScrollPane fitToHeight="true"
+                        styleClass="groups-scroll-pane">
+                <HBox fx:id="allGroupsContainer"
+                      spacing="16"
+                      alignment="TOP_LEFT"/>
+            </ScrollPane>
+        </VBox>
 
-                <Label text="GROUPS"
-                       styleClass="section-caption"/>
+        <!-- 4 CAJAS DE FASES ELIMINATORIAS (ABAJO) -->
+        <VBox VBox.vgrow="ALWAYS" spacing="10">
+            <Label text="KNOCKOUT ROUNDS &amp; CHAMPION"
+                   styleClass="section-caption"/>
 
-                <VBox fx:id="groupButtonsBox"
-                      spacing="6"/>
+            <HBox spacing="16" VBox.vgrow="ALWAYS">
 
-            </VBox>
-
-
-            <VBox spacing="10"
-                  HBox.hgrow="ALWAYS"
-                  styleClass="panel">
-
-                <Label fx:id="selectedGroupTitle"
-                       text="GROUP A"
-                       styleClass="section-title"/>
-
-                <HBox styleClass="table-header">
-
-                    <Label text="#"
-                           prefWidth="35"/>
-
-                    <Label text="TEAM"
-                           prefWidth="210"/>
-
-                    <Label text="PTS"
-                           prefWidth="55"/>
-
-                    <Label text="MP"
-                           prefWidth="55"/>
-
-                    <Label text="GF"
-                           prefWidth="55"/>
-
-                    <Label text="GA"
-                           prefWidth="55"/>
-
-                    <Label text="GD"
-                           prefWidth="55"/>
-
-                </HBox>
-
-                <VBox fx:id="standingsBox"
-                      spacing="5"/>
-
-            </VBox>
-
-
-            <VBox prefWidth="270"
-                  spacing="12"
-                  styleClass="panel">
-
-                <Label text="TOURNAMENT"
-                       styleClass="section-caption"/>
-
-                <VBox spacing="4"
-                      styleClass="info-card">
-
-                    <Label text="CURRENT STAGE"
+                <!-- 1. Cuartos de Final -->
+                <VBox HBox.hgrow="ALWAYS"
+                      spacing="8"
+                      styleClass="panel">
+                    <Label text="QUARTER-FINALS"
                            styleClass="small-text"/>
-
-                    <Label fx:id="overviewStage"
-                           text="-"
-                           styleClass="metric-value"/>
-
+                    <VBox fx:id="overviewQuarterBox"
+                          VBox.vgrow="ALWAYS"
+                          spacing="6"/>
                 </VBox>
 
-                <VBox spacing="4"
-                      styleClass="info-card">
-
-                    <Label text="MATCHES"
+                <!-- 2. Semifinales -->
+                <VBox HBox.hgrow="ALWAYS"
+                      spacing="8"
+                      styleClass="panel">
+                    <Label text="SEMI-FINALS"
                            styleClass="small-text"/>
-
-                    <Label fx:id="overviewMatches"
-                           text="-"
-                           styleClass="metric-value"/>
-
+                    <VBox fx:id="overviewSemiBox"
+                          VBox.vgrow="ALWAYS"
+                          spacing="6"/>
                 </VBox>
 
-                <VBox spacing="4"
-                      styleClass="info-card">
+                <!-- 3. Final -->
+                <VBox HBox.hgrow="ALWAYS"
+                      spacing="8"
+                      styleClass="panel">
+                    <Label text="FINAL"
+                           styleClass="small-text"/>
+                    <VBox fx:id="overviewFinalBox"
+                          VBox.vgrow="ALWAYS"
+                          spacing="6"/>
+                </VBox>
 
+                <!-- 4. Campeón -->
+                <VBox HBox.hgrow="ALWAYS"
+                      spacing="8"
+                      alignment="CENTER"
+                      styleClass="panel">
                     <Label text="CHAMPION"
                            styleClass="small-text"/>
-
-                    <Label fx:id="overviewChampion"
-                           text="-"
+                    <Label fx:id="overviewChampionName"
+                           text="NOT WINNER YET"
+                           styleClass="champion-text"
                            wrapText="true"
-                           styleClass="info-value"/>
-
+                           alignment="CENTER"/>
                 </VBox>
 
-            </VBox>
-
-        </HBox>
-
-
-        <HBox spacing="16">
-
-            <VBox styleClass="stat-card"
-                  HBox.hgrow="ALWAYS">
-
-                <Label text="TOP SCORER"
-                       styleClass="card-caption"/>
-
-                <Label fx:id="overviewScorer"
-                       text="-"
-                       styleClass="card-value"/>
-
-            </VBox>
-
-            <VBox styleClass="stat-card"
-                  HBox.hgrow="ALWAYS">
-
-                <Label text="MOST MINUTES"
-                       styleClass="card-caption"/>
-
-                <Label fx:id="overviewMinutes"
-                       text="-"
-                       styleClass="card-value"/>
-
-            </VBox>
-
-            <VBox styleClass="stat-card"
-                  HBox.hgrow="ALWAYS">
-
-                <Label text="FAIR PLAY"
-                       styleClass="card-caption"/>
-
-                <Label fx:id="overviewFairPlay"
-                       text="-"
-                       styleClass="card-value"/>
-
-            </VBox>
-
-        </HBox>
+            </HBox>
+        </VBox>
 
     </VBox>
 
@@ -200,30 +125,34 @@
         <VBox spacing="14"
               HBox.hgrow="ALWAYS">
 
+            <!-- ENCABEZADO DESTACADO DEL EQUIPO -->
             <HBox alignment="CENTER_LEFT"
-                  spacing="18"
-                  styleClass="panel">
+                  spacing="24"
+                  styleClass="team-header-panel">
 
-                <VBox spacing="4">
+                <VBox spacing="6">
 
                     <Label fx:id="teamName"
                            text="-"
-                           styleClass="team-title"/>
+                           styleClass="team-header-title"/>
 
-                    <Label fx:id="teamCountry"
-                           text="-"
-                           styleClass="muted-text"/>
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <Label fx:id="teamCountry"
+                               text="-"
+                               styleClass="team-header-country"/>
 
-                    <Label fx:id="teamRanking"
-                           text="-"
-                           styleClass="purple-chip"/>
+                        <Label fx:id="teamRanking"
+                               text="-"
+                               styleClass="ranking-badge"/>
+                    </HBox>
 
                 </VBox>
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <VBox spacing="3"
-                      styleClass="info-card">
+                <!-- Tarjeta Squad Rating -->
+                <VBox spacing="2"
+                      styleClass="metric-card-highlight">
 
                     <Label text="SQUAD RATING"
                            styleClass="small-text"/>
@@ -234,16 +163,20 @@
 
                 </VBox>
 
-                <VBox spacing="3"
-                      styleClass="info-card">
+                <!-- Tarjeta Head Coach -->
+                <VBox spacing="4"
+                      styleClass="coach-card">
 
                     <Label text="HEAD COACH"
                            styleClass="small-text"/>
 
                     <Label fx:id="coachName"
                            text="-"
-                           wrapText="true"
-                           styleClass="info-value"/>
+                           styleClass="coach-name-label"/>
+
+                    <Label fx:id="coachDetails"
+                           text="-"
+                           styleClass="coach-detail-label"/>
 
                 </VBox>
 
@@ -268,19 +201,19 @@
 
                             <TableColumn fx:id="playerNameColumn"
                                          text="PLAYER"
-                                         prefWidth="185"/>
+                                         prefWidth="180"/>
 
                             <TableColumn fx:id="playerPositionColumn"
                                          text="POS"
-                                         prefWidth="100"/>
+                                         prefWidth="80"/>
 
                             <TableColumn fx:id="playerOverallColumn"
                                          text="OVR"
-                                         prefWidth="60"/>
+                                         prefWidth="65"/>
 
                             <TableColumn fx:id="playerMatchesColumn"
                                          text="MP"
-                                         prefWidth="50"/>
+                                         prefWidth="55"/>
 
                             <TableColumn fx:id="playerMinutesColumn"
                                          text="MIN"
@@ -288,12 +221,13 @@
 
                             <TableColumn fx:id="playerGoalsColumn"
                                          text="GLS"
-                                         prefWidth="50"/>
+                                         prefWidth="55"/>
 
                         </columns>
-
+                        <columnResizePolicy>
+                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                        </columnResizePolicy>
                     </TableView>
-
                 </VBox>
 
 
@@ -412,52 +346,65 @@
 
 
         <HBox spacing="24"
+              VBox.vgrow="ALWAYS"
               styleClass="bracket-container">
 
+            <!-- COLUMNA 1: CLASIFICADOS DE GRUPOS -->
+            <VBox prefWidth="240"
+                  spacing="10">
+
+                <Label text="GROUPS STAGE"
+                       maxWidth="Infinity"
+                       styleClass="bracket-stage-header"/>
+
+                <VBox fx:id="qualifiedBox"
+                      alignment="CENTER"
+                      spacing="10"
+                      VBox.vgrow="ALWAYS"/>
+
+            </VBox>
+
+            <!-- COLUMNA 2: CUARTOS DE FINAL (4 series) -->
             <VBox prefWidth="260"
                   spacing="10">
 
-                <Label text="QUALIFIED"
-                       styleClass="bracket-stage"/>
-
-                <VBox fx:id="qualifiedBox"
-                      spacing="12"/>
-
-            </VBox>
-
-
-            <VBox prefWidth="280"
-                  spacing="10">
-
-                <Label text="QUARTER-FINALS"
-                       styleClass="bracket-stage"/>
+                <Label text="QUARTER FINALS"
+                       maxWidth="Infinity"
+                       styleClass="bracket-stage-header"/>
 
                 <VBox fx:id="quarterFinalBox"
-                      spacing="12"/>
+                      alignment="CENTER"
+                      spacing="18"
+                      VBox.vgrow="ALWAYS"/>
 
             </VBox>
 
-
-            <VBox prefWidth="280"
+            <!-- COLUMNA 3: SEMIFINALES (2 series centradas) -->
+            <VBox prefWidth="260"
                   spacing="10">
 
-                <Label text="SEMI-FINALS"
-                       styleClass="bracket-stage"/>
+                <Label text="SEMIFINALS"
+                       maxWidth="Infinity"
+                       styleClass="bracket-stage-header"/>
 
                 <VBox fx:id="semiFinalBox"
-                      spacing="24"/>
+                      alignment="CENTER"
+                      spacing="64"
+                      VBox.vgrow="ALWAYS"/>
 
             </VBox>
 
-
+            <!-- COLUMNA 4: GRAN FINAL (Centrada en el medio) -->
             <VBox prefWidth="280"
                   spacing="10">
 
                 <Label text="FINAL"
-                       styleClass="bracket-stage"/>
+                       maxWidth="Infinity"
+                       styleClass="bracket-stage-header"/>
 
                 <VBox fx:id="finalBox"
-                      spacing="12"/>
+                      alignment="CENTER"
+                      VBox.vgrow="ALWAYS"/>
 
             </VBox>
 
@@ -467,64 +414,59 @@
 
 
     <!-- ===================================================
-         REPORTS
-         =================================================== -->
-
+             REPORTS PANE
+             =================================================== -->
     <HBox fx:id="reportsPane"
           visible="false"
           managed="false"
           spacing="16"
           styleClass="page-content">
 
-        <VBox prefWidth="280"
+        <!-- Menú lateral izquierdo -->
+        <VBox prefWidth="260"
               spacing="12"
               styleClass="panel">
 
-            <Label text="REPORTS"
+            <Label text="REPORTS &amp; STATS"
                    styleClass="section-title"/>
 
             <ListView fx:id="reportList"
                       VBox.vgrow="ALWAYS"
                       styleClass="dark-list"/>
 
-            <Label text="PLAYER POSITION"
-                   styleClass="small-text"/>
-
-            <ComboBox fx:id="positionFilter"
-                      maxWidth="Infinity"
-                      promptText="ALL POSITIONS"/>
-
-            <Button text="ALL POSITIONS"
+            <Button text="REFRESH CURRENT"
                     maxWidth="Infinity"
                     styleClass="secondary-button"
-                    onAction="#handleAllPositions"/>
+                    onAction="#handleRefreshReport"/>
 
         </VBox>
 
-
-        <VBox spacing="12"
+        <!-- Panel principal dinámico -->
+        <VBox spacing="14"
               HBox.hgrow="ALWAYS"
               styleClass="panel">
 
-            <HBox alignment="CENTER_LEFT">
-
-                <Label fx:id="selectedReportTitle"
-                       text="Report"
-                       styleClass="section-title"/>
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <VBox spacing="2">
+                    <Label fx:id="selectedReportTitle"
+                           text="Report Overview"
+                           styleClass="section-title-large"/>
+                    <Label fx:id="selectedReportSubtitle"
+                           text="Tournament analytical data"
+                           styleClass="muted-text"/>
+                </VBox>
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <Button text="REFRESH"
-                        styleClass="primary-button"
-                        onAction="#handleRefreshReport"/>
-
+                <Label fx:id="reportMetricChip"
+                       text="READY"
+                       styleClass="purple-chip"/>
             </HBox>
 
-            <TextArea fx:id="reportArea"
-                      editable="false"
-                      wrapText="false"
-                      VBox.vgrow="ALWAYS"
-                      styleClass="report-area"/>
+            <!-- Contenedor dinámico (Reemplaza al viejo TextArea) -->
+            <StackPane fx:id="reportContentHost"
+                       VBox.vgrow="ALWAYS"
+                       styleClass="report-content-host"/>
 
         </VBox>
 

@@ -361,6 +361,10 @@ public class MatchDayController {
                     "-"
             );
 
+            selectedResolution.setText("-");
+            selectedResolution.getStyleClass().removeAll("ready-chip", "blocked-chip");
+            selectedResolution.getStyleClass().add("purple-chip");
+
             updateActionButtons();
 
             return;
@@ -435,6 +439,9 @@ public class MatchDayController {
             );
         }
 
+        // 1. Limpiamos cualquier clase previa del chip para evitar acumulaciones
+        selectedResolution.getStyleClass().removeAll("ready-chip", "blocked-chip", "purple-chip");
+
         if (selectedMatch.isPlayed()
                 && selectedMatch.isKnockout()) {
 
@@ -443,12 +450,14 @@ public class MatchDayController {
                             + selectedMatch
                             .getResolutionCriteria()
             );
+            selectedResolution.getStyleClass().add("ready-chip");
 
         } else if (selectedMatch.isPlayed()) {
 
             selectedResolution.setText(
                     "STATUS  FINISHED"
             );
+            selectedResolution.getStyleClass().add("ready-chip");
 
         } else if (executionService
                 .isMatchPlayable(
@@ -459,12 +468,15 @@ public class MatchDayController {
             selectedResolution.setText(
                     "STATUS  READY"
             );
+            selectedResolution.getStyleClass().add("ready-chip");
 
         } else {
 
+            // Caso Bloqueado: Texto STATUS BLOCKED y estilo rojo
             selectedResolution.setText(
-                    "STATUS  LOCKED"
+                    "STATUS  BLOCKED"
             );
+            selectedResolution.getStyleClass().add("blocked-chip");
         }
 
         if (selectedMatch

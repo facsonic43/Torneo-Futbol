@@ -8,7 +8,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import model.tournament.Tournament;
 import service.TournamentSessionService;
 
 /*
@@ -54,6 +56,15 @@ public class MainController {
     @FXML
     private StackPane contentHost;
 
+    @FXML
+    private Label mainStageLabel;
+
+    @FXML
+    private Label mainMatchesLabel;
+
+    @FXML
+    private HBox globalTournamentStatusBox;
+
     private TournamentSessionService session;
 
     private Parent tournamentView;
@@ -64,30 +75,33 @@ public class MainController {
     private MatchDayController matchDayController;
     private DatabaseController databaseController;
 
-    public void setSession(
-            TournamentSessionService session) {
+    private void updateHeader(String title, String subtitle) {
+        pageTitle.setText(title);
+        if (subtitle == null || subtitle.isBlank()) {
+            pageSubtitle.setText("");
+            pageSubtitle.setVisible(false);
+            pageSubtitle.setManaged(false);
+        } else {
+            pageSubtitle.setText(subtitle);
+            pageSubtitle.setVisible(true);
+            pageSubtitle.setManaged(true);
+        }
+    }
 
-        this.session =
-                session;
+    public void setSession(TournamentSessionService session) {
+        this.session = session;
 
         try {
-
-            File logoFile =
-                    new File(
-                            "Images/image.png"
-                    );
-
+            File logoFile = new File("Images/image.png");
             if (logoFile.exists()) {
-                brandLogo.setImage(
-                        new Image(
-                                logoFile.toURI().toString()
-                        )
-                );
+                brandLogo.setImage(new Image(logoFile.toURI().toString()));
             }
 
             loadModules();
 
             handleTournament();
+
+            updateGlobalStatus();
 
             statusLabel.setText(
                     session.saveExists()
@@ -96,11 +110,7 @@ public class MainController {
             );
 
         } catch (Exception exception) {
-
-            showError(
-                    "Error starting interface",
-                    exception
-            );
+            showError("Error starting interface", exception);
         }
     }
 
@@ -167,30 +177,16 @@ public class MainController {
 
     @FXML
     private void handleTournament() {
+        contentHost.getChildren().setAll(tournamentView);
 
-        contentHost
-                .getChildren()
-                .setAll(
-                        tournamentView
-                );
+        tournamentController.showOverview();
+        tournamentController.refreshAll();
 
-        tournamentController
-                .showOverview();
+        updateGlobalStatus();
 
-        tournamentController
-                .refreshAll();
+        setActiveButton(tournamentButton);
 
-        setActiveButton(
-                tournamentButton
-        );
-
-        pageTitle.setText(
-                "Tournament Overview"
-        );
-
-        pageSubtitle.setText(
-                "International Club Cup 2026"
-        );
+        updateHeader("Tournament Overview - International Club Cup 2026", null);
     }
 
     @FXML
@@ -212,38 +208,20 @@ public class MainController {
                 teamsButton
         );
 
-        pageTitle.setText(
-                "Teams & Squad"
-        );
-
-        pageSubtitle.setText(
-                "Clubs, coaches and player profiles"
-        );
+        updateHeader("Teams Directory", "Club profiles, squad analysis and technical staff");
     }
 
     @FXML
     private void handleMatchDay() {
+        contentHost.getChildren().setAll(matchDayView);
 
-        contentHost
-                .getChildren()
-                .setAll(
-                        matchDayView
-                );
+        matchDayController.refreshFromMain();
 
-        matchDayController
-                .refreshFromMain();
+        updateGlobalStatus();
 
-        setActiveButton(
-                matchDayButton
-        );
+        setActiveButton(matchDayButton);
 
-        pageTitle.setText(
-                "Match Center"
-        );
-
-        pageSubtitle.setText(
-                "Play selected matches or simulate the current stage"
-        );
+        updateHeader("Match Center", "Play selected matches or simulate the current stage");
     }
 
     @FXML
@@ -265,13 +243,7 @@ public class MainController {
                 bracketButton
         );
 
-        pageTitle.setText(
-                "Championship Bracket"
-        );
-
-        pageSubtitle.setText(
-                "Qualified teams and knockout path"
-        );
+        updateHeader("Championship Bracket", "Knockout stage tracker and finals roadmap");
     }
 
     @FXML
@@ -293,13 +265,7 @@ public class MainController {
                 reportsButton
         );
 
-        pageTitle.setText(
-                "Reports & Rankings"
-        );
-
-        pageSubtitle.setText(
-                "Tournament statistics available at any time"
-        );
+        updateHeader("Analytics & Reports", "Comprehensive tournament statistics and disciplinary logs");
     }
 
     @FXML
@@ -318,13 +284,7 @@ public class MainController {
                 databaseButton
         );
 
-        pageTitle.setText(
-                "Cities & Stadiums"
-        );
-
-        pageSubtitle.setText(
-                "Relational database administration"
-        );
+        updateHeader("Database Management", "Persistent records, imports and system integrity");
     }
 
     @FXML
@@ -333,25 +293,17 @@ public class MainController {
         handleMatchDay();
     }
 
-        @FXML
-        private void handleThemeToggle() {
-
-                Parent root =
-                                contentHost
-                                                .getScene()
-                                                .getRoot();
-
-                if (root.getStyleClass().contains("light-theme")) {
-
-                        root.getStyleClass().remove("light-theme");
-                        themeButton.setText("LIGHT MODE");
-
-                } else {
-
-                        root.getStyleClass().add("light-theme");
-                        themeButton.setText("DARK MODE");
-                }
+    @FXML
+    private void handleThemeToggle() {
+        Parent root = tournamentButton.getScene().getRoot();
+        if (root.getStyleClass().contains("light-theme")) {
+            root.getStyleClass().remove("light-theme");
+            themeButton.setText("☀");
+        } else {
+            root.getStyleClass().add("light-theme");
+            themeButton.setText("🌙");
         }
+    }
 
     @FXML
     private void handleSave() {
@@ -375,38 +327,21 @@ public class MainController {
 
     @FXML
     private void handleLoad() {
-
         try {
-
             session.load();
 
-            tournamentController
-                    .setSession(
-                            session
-                    );
-
-            matchDayController
-                    .setSession(
-                            session
-                    );
-
-            databaseController
-                    .setSession(
-                            session
-                    );
+            tournamentController.setSession(session);
+            matchDayController.setSession(session);
+            databaseController.setSession(session);
 
             handleTournament();
 
-            statusLabel.setText(
-                    "Tournament loaded successfully."
-            );
+            updateGlobalStatus();
+
+            statusLabel.setText("Tournament loaded successfully.");
 
         } catch (Exception exception) {
-
-            showError(
-                    "Error loading tournament",
-                    exception
-            );
+            showError("Error loading tournament", exception);
         }
     }
 
@@ -449,12 +384,15 @@ public class MainController {
                         "nav-button-active"
                 );
 
-        selectedButton
-                .getStyleClass()
-                .add(
-                        "nav-button-active"
-                );
+        if (selectedButton != null) {
+            selectedButton
+                    .getStyleClass()
+                    .add(
+                            "nav-button-active"
+                    );
+        }
     }
+
 
     private void showError(
             String message,
@@ -467,5 +405,31 @@ public class MainController {
         );
 
         exception.printStackTrace();
+    }
+    public void updateGlobalStatus() {
+        if (session == null || session.getTournament() == null) {
+            return;
+        }
+
+        Tournament tournament = session.getTournament();
+
+        // Formato de la etapa actual
+        switch (session.getStage()) {
+            case GROUP_STAGE -> mainStageLabel.setText("GROUP STAGE");
+            case QUARTER_FINALS -> mainStageLabel.setText("QUARTER-FINALS");
+            case SEMI_FINALS -> mainStageLabel.setText("SEMI-FINALS");
+            case FINAL -> mainStageLabel.setText("FINAL");
+            case FINISHED -> mainStageLabel.setText("FINISHED");
+            default -> mainStageLabel.setText("NOT STARTED");
+        }
+
+        // Cálculo de partidos jugados
+        int played = 0;
+        for (model.match.Match m : tournament.getAllMatches()) {
+            if (m.isPlayed()) {
+                played++;
+            }
+        }
+        mainMatchesLabel.setText(played + " / 37");
     }
 }
