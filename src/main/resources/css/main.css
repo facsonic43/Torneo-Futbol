@@ -625,3 +625,240 @@
     -fx-padding: 7 20;
     -fx-border-color: #28334a transparent transparent transparent;
 }
+
+
+/* =========================================================
+   LIGHT THEME
+   ========================================================= */
+
+.light-theme.app-root,
+.light-theme .module-root,
+.light-theme .content-host,
+.light-theme .page-content,
+.light-theme .match-day-wrapper {
+    -fx-background-color: #f3f6f7;
+}
+
+.light-theme .top-navigation,
+.light-theme .status-bar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d6e0e2;
+}
+
+.light-theme .page-header {
+    -fx-background-color: #eaf0f1;
+    -fx-border-color: #d6e0e2;
+}
+
+.light-theme .brand-title,
+.light-theme .page-title,
+.light-theme .section-title,
+.light-theme .section-title-large,
+.light-theme .team-title,
+.light-theme .player-title,
+.light-theme .selected-match-title,
+.light-theme .card-value,
+.light-theme .bracket-team {
+    -fx-text-fill: #1c3038;
+}
+
+.light-theme .brand-subtitle,
+.light-theme .page-subtitle,
+.light-theme .small-text,
+.light-theme .small-label,
+.light-theme .muted-text,
+.light-theme .muted-label,
+.light-theme .section-caption,
+.light-theme .status-text,
+.light-theme .bracket-stage,
+.light-theme .match-detail {
+    -fx-text-fill: #61747a;
+}
+
+.light-theme .metric-value,
+.light-theme .accent-text,
+.light-theme .card-caption,
+.light-theme .bracket-caption,
+.light-theme .selected-score {
+    -fx-text-fill: #087e83;
+}
+
+.light-theme .nav-button {
+    -fx-text-fill: #40565d;
+}
+
+.light-theme .nav-button:hover {
+    -fx-text-fill: #17383d;
+    -fx-background-color: #edf4f4;
+}
+
+.light-theme .nav-button-active {
+    -fx-text-fill: #087e83;
+    -fx-border-color: transparent transparent #087e83 transparent;
+}
+
+.light-theme .panel,
+.light-theme .stat-card,
+.light-theme .bracket-container {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d6e0e2;
+}
+
+.light-theme .info-card,
+.light-theme .bracket-card,
+.light-theme .selected-match-info,
+.light-theme .table-header,
+.light-theme .standing-qualified,
+.light-theme .standing-normal {
+    -fx-background-color: #f5f8f8;
+}
+
+.light-theme .standing-qualified .label,
+.light-theme .standing-normal .label,
+.light-theme .info-value,
+.light-theme .bracket-team {
+    -fx-text-fill: #30464d;
+}
+
+.light-theme .standing-qualified {
+    -fx-border-color: transparent transparent transparent #087e83;
+}
+
+.light-theme .group-button-active,
+.light-theme .dark-list .list-cell:selected,
+.light-theme .dark-list .list-cell:hover,
+.light-theme .dark-table .table-row-cell:selected {
+    -fx-background-color: #dcefee;
+    -fx-text-fill: #14585c;
+}
+
+.light-theme .primary-button,
+.light-theme .continue-button,
+.light-theme .phase-action-button {
+    -fx-background-color: #087e83;
+    -fx-text-fill: #ffffff;
+}
+
+.light-theme .primary-button:hover,
+.light-theme .continue-button:hover,
+.light-theme .phase-action-button:hover {
+    -fx-background-color: #076d72;
+}
+
+.light-theme .utility-button,
+.light-theme .secondary-button,
+.light-theme .secondary-action-button,
+.light-theme .group-button {
+    -fx-background-color: #edf2f3;
+    -fx-text-fill: #354d54;
+    -fx-border-color: #ccd9dc;
+}
+
+.light-theme .group-button:hover {
+    -fx-background-color: #e1ebec;
+}
+
+.light-theme .group-button-active,
+.light-theme .group-button-active:hover {
+    -fx-background-color: #dcefee;
+    -fx-text-fill: #14585c;
+}
+
+.light-theme .danger-button {
+    -fx-background-color: #fbe9e8;
+    -fx-text-fill: #a43838;
+}
+
+.light-theme .purple-chip,
+.light-theme .status-chip {
+    -fx-background-color: #e8eff0;
+    -fx-text-fill: #496168;
+}
+
+.light-theme .green-chip,
+.light-theme .ready-chip {
+    -fx-background-color: #e2f2e9;
+    -fx-text-fill: #287348;
+}
+
+.light-theme .goalkeeper-info {
+    -fx-background-color: #e1f1f0;
+    -fx-text-fill: #176c6d;
+}
+
+.light-theme .dark-list,
+.light-theme .dark-list .list-cell,
+.light-theme .dark-list .list-cell:odd,
+.light-theme .dark-table,
+.light-theme .dark-table .table-row-cell,
+.light-theme .dark-table .table-row-cell:odd,
+.light-theme .dark-field,
+.light-theme .report-area,
+.light-theme .combo-box,
+.light-theme .combo-box .list-cell {
+    -fx-background-color: #ffffff;
+    -fx-control-inner-background: #ffffff;
+    -fx-text-fill: #2b4148;
+    -fx-border-color: #ccd9dc;
+}
+
+.light-theme .dark-table .column-header-background,
+.light-theme .dark-table .column-header {
+    -fx-background-color: #edf2f3;
+    -fx-border-color: transparent transparent #ccd9dc transparent;
+}
+
+.light-theme .dark-table .column-header .label,
+.light-theme .dark-table .table-cell,
+.light-theme .dark-list .list-cell {
+    -fx-text-fill: #354d54;
+}
+
+.light-theme .dark-table .table-row-cell:selected .table-cell {
+    -fx-text-fill: #14585c;
+}
+
+.light-theme .dark-field {
+    -fx-prompt-text-fill: #829398;
+}
+
+.light-theme .match-list-item,
+.light-theme .event-row {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d6e0e2;
+    -fx-text-fill: #354d54;
+}
+
+.light-theme .match-list-item:hover {
+    -fx-background-color: #f0f6f6;
+}
+
+.light-theme .match-list-playable {
+    -fx-border-color: #25888b;
+    -fx-text-fill: #28595b;
+}
+
+.light-theme .match-list-finished {
+    -fx-border-color: #5a9b72;
+    -fx-text-fill: #36734d;
+}
+
+.light-theme .match-list-selected {
+    -fx-background-color: #dcefee;
+    -fx-border-color: #087e83;
+    -fx-text-fill: #14585c;
+}
+
+.light-theme .penalty-result {
+    -fx-background-color: #e8eff0;
+    -fx-text-fill: #087e83;
+}
+
+.light-theme .bracket-score,
+.light-theme .champion-text {
+    -fx-text-fill: #9a6b13;
+}
+
+.light-theme .status-bar {
+    -fx-text-fill: #61747a;
+}

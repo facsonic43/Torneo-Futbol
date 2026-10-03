@@ -1,10 +1,13 @@
 package gui.controller;
 
+import java.io.File;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import service.TournamentSessionService;
 
@@ -32,6 +35,12 @@ public class MainController {
 
     @FXML
     private Button databaseButton;
+
+        @FXML
+        private Button themeButton;
+
+    @FXML
+    private ImageView brandLogo;
 
     @FXML
     private Label pageTitle;
@@ -62,6 +71,19 @@ public class MainController {
                 session;
 
         try {
+
+            File logoFile =
+                    new File(
+                            "Images/image.png"
+                    );
+
+            if (logoFile.exists()) {
+                brandLogo.setImage(
+                        new Image(
+                                logoFile.toURI().toString()
+                        )
+                );
+            }
 
             loadModules();
 
@@ -310,6 +332,26 @@ public class MainController {
 
         handleMatchDay();
     }
+
+        @FXML
+        private void handleThemeToggle() {
+
+                Parent root =
+                                contentHost
+                                                .getScene()
+                                                .getRoot();
+
+                if (root.getStyleClass().contains("light-theme")) {
+
+                        root.getStyleClass().remove("light-theme");
+                        themeButton.setText("LIGHT MODE");
+
+                } else {
+
+                        root.getStyleClass().add("light-theme");
+                        themeButton.setText("DARK MODE");
+                }
+        }
 
     @FXML
     private void handleSave() {
