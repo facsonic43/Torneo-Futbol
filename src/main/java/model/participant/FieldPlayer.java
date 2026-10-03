@@ -3,6 +3,8 @@ package model.participant;
 import java.time.LocalDate;
 
 public class FieldPlayer extends Player {
+    private static final long serialVersionUID = -2473516079032478862L;
+
     Position position;
     private int dribbling;          //regate
     private int defensiveSkills;        //capacidad defensiva
