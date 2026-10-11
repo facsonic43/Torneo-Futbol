@@ -14,6 +14,7 @@ import model.tournament.Group;
 import model.tournament.Tournament;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -277,6 +278,69 @@ public class TournamentSimulationTest {
 
         assertTrue(
                 penaltyEventFound
+        );
+    }
+
+    @Test
+    void tiedFinalShouldCompletePenaltyShootout() {
+
+        TournamentData data =
+                new TournamentDataLoader()
+                        .load("torneo.json");
+
+        Team home =
+                data.getTeams().get(0);
+
+        Team away =
+                data.getTeams().get(1);
+
+        boolean tiedFinalFound =
+                false;
+
+        for (long seed = 0;
+             seed < 100 && !tiedFinalFound;
+             seed++) {
+
+            FinalMatch match =
+                    new FinalMatch(
+                            home,
+                            away,
+                            null,
+                            null,
+                            LocalDate.now()
+                    );
+
+            new MatchSimulator(seed)
+                    .simulateMatch(match);
+
+            if (match.getHomeGoals()
+                    == match.getAwayGoals()) {
+
+                assertNotNull(
+                        match.getHomePenalties()
+                );
+
+                assertNotNull(
+                        match.getAwayPenalties()
+                );
+
+                assertNotEquals(
+                        match.getHomePenalties(),
+                        match.getAwayPenalties()
+                );
+
+                assertNotNull(
+                        match.getWinner()
+                );
+
+                tiedFinalFound =
+                        true;
+            }
+        }
+
+        assertTrue(
+                tiedFinalFound,
+                "Expected to find a tied final within the deterministic seed range."
         );
     }
 
