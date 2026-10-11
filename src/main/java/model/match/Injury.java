@@ -17,6 +17,6 @@ public class Injury extends Event {
 
     @Override
     public String getDescription() {
-        return minute + "' Lesión - " + player.getName() + " [" + team.getName() + "] (Baja por " + matchesOut + " fecha/s)";
+        return minute + "' Injury - " + player.getName() + " [" + team.getName() + "] (Out for " + matchesOut + " match/es)";
     }
 }

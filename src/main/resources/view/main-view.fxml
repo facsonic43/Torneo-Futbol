@@ -101,9 +101,9 @@
                         styleClass="utility-button"
                         onAction="#handleSave"/>
 
-                <Button text="LOAD"
+                <Button text="MAIN MENU"
                         styleClass="utility-button"
-                        onAction="#handleLoad"/>
+                        onAction="#handleMainMenu"/>
 
                 <Button fx:id="themeButton"
                         text="☀"

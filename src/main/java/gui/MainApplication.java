@@ -1,6 +1,7 @@
 package gui;
 
 import gui.controller.MainController;
+import gui.controller.MainMenuController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -15,68 +16,22 @@ import service.TournamentSessionService;
 public class MainApplication extends Application {
 
     @Override
-    public void start(Stage stage)
-            throws Exception {
+    public void start(Stage primaryStage) throws Exception {
+        TournamentSessionService session = new TournamentSessionService();
 
-        TournamentSessionService session =
-                new TournamentSessionService();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/main-menu-view.fxml"));
+        Parent root = loader.load();
 
-        session.startSession();
+        MainMenuController menuController = loader.getController();
+        menuController.setSession(session);
 
-        FXMLLoader loader =
-                new FXMLLoader(
-                        getClass()
-                                .getResource(
-                                        "/view/main-view.fxml"
-                                )
-                );
+        Scene scene = new Scene(root, 1280, 720);
 
-        Parent root =
-                loader.load();
+        // Carga de la hoja de estilos global
+        scene.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
 
-        MainController controller =
-                loader.getController();
-
-        controller.setSession(
-                session
-        );
-
-        Scene scene =
-                new Scene(
-                        root,
-                        1450,
-                        850
-                );
-
-        scene.getStylesheets()
-                .add(
-                        getClass()
-                                .getResource(
-                                        "/css/main.css"
-                                )
-                                .toExternalForm()
-                );
-
-        stage.setTitle(
-                "International Club Cup 2026"
-        );
-
-        stage.setMinWidth(
-                1200
-        );
-
-        stage.setMinHeight(
-                720
-        );
-
-        stage.setScene(
-                scene
-        );
-
-        stage.setMaximized(
-                true
-        );
-
-        stage.show();
+        primaryStage.setTitle("International Club Cup 2026");
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 }

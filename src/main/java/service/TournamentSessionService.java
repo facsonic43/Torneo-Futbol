@@ -58,8 +58,10 @@ public class TournamentSessionService {
         return tournament;
     }
 
-    private Tournament createNewTournament()
+    public Tournament createNewTournament()
             throws Exception {
+        
+        refreshStadiums();
 
         TournamentDataLoader loader =
                 new TournamentDataLoader();
@@ -80,6 +82,9 @@ public class TournamentSessionService {
         newTournament.generateGroupMatches(
                 stadiums
         );
+
+        // 2. Guardamos la referencia en el atributo de sesión
+        this.tournament = newTournament;
 
         return newTournament;
     }
