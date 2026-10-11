@@ -46,15 +46,15 @@ public class Goal extends Event {
     @Override
     public String getDescription() {
         String description =
-                minute + "' GOL - " + player.getName();
+                minute + "' GOAL - " + player.getName();
 
         if (ownGoal) {
-            description += " (Gol en contra)";
+            description += " (Own goal)";
         } else if (penalty) {
-            description += " (Penal)";
+            description += " (Penalty)";
         } else if (assistPlayer != null) {
             description +=
-                    " (Asistencia: "
+                    " (Assist from: "
                             + assistPlayer.getName()
                             + ")";
         }

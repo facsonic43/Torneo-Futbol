@@ -278,8 +278,11 @@
     -fx-opacity: 0.85;
 }
 
-.button:disabled {
-    -fx-opacity: 0.4;
+.button:disabled,
+.primary-button:disabled,
+.secondary-button:disabled {
+    -fx-opacity: 0.35;
+    -fx-cursor: default;
 }
 
 /* =========================================================
@@ -901,14 +904,15 @@
 
 /* Tarjeta individual de cada grupo */
 .group-card {
-    -fx-background-color: -bg-panel;
+    -fx-background-color: -bg-panel-secondary;
     -fx-border-color: -border-card;
     -fx-border-width: 1px;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
-    -fx-padding: 14 16;
-    -fx-min-width: 320px;
-    -fx-pref-width: 340px;
+    -fx-padding: 16px 18px;
+    -fx-min-width: 360px;
+    -fx-pref-width: 380px;
+    -fx-min-height: 190px;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 8, 0, 0, 2);
 }
 
@@ -927,6 +931,116 @@
 /* Encabezado de columnas de la mini tabla del grupo */
 .group-table-head {
     -fx-text-fill: -text-muted;
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+}
+
+/* =========================================================
+   BRACKET (árbol de eliminatorias con líneas conectoras)
+
+   Pegar al final de la hoja de estilos existente.
+   IMPORTANTE: si ya habías pegado la versión anterior de este
+   bloque, borrala y dejá solo esta.
+   ========================================================= */
+
+/* ---------- Títulos de ronda ---------- */
+
+.bracket-stage-header {
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-alignment: CENTER;
+}
+
+/* Ronda que se está jugando ahora */
+.bracket-stage-header-active {
+    -fx-text-fill: -accent-text;
+    -fx-border-color: transparent transparent -accent-primary transparent;
+    -fx-border-width: 0 0 2px 0;
+    -fx-padding: 0 0 4px 0;
+}
+
+/* ---------- Líneas conectoras ---------- */
+
+.bracket-line {
+    -fx-stroke: -border-card;
+    -fx-stroke-width: 2;
+    -fx-stroke-line-join: round;
+}
+
+/* Camino del campeón */
+.bracket-line-champion {
+    -fx-stroke: -accent-gold;
+    -fx-stroke-width: 3;
+    -fx-stroke-line-join: round;
+}
+
+/* ---------- Estados de la tarjeta ---------- */
+
+/* Bloqueada: todavía no existe el cruce */
+.bracket-card-locked {
+    -fx-background-color: transparent;
+    -fx-border-color: -border-subtle;
+    -fx-border-style: dashed;
+    -fx-border-width: 1.5px;
+}
+
+.bracket-card-locked .bracket-team {
+    -fx-text-fill: -text-muted;
+    -fx-font-weight: 600;
+}
+
+.bracket-lock-tag {
+    -fx-text-fill: -text-disabled;
+    -fx-font-size: 9px;
+    -fx-font-weight: 800;
+}
+
+/* Lista: equipos definidos, falta jugar */
+.bracket-card-ready {
+    -fx-border-color: -accent-primary;
+    -fx-border-width: 1.5px;
+}
+
+/* Jugada: serie terminada */
+.bracket-card-played {
+    -fx-border-color: -border-card;
+}
+
+.bracket-card-ready:hover,
+.bracket-card-played:hover {
+    -fx-background-color: -bg-hover;
+    -fx-border-color: -accent-text;
+}
+
+/* ---------- Contenido de la tarjeta ---------- */
+
+.bracket-team {
+    -fx-text-fill: -text-main;
+    -fx-font-weight: 700;
+}
+
+.bracket-score-cell {
+    -fx-text-fill: -text-secondary;
+    -fx-font-weight: 700;
+}
+
+/* Equipo ganador del cruce */
+.bracket-team-winner .bracket-team,
+.bracket-team-winner .bracket-score-cell {
+    -fx-text-fill: -accent-gold;
+    -fx-font-weight: 900;
+}
+
+/* Fecha · estadio · árbitro */
+.bracket-info {
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 10px;
+}
+
+/* Criterio que definió al ganador */
+.bracket-criterion {
+    -fx-text-fill: -accent-text;
     -fx-font-size: 10px;
     -fx-font-weight: 800;
 }

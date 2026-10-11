@@ -4,12 +4,16 @@ import java.io.File;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
 import model.tournament.Tournament;
 import service.TournamentSessionService;
 
@@ -92,7 +96,7 @@ public class MainController {
         this.session = session;
 
         try {
-            File logoFile = new File("Images/image.png");
+            File logoFile = new File("Images/logo.png");
             if (logoFile.exists()) {
                 brandLogo.setImage(new Image(logoFile.toURI().toString()));
             }
@@ -326,22 +330,51 @@ public class MainController {
     }
 
     @FXML
-    private void handleLoad() {
+    private void handleMainMenu() {
         try {
-            session.load();
+            Alert alert = new Alert(
+                    Alert.AlertType.CONFIRMATION,
+                    "Do you want to save your progress before returning to the Main Menu?",
+                    ButtonType.YES,
+                    ButtonType.NO,
+                    ButtonType.CANCEL
+            );
+            alert.setTitle("Return to Main Menu");
+            alert.setHeaderText("Unsaved progress may be lost.");
 
-            tournamentController.setSession(session);
-            matchDayController.setSession(session);
-            databaseController.setSession(session);
+            ButtonType result = alert.showAndWait().orElse(ButtonType.CANCEL);
 
-            handleTournament();
+            if (result == ButtonType.CANCEL) {
+                return;
+            }
 
-            updateGlobalStatus();
+            if (result == ButtonType.YES) {
+                session.save();
+            }
 
-            statusLabel.setText("Tournament loaded successfully.");
+            Stage stage = (Stage) contentHost.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/main-menu-view.fxml"));
+            Parent root = loader.load();
+
+            MainMenuController menuController = loader.getController();
+            menuController.setSession(session);
+
+            Scene scene = new Scene(root, stage.getScene().getWidth(), stage.getScene().getHeight());
+
+            java.net.URL cssUrl = getClass().getResource("/css/main.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            }
+
+            // Propagación del tema activo al menú
+            if (contentHost.getScene().getRoot().getStyleClass().contains("light-theme")) {
+                root.getStyleClass().add("light-theme");
+            }
+
+            stage.setScene(scene);
 
         } catch (Exception exception) {
-            showError("Error loading tournament", exception);
+            showError("Error returning to Main Menu", exception);
         }
     }
 
