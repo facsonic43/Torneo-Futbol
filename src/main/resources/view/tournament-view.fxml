@@ -93,7 +93,7 @@
                            alignment="CENTER"/>
 
                     <ImageView fx:id="overviewTrophyImage"
-                               fitHeight="180"
+                               fitHeight="220"
                                preserveRatio="true"
                                visible="false"
                                managed="false"/>
@@ -388,7 +388,7 @@
                       VBox.vgrow="ALWAYS"
                       styleClass="dark-list"/>
 
-            <Button text="Generete PDF"
+            <Button text="Generate PDF"
                     maxWidth="Infinity"
                     styleClass="primary-button"
                     onAction="#handleGeneratePdf"/>

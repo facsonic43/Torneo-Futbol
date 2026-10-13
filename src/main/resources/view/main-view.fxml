@@ -2,7 +2,6 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -16,10 +15,8 @@
             styleClass="app-root">
 
     <top>
-
         <VBox>
 
-            <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
             <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
             <HBox alignment="CENTER_LEFT"
                   spacing="10"
@@ -37,23 +34,13 @@
                         styleClass="nav-button"
                         onAction="#handleTournament"/>
 
-                <Button fx:id="teamsButton"
-                        text="TEAMS"
-                        styleClass="nav-button"
-                        onAction="#handleTeams"/>
-
                 <Button fx:id="matchDayButton"
                         text="MATCH DAY"
                         styleClass="nav-button"
                         onAction="#handleMatchDay"/>
 
-                <Button fx:id="bracketButton"
-                        text="BRACKET"
-                        styleClass="nav-button"
-                        onAction="#handleBracket"/>
-
                 <Button fx:id="reportsButton"
-                        text="REPORTS"
+                        text="REPORTS &amp; STATS"
                         styleClass="nav-button"
                         onAction="#handleReports"/>
 
@@ -62,10 +49,9 @@
                         styleClass="nav-button"
                         onAction="#handleDatabase"/>
 
-                <!-- ESPACIADOR IZQUIERDO PARA CENTRADO -->
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <!-- INDICADORES GLOBALES: CURRENT STAGE & MATCHES (MÁS GRANDES Y SIN RAYAS) -->
+                <!-- INDICADORES GLOBALES -->
                 <HBox fx:id="globalTournamentStatusBox"
                       alignment="CENTER"
                       spacing="28"
@@ -93,10 +79,9 @@
 
                 </HBox>
 
-                <!-- ESPACIADOR DERECHO PARA EQUILIBRAR EL CENTRADO -->
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <!-- BOTONES DE ACCIÓN Y UTILIDADES -->
+                <!-- BOTONES DE ACCIÓN -->
                 <Button text="SAVE"
                         styleClass="utility-button"
                         onAction="#handleSave"/>
@@ -116,7 +101,7 @@
 
             </HBox>
 
-            <!-- ENCABEZADO DE PÁGINA (TÍTULO Y SUBTÍTULO) -->
+            <!-- ENCABEZADO DE PÁGINA -->
             <HBox alignment="CENTER"
                   styleClass="page-header">
 
@@ -142,24 +127,18 @@
             </HBox>
 
         </VBox>
-
     </top>
 
     <center>
-
         <StackPane fx:id="contentHost"
                    styleClass="content-host"/>
-
     </center>
 
-
     <bottom>
-
         <Label fx:id="statusLabel"
                maxWidth="Infinity"
                text="Application ready."
                styleClass="status-bar"/>
-
     </bottom>
 
 </BorderPane>
