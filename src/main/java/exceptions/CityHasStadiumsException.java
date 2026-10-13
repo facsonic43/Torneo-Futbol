@@ -2,6 +2,6 @@ package exceptions;
 
 public class CityHasStadiumsException extends RuntimeException {
     public CityHasStadiumsException(int cityId) {
-        super("City " + cityId + " cannot be deleted, it has stadiums associated.");
+        super("This city cannot be deleted because it is associated with one or more stadiums.");
     }
 }

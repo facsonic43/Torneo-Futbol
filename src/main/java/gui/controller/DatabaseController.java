@@ -3,10 +3,16 @@ package gui.controller;
 import dao.CityDAO;
 import dao.StadiumDAO;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import model.match.City;
 import model.match.Stadium;
 import service.TournamentSessionService;
@@ -154,12 +160,10 @@ public class DatabaseController {
 
         } catch (SQLException exception) {
 
-            databaseStatus.setText(
-                    "Database error: "
-                            + exception.getMessage()
+            showDatabaseError(
+                    "Could not load cities and stadiums",
+                    exception
             );
-
-            exception.printStackTrace();
         }
     }
 
@@ -206,14 +210,12 @@ public class DatabaseController {
 
             refreshData();
 
-        } catch (SQLException exception) {
+        } catch (SQLException | RuntimeException exception) {
 
-            databaseStatus.setText(
-                    "Error adding city: "
-                            + exception.getMessage()
+            showDatabaseError(
+                    "Could not add the city",
+                    exception
             );
-
-            exception.printStackTrace();
         }
     }
 
@@ -256,16 +258,15 @@ public class DatabaseController {
 
         try {
 
-            selectedCity.setName(
-                    name
-            );
-
-            selectedCity.setCountry(
-                    country
-            );
+            City updatedCity =
+                    new City(
+                            selectedCity.getId(),
+                            name,
+                            country
+                    );
 
             cityDAO.update(
-                    selectedCity
+                    updatedCity
             );
 
             databaseStatus.setText(
@@ -274,14 +275,12 @@ public class DatabaseController {
 
             refreshData();
 
-        } catch (SQLException exception) {
+        } catch (SQLException | RuntimeException exception) {
 
-            databaseStatus.setText(
-                    "Error updating city: "
-                            + exception.getMessage()
+            showDatabaseError(
+                    "Could not update the city",
+                    exception
             );
-
-            exception.printStackTrace();
         }
     }
 
@@ -316,10 +315,11 @@ public class DatabaseController {
 
             refreshData();
 
-        } catch (SQLException exception) {
+        } catch (SQLException | RuntimeException exception) {
 
-            databaseStatus.setText(
-                    "The city cannot be deleted if it has associated stadiums."
+            showDatabaseError(
+                    "Could not delete the city",
+                    exception
             );
         }
     }
@@ -368,14 +368,12 @@ public class DatabaseController {
 
             refreshTournamentStadiums();
 
-        } catch (Exception exception) {
+        } catch (SQLException | RuntimeException exception) {
 
-            databaseStatus.setText(
-                    "Error adding stadium: "
-                            + exception.getMessage()
+            showDatabaseError(
+                    "Could not add the stadium",
+                    exception
             );
-
-            exception.printStackTrace();
         }
     }
 
@@ -417,16 +415,15 @@ public class DatabaseController {
 
         try {
 
-            selectedStadium.setName(
-                    name
-            );
-
-            selectedStadium.setCityId(
-                    selectedCity.getId()
-            );
+            Stadium updatedStadium =
+                    new Stadium(
+                            selectedStadium.getId(),
+                            name,
+                            selectedCity.getId()
+                    );
 
             stadiumDAO.update(
-                    selectedStadium
+                    updatedStadium
             );
 
             databaseStatus.setText(
@@ -437,14 +434,12 @@ public class DatabaseController {
 
             refreshTournamentStadiums();
 
-        } catch (Exception exception) {
+        } catch (SQLException | RuntimeException exception) {
 
-            databaseStatus.setText(
-                    "Error updating stadium: "
-                            + exception.getMessage()
+            showDatabaseError(
+                    "Could not update the stadium",
+                    exception
             );
-
-            exception.printStackTrace();
         }
     }
 
@@ -481,14 +476,12 @@ public class DatabaseController {
 
             refreshTournamentStadiums();
 
-        } catch (Exception exception) {
+        } catch (SQLException | RuntimeException exception) {
 
-            databaseStatus.setText(
-                    "Error deleting stadium: "
-                            + exception.getMessage()
+            showDatabaseError(
+                    "Could not delete the stadium",
+                    exception
             );
-
-            exception.printStackTrace();
         }
     }
 
@@ -555,11 +548,65 @@ public class DatabaseController {
 
         } catch (Exception exception) {
 
-            databaseStatus.setText(
-                    "Database changed, but tournament stadiums could not refresh: "
-                            + exception.getMessage()
+            showDatabaseError(
+                    "Stadiums were saved, but the tournament could not refresh",
+                    exception
             );
         }
+    }
+
+    private void showDatabaseError(String title, Exception exception) {
+        exception.printStackTrace();
+        databaseStatus.setText("Database operation failed.");
+
+        String message = exception.getMessage();
+        if (message == null || message.isBlank()) {
+            message = exception.getClass().getSimpleName();
+        }
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Database error");
+        dialog.setHeaderText(null);
+
+        DialogPane pane = dialog.getDialogPane();
+        pane.getButtonTypes().add(ButtonType.CLOSE);
+        pane.setMinWidth(460);
+
+        Scene scene = databaseStatus.getScene();
+        if (scene != null) {
+            dialog.initOwner(scene.getWindow());
+            pane.getStylesheets().addAll(scene.getStylesheets());
+
+            if (scene.getRoot().getStyleClass().contains("light-theme")) {
+                pane.getStyleClass().add("light-theme");
+            }
+        }
+        pane.getStyleClass().add("app-root");
+
+        Button closeButton = (Button) pane.lookupButton(ButtonType.CLOSE);
+        closeButton.setText("Cerrar");
+        closeButton.getStyleClass().add("utility-button");
+
+        Label errorType = new Label("DATABASE ERROR");
+        errorType.getStyleClass().add("blocked-chip");
+
+        Label heading = new Label(title);
+        heading.getStyleClass().add("section-title");
+        heading.setWrapText(true);
+
+        Label details = new Label(message);
+        details.getStyleClass().add("info-value");
+        details.setWrapText(true);
+        details.setMaxWidth(500);
+
+        VBox errorCard = new VBox(12, errorType, heading, details);
+        errorCard.getStyleClass().add("info-card");
+
+        VBox content = new VBox(14, errorCard);
+        content.getStyleClass().add("page-content");
+        pane.setContent(content);
+
+        dialog.showAndWait();
     }
 
     private void clearCity() {

@@ -100,6 +100,9 @@ public class StadiumDAO {
     }
 
     public void update(Stadium stadium) throws SQLException {
+        if (exists(stadium.getName(), stadium.getId())) {
+            throw new DuplicateLocationException("A stadium with this name already exists.");
+        }
 
         String sql = "UPDATE estadio SET nombre = ?, id_ciudad = ? WHERE id_estadio = ?";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql)) {
