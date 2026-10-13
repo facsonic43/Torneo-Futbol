@@ -15,8 +15,8 @@ import java.util.List;
 public class CityDAO {
 
     public void add(City city) throws SQLException {
-        if (exists(city.getName(), city.getCountry(), 0)) {
-            throw new DuplicateLocationException("A city with this name and country already exists.");
+        if (exists(city.getName(), 0)) {
+            throw new DuplicateLocationException("A city with this name already exists.");
         }
 
         String sql = "INSERT INTO ciudad (nombre, pais) VALUES (?, ?)";
@@ -76,6 +76,9 @@ public class CityDAO {
         return cities;
     }
     public void update(City city) throws SQLException {
+        if (exists(city.getName(), city.getId())) {
+            throw new DuplicateLocationException("A city with this name already exists.");
+        }
 
         String sql = "UPDATE ciudad SET nombre = ?, pais = ? WHERE id_ciudad = ?";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql)) {
@@ -92,22 +95,33 @@ public class CityDAO {
             ps.setInt(1, id);
             ps.executeUpdate();
         } catch (SQLException exception) {
-            if ("23503".equals(exception.getSQLState())) {
+            if (isCityReferencedByStadium(exception)) {
                 throw new CityHasStadiumsException(id);
             }
             throw exception;
         }
     }
 
-    private boolean exists(String name, String country, int excludedId) throws SQLException {
+    private boolean isCityReferencedByStadium(SQLException exception) {
+        for (SQLException current = exception;
+             current != null;
+             current = current.getNextException()) {
+            if ("23503".equals(current.getSQLState())
+                    || (current.getMessage() != null
+                    && current.getMessage().toLowerCase().contains("fk_estadio_ciudad"))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean exists(String name, int excludedId) throws SQLException {
         String sql = "SELECT 1 FROM ciudad "
                 + "WHERE LOWER(TRIM(nombre)) = LOWER(TRIM(?)) "
-                + "AND LOWER(TRIM(pais)) = LOWER(TRIM(?)) "
                 + "AND id_ciudad <> ? LIMIT 1";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql)) {
             ps.setString(1, name);
-            ps.setString(2, country);
-            ps.setInt(3, excludedId);
+            ps.setInt(2, excludedId);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
             }
