@@ -13,6 +13,8 @@ and referees, with personal details, role, photograph and a Code 128 barcode.
 Reports I–IV use native tables and cards in the application's dark or light theme,
 with the same ranking data, explanatory notes and complete championship bracket. Select a
 report or use **REFRESH CURRENT** to update it from the current tournament matches.
+Additional entries keep the match summary with team/stage filters, lineups and
+incidences, and the team, referee and player views available alongside reports I–IV.
 Reports use a snapshot, so matches can continue without changing a report while
 it is being prepared.
 The report API shown below can also export these identification cards.

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="gui.controller.MainMenuController"
+      alignment="CENTER"
+      spacing="24"
+      styleClass="app-root"
+      prefWidth="1024"
+      prefHeight="700">
+
+    <VBox alignment="CENTER" spacing="12">
+        <ImageView fx:id="menuLogo"
+                   fitWidth="380"
+                   preserveRatio="true"/>
+
+        <Label text="INTERNATIONAL CLUB CUP 2026"
+               styleClass="page-title"
+               style="-fx-font-size: 28px; -fx-font-weight: 900;"/>
+
+        <Label text="Continental Football Championship Simulator"
+               styleClass="page-subtitle"
+               style="-fx-font-size: 14px;"/>
+    </VBox>
+
+    <VBox alignment="CENTER"
+          spacing="14"
+          prefWidth="280"
+          maxWidth="280">
+
+        <Button fx:id="continueButton"
+                text="CONTINUE GAME"
+                maxWidth="Infinity"
+                styleClass="secondary-button"
+                style="-fx-font-size: 14px; -fx-padding: 12 20;"
+                onAction="#handleContinueGame"/>
+
+        <Button text="NEW GAME"
+                maxWidth="Infinity"
+                styleClass="secondary-button"
+                style="-fx-font-size: 14px; -fx-padding: 12 20;"
+                onAction="#handleNewGame"/>
+
+        <Button text="EXIT"
+                maxWidth="Infinity"
+                styleClass="danger-button"
+                style="-fx-font-size: 14px; -fx-padding: 12 20;"
+                onAction="#handleExit"/>
+
+        <!-- BOTÓN PEQUEÑO DE TEMA DEBAJO DE EXIT -->
+        <Button fx:id="themeButton"
+                text="☀"
+                styleClass="utility-button"
+                style="-fx-font-size: 12px; -fx-padding: 6 12;"
+                onAction="#handleThemeToggle"/>
+
+    </VBox>
+
+</VBox>

@@ -12,6 +12,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.ImageView?>
 
 <?import javafx.scene.control.ScrollPane?>
 <StackPane xmlns="http://javafx.com/javafx"
@@ -25,8 +26,8 @@
           spacing="18"
           styleClass="page-content">
 
-        <!-- GRUPOS EN PARALELO (ARRIBA) -->
-        <VBox spacing="10">
+        <!-- GRUPOS EN PARALELO (ARRIBA) - Usamos la clase 'panel' para igualar grosores y estilos -->
+        <VBox spacing="10" styleClass="panel">
             <Label text="GROUP STAGE STANDINGS"
                    styleClass="section-caption"/>
 
@@ -78,9 +79,9 @@
                           spacing="6"/>
                 </VBox>
 
-                <!-- 4. Campeón -->
+                <!-- 4. Campeón (con foto del trofeo) -->
                 <VBox HBox.hgrow="ALWAYS"
-                      spacing="8"
+                      spacing="10"
                       alignment="CENTER"
                       styleClass="panel">
                     <Label text="CHAMPION"
@@ -90,6 +91,12 @@
                            styleClass="champion-text"
                            wrapText="true"
                            alignment="CENTER"/>
+
+                    <ImageView fx:id="overviewTrophyImage"
+                               fitHeight="180"
+                               preserveRatio="true"
+                               visible="false"
+                               managed="false"/>
                 </VBox>
 
             </HBox>
@@ -324,7 +331,7 @@
                 <Label text="ROAD TO THE FINAL"
                        styleClass="section-title"/>
 
-                <Label text="Only confirmed qualifiers are displayed"
+                <Label text="Matches appear as soon as each round is defined"
                        styleClass="muted-text"/>
 
             </VBox>
@@ -345,70 +352,17 @@
         </HBox>
 
 
-        <HBox spacing="24"
-              VBox.vgrow="ALWAYS"
-              styleClass="bracket-container">
+        <!-- El árbol del bracket (grilla + líneas conectoras) lo arma
+             TournamentController.BracketView dentro de bracketHost.
+             El ScrollPane evita que se corte si la ventana es chica. -->
+        <ScrollPane fitToWidth="true"
+                    fitToHeight="true"
+                    VBox.vgrow="ALWAYS">
 
-            <!-- COLUMNA 1: CLASIFICADOS DE GRUPOS -->
-            <VBox prefWidth="240"
-                  spacing="10">
+            <StackPane fx:id="bracketHost"
+                       styleClass="bracket-container"/>
 
-                <Label text="GROUPS STAGE"
-                       maxWidth="Infinity"
-                       styleClass="bracket-stage-header"/>
-
-                <VBox fx:id="qualifiedBox"
-                      alignment="CENTER"
-                      spacing="10"
-                      VBox.vgrow="ALWAYS"/>
-
-            </VBox>
-
-            <!-- COLUMNA 2: CUARTOS DE FINAL (4 series) -->
-            <VBox prefWidth="260"
-                  spacing="10">
-
-                <Label text="QUARTER FINALS"
-                       maxWidth="Infinity"
-                       styleClass="bracket-stage-header"/>
-
-                <VBox fx:id="quarterFinalBox"
-                      alignment="CENTER"
-                      spacing="18"
-                      VBox.vgrow="ALWAYS"/>
-
-            </VBox>
-
-            <!-- COLUMNA 3: SEMIFINALES (2 series centradas) -->
-            <VBox prefWidth="260"
-                  spacing="10">
-
-                <Label text="SEMIFINALS"
-                       maxWidth="Infinity"
-                       styleClass="bracket-stage-header"/>
-
-                <VBox fx:id="semiFinalBox"
-                      alignment="CENTER"
-                      spacing="64"
-                      VBox.vgrow="ALWAYS"/>
-
-            </VBox>
-
-            <!-- COLUMNA 4: GRAN FINAL (Centrada en el medio) -->
-            <VBox prefWidth="280"
-                  spacing="10">
-
-                <Label text="FINAL"
-                       maxWidth="Infinity"
-                       styleClass="bracket-stage-header"/>
-
-                <VBox fx:id="finalBox"
-                      alignment="CENTER"
-                      VBox.vgrow="ALWAYS"/>
-
-            </VBox>
-
-        </HBox>
+        </ScrollPane>
 
     </VBox>
 

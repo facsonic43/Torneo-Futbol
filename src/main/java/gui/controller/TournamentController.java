@@ -2,7 +2,7 @@ package gui.controller;
 
 import gui.PlayerDirectoryEntry;
 import gui.StatisticsReportView;
-import main.loader.TournamentData;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -10,15 +10,30 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
+import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
+import main.loader.TournamentData;
+import model.match.Event;
+import model.match.Formation;
 import model.match.GroupMatch;
 import model.match.Match;
 import model.participant.Goalkeeper;
@@ -43,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.IntFunction;
 
 /*
  * Controla las pantallas informativas del campeonato:
@@ -82,6 +98,9 @@ public class TournamentController {
 
     @FXML
     private Label overviewChampionName;
+
+    @FXML
+    private ImageView overviewTrophyImage;
 
     @FXML
     private HBox allGroupsContainer;
@@ -166,16 +185,7 @@ public class TournamentController {
      * BRACKET
      */
     @FXML
-    private VBox qualifiedBox;
-
-    @FXML
-    private VBox quarterFinalBox;
-
-    @FXML
-    private VBox semiFinalBox;
-
-    @FXML
-    private VBox finalBox;
+    private StackPane bracketHost;
 
     @FXML
     private Label championName;
@@ -207,10 +217,14 @@ public class TournamentController {
     private ReportService reportService;
     private StatisticsReportView statisticsReportView;
 
+    private final BracketView bracketView = new BracketView();
+
     @FXML
     public void initialize() {
         dashboardService = new TournamentDashboardService();
         reportService = new ReportService();
+
+        bracketHost.getChildren().add(bracketView);
 
         configureTeamList();
         configurePlayerTable();
@@ -324,10 +338,21 @@ public class TournamentController {
         // 4. Campeón
         if (tournament.getChampion() != null) {
             overviewChampionName.setText(tournament.getChampion().getName().toUpperCase());
-            overviewChampionName.setStyle("-fx-font-size: 22px; -fx-font-weight: 900; -fx-text-fill: -accent-gold;");
+            overviewChampionName.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: -accent-gold;");
+
+            // Carga de la imagen del trofeo
+            java.io.File trophyFile = new java.io.File("Images/trophy.png");
+            if (trophyFile.exists()) {
+                overviewTrophyImage.setImage(new javafx.scene.image.Image(trophyFile.toURI().toString()));
+                overviewTrophyImage.setVisible(true);
+                overviewTrophyImage.setManaged(true);
+            }
         } else {
             overviewChampionName.setText("NOT WINNER YET");
-            overviewChampionName.setStyle("-fx-font-size: 15px; -fx-font-weight: 700; -fx-text-fill: -text-muted;");
+            overviewChampionName.setStyle("-fx-font-size: 14px; -fx-font-weight: 700; -fx-text-fill: -text-muted;");
+
+            overviewTrophyImage.setVisible(false);
+            overviewTrophyImage.setManaged(false);
         }
     }
 
@@ -358,7 +383,9 @@ public class TournamentController {
             seriesBox.getChildren().addAll(matchLabel, res);
             container.getChildren().add(seriesBox);
         }
-    }    private void refreshGroups() {
+    }
+
+    private void refreshGroups() {
         if (allGroupsContainer == null) {
             return;
         }
@@ -373,7 +400,7 @@ public class TournamentController {
         }
 
         for (Group group : tournament.getGroups()) {
-            VBox groupCard = new VBox(10);
+            VBox groupCard = new VBox(12);
             groupCard.getStyleClass().add("group-card");
 
             // Título del Grupo
@@ -721,65 +748,61 @@ public class TournamentController {
             }
         };
     }
+
+
     /* =====================================================
        BRACKET
        ===================================================== */
+
+    // Cruces de cuartos según el enunciado: {zonaA, posA, zonaB, posB} (índices base 0).
+    // I: 1° Z1 vs 2° Z4 | II: 1° Z2 vs 2° Z3 | III: 1° Z3 vs 2° Z1 | IV: 1° Z4 vs 2° Z2
+    private static final int[][] QUARTER_SEEDS = {
+            {0, 0, 3, 1},
+            {1, 0, 2, 1},
+            {2, 0, 0, 1},
+            {3, 0, 1, 1}
+    };
+
+    // Numeración de las series: cuartos I-IV, semifinales V-VI.
+    private static final String[] ROMAN = {"I", "II", "III", "IV", "V", "VI"};
 
     private void refreshBracket() {
         if (tournament == null) {
             return;
         }
 
-        qualifiedBox.getChildren().clear();
-        quarterFinalBox.getChildren().clear();
-        semiFinalBox.getChildren().clear();
-        finalBox.getChildren().clear();
+        Team champion = tournament.getChampion();
 
-        refreshQualifiedTeams();
-
-        refreshTwoLegRound(
-                tournament.getQuarterFinalFirstLegs(),
-                tournament.getQuarterFinalSecondLegs(),
-                quarterFinalBox
+        bracketView.setMatches(
+                buildRound(
+                        tournament.getQuarterFinalFirstLegs(),
+                        tournament.getQuarterFinalSecondLegs(),
+                        4, 0, "QUARTER-FINAL", champion,
+                        this::quarterPlaceholder),
+                buildRound(
+                        tournament.getSemiFinalFirstLegs(),
+                        tournament.getSemiFinalSecondLegs(),
+                        2, 4, "SEMI-FINAL", champion,
+                        this::semiPlaceholder),
+                buildFinalCard(champion)
         );
 
-        refreshTwoLegRound(
-                tournament.getSemiFinalFirstLegs(),
-                tournament.getSemiFinalSecondLegs(),
-                semiFinalBox
-        );
+        bracketView.setActiveRound(activeRound());
 
-        refreshFinal();
-
-        if (tournament.getChampion() == null) {
-            championName.setText("NOT DEFINED");
-        } else {
-            championName.setText(tournament.getChampion().getName());
-        }
+        championName.setText(champion == null ? "NOT DEFINED" : champion.getName());
     }
 
-    private void refreshQualifiedTeams() {
-        for (Group group : tournament.getGroups()) {
-            VBox card = createBracketCard();
-
-            Label title = new Label(group.getName());
-            title.getStyleClass().add("bracket-caption");
-            card.getChildren().add(title);
-
-            if (!isGroupFinished(group)) {
-                Label pending = new Label("Group stage in progress");
-                pending.getStyleClass().add("muted-text");
-                card.getChildren().add(pending);
-            } else {
-                List<Team> qualified = group.getQualifiedTeams();
-                for (int i = 0; i < qualified.size() && i < 2; i++) {
-                    Label team = new Label((i + 1) + ". " + qualified.get(i).getName());
-                    team.getStyleClass().add("bracket-team");
-                    card.getChildren().add(team);
-                }
-            }
-
-            qualifiedBox.getChildren().add(card);
+    /* Ronda en juego según la etapa del torneo (-1 si no hay ronda eliminatoria activa). */
+    private int activeRound() {
+        switch (session.getStage()) {
+            case QUARTER_FINALS:
+                return 0;
+            case SEMI_FINALS:
+                return 1;
+            case FINAL:
+                return 2;
+            default:
+                return -1;
         }
     }
 
@@ -797,82 +820,376 @@ public class TournamentController {
         return true;
     }
 
-    private void refreshTwoLegRound(
+    /* Una tarjeta por cruce; si el cruce no existe todavía, una tarjeta bloqueada. */
+    private List<Node> buildRound(
             List<? extends Match> firstLegs,
             List<? extends Match> secondLegs,
-            VBox container) {
+            int slots,
+            int romanOffset,
+            String roundTitle,
+            Team champion,
+            IntFunction<Node> placeholder) {
 
-        if (firstLegs.isEmpty()) {
-            Label pending = new Label("Not generated yet");
-            pending.getStyleClass().add("muted-text");
-            container.getChildren().add(pending);
-            return;
-        }
+        List<Node> cards = new ArrayList<>();
 
-        for (int i = 0; i < firstLegs.size(); i++) {
-            Match first = firstLegs.get(i);
-            VBox card = createBracketCard();
-
-            Label teams = new Label(
-                    first.getHomeTeam().getName()
-                            + "\nvs\n"
-                            + first.getAwayTeam().getName()
-            );
-            teams.getStyleClass().add("bracket-team");
-
-            Label firstResult = new Label("1st leg: " + scoreText(first));
-            firstResult.getStyleClass().add("muted-text");
-
-            card.getChildren().addAll(teams, firstResult);
-
-            if (i < secondLegs.size()) {
-                Match second = secondLegs.get(i);
-                Label secondResult = new Label("2nd leg: " + scoreText(second));
-                secondResult.getStyleClass().add("muted-text");
-
-                card.getChildren().add(secondResult);
-
-                if (second.isPlayed() && second.getWinner() != null) {
-                    Label winner = new Label("WINNER: " + second.getWinner().getName());
-                    winner.getStyleClass().add("green-chip");
-                    card.getChildren().add(winner);
-                }
+        for (int i = 0; i < slots; i++) {
+            if (firstLegs != null && i < firstLegs.size()) {
+                Match second = (secondLegs != null && i < secondLegs.size())
+                        ? secondLegs.get(i)
+                        : null;
+                cards.add(twoLegCard(
+                        roundTitle + " " + ROMAN[romanOffset + i],
+                        firstLegs.get(i),
+                        second,
+                        champion));
+            } else {
+                cards.add(placeholder.apply(i));
             }
-
-            container.getChildren().add(card);
         }
+
+        return cards;
     }
 
-    private void refreshFinal() {
+
+    /* ---------- Tarjetas con partidos definidos ---------- */
+
+    /*
+     * Cruce de ida y vuelta. Estados:
+     *  - READY:  los equipos ya están definidos pero la serie no terminó.
+     *  - PLAYED: la serie terminó (se resalta el ganador y el criterio).
+     */
+    private Node twoLegCard(String title, Match first, Match second, Team champion) {
+        Team a = first.getHomeTeam();
+        Team b = first.getAwayTeam();
+
+        Team winner = (second != null && second.isPlayed()) ? second.getWinner() : null;
+        boolean decided = winner != null;
+        String criterion = decided ? tieCriterion(first, second, a, b) : null;
+
+        VBox card = new VBox(4,
+                teamRow(a.getName(), a.equals(winner), legGoals(first, a), legGoals(second, a)),
+                teamRow(b.getName(), b.equals(winner), legGoals(first, b), legGoals(second, b)),
+                infoLine("L1", first)
+        );
+
+        if (second != null) {
+            card.getChildren().add(infoLine("L2", second));
+        }
+
+        if (decided) {
+            Label criterionLabel = new Label(criterion);
+            criterionLabel.getStyleClass().add("bracket-criterion");
+            card.getChildren().add(criterionLabel);
+        }
+
+        card.getStyleClass().addAll("bracket-card", decided ? "bracket-card-played" : "bracket-card-ready");
+
+        // Marca la tarjeta si el campeón ganó esta serie (para pintar su camino en dorado).
+        card.getProperties().put(BracketView.CHAMPION_PATH, decided && winner.equals(champion));
+
+        makeClickable(card, title, first, second,
+                decided ? "WINNER: " + winner.getName() + " · " + criterion : null);
+
+        return card;
+    }
+
+    private Node buildFinalCard(Team champion) {
         Match finalMatch = tournament.getFinalMatch();
 
         if (finalMatch == null) {
-            Label pending = new Label("Not generated yet");
-            pending.getStyleClass().add("muted-text");
-            finalBox.getChildren().add(pending);
-            return;
+            return lockedCard("WINNER SF 1", "WINNER SF 2");
         }
 
-        VBox card = createBracketCard();
+        Team a = finalMatch.getHomeTeam();
+        Team b = finalMatch.getAwayTeam();
 
-        Label teams = new Label(
-                finalMatch.getHomeTeam().getName()
-                        + "\nvs\n"
-                        + finalMatch.getAwayTeam().getName()
+        boolean played = finalMatch.isPlayed();
+        String criterion = played ? finalCriterion(finalMatch, a, b) : null;
+
+        VBox card = new VBox(4,
+                teamRow(a.getName(), a.equals(champion), finalScore(finalMatch, a)),
+                teamRow(b.getName(), b.equals(champion), finalScore(finalMatch, b)),
+                infoLine("MATCH", finalMatch)
         );
-        teams.getStyleClass().add("bracket-team");
 
-        Label result = new Label(scoreText(finalMatch));
-        result.getStyleClass().add("bracket-score");
+        if (played) {
+            Label criterionLabel = new Label(criterion);
+            criterionLabel.getStyleClass().add("bracket-criterion");
+            card.getChildren().add(criterionLabel);
+        }
 
-        card.getChildren().addAll(teams, result);
-        finalBox.getChildren().add(card);
+        card.getStyleClass().addAll("bracket-card", played ? "bracket-card-played" : "bracket-card-ready");
+
+        // Centramos verticalmente los elementos internos de la tarjeta
+        card.setAlignment(Pos.CENTER_LEFT);
+
+        makeClickable(card, "FINAL", finalMatch, null,
+                (played && champion != null) ? "CHAMPION: " + champion.getName() + " · " + criterion : null);
+
+        return card;
     }
 
-    private VBox createBracketCard() {
-        VBox card = new VBox(6);
-        card.getStyleClass().add("bracket-card");
+    /* Fila de un equipo: nombre + una celda por cada marcador. */
+    private HBox teamRow(String name, boolean winner, String... scores) {
+        Label nameLabel = new Label(name);
+        nameLabel.getStyleClass().add("bracket-team");
+        nameLabel.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(nameLabel, Priority.ALWAYS);
+
+        HBox row = new HBox(8, nameLabel);
+        row.setAlignment(Pos.CENTER_LEFT);
+
+        for (String score : scores) {
+            Label scoreLabel = new Label(score);
+            scoreLabel.setMinWidth(22);
+            scoreLabel.setAlignment(Pos.CENTER);
+            scoreLabel.getStyleClass().add("bracket-score-cell");
+            row.getChildren().add(scoreLabel);
+        }
+
+        if (winner) {
+            row.getStyleClass().add("bracket-team-winner");
+        }
+
+        return row;
+    }
+
+    /* Línea compacta con fecha, estadio y árbitro; el texto completo va en un tooltip. */
+    private Label infoLine(String tag, Match match) {
+        Label line = new Label(
+                tag + " · " + matchDate(match)
+                        + " · " + matchStadium(match)
+                        + " · REF " + matchReferee(match)
+        );
+        line.getStyleClass().add("bracket-info");
+        line.setMaxWidth(Double.MAX_VALUE);
+        line.setTooltip(new Tooltip(line.getText()));
+        return line;
+    }
+
+    private void makeClickable(Node card, String title, Match first, Match second, String outcome) {
+        card.setCursor(Cursor.HAND);
+        card.setOnMouseClicked(event -> showMatchDetails(title, first, second, outcome));
+    }
+
+
+    /* ---------- Resultados y criterio que definió al ganador ---------- */
+
+    private int goalsOf(Match match, Team team) {
+        return match.getHomeTeam().equals(team) ? match.getHomeGoals() : match.getAwayGoals();
+    }
+
+    private int goalsAgainst(Match match, Team team) {
+        return match.getHomeTeam().equals(team) ? match.getAwayGoals() : match.getHomeGoals();
+    }
+
+    /* Goles de un equipo en un partido (sin importar si fue local o visitante). */
+    private String legGoals(Match match, Team team) {
+        if (match == null || !match.isPlayed()) {
+            return "-";
+        }
+        return String.valueOf(goalsOf(match, team));
+    }
+
+    /* Puntos obtenidos en un partido: 3 gana, 1 empata, 0 pierde. */
+    private int legPoints(Match match, Team team) {
+        if (match == null || !match.isPlayed()) {
+            return 0;
+        }
+
+        int scored = goalsOf(match, team);
+        int conceded = goalsAgainst(match, team);
+
+        if (scored > conceded) {
+            return 3;
+        }
+        return scored == conceded ? 1 : 0;
+    }
+
+    private String penalties(Match match, Team team) {
+        Integer value = match.getHomeTeam().equals(team)
+                ? match.getHomePenalties()
+                : match.getAwayPenalties();
+        return value == null ? "-" : String.valueOf(value);
+    }
+
+    /*
+     * Criterio de desempate en series de ida y vuelta, en el orden del reglamento:
+     * puntos de ambos partidos, diferencia de gol (goles de visitante doble) y penales.
+     */
+    private String tieCriterion(Match first, Match second, Team a, Team b) {
+        if (second.getHomePenalties() != null) {
+            return "BY PENALTIES (" + penalties(second, a) + "-" + penalties(second, b) + ")";
+        }
+
+        int pointsA = legPoints(first, a) + legPoints(second, a);
+        int pointsB = legPoints(first, b) + legPoints(second, b);
+
+        if (pointsA != pointsB) {
+            return "BY AGGREGATE";
+        }
+
+        return "BY GOAL DIFFERENCE";
+    }
+
+    private String finalCriterion(Match match, Team a, Team b) {
+        if (match.getHomePenalties() != null) {
+            return "BY PENALTIES (" + penalties(match, a) + "-" + penalties(match, b) + ")";
+        }
+        return "IN 90 MIN";
+    }
+
+    private String finalScore(Match match, Team team) {
+        if (!match.isPlayed()) {
+            return "-";
+        }
+
+        boolean home = match.getHomeTeam().equals(team);
+        String goals = String.valueOf(home ? match.getHomeGoals() : match.getAwayGoals());
+        Integer pens = home ? match.getHomePenalties() : match.getAwayPenalties();
+
+        return pens != null ? goals + " (" + pens + ")" : goals;
+    }
+
+
+    /* ---------- Tarjetas bloqueadas (cruces que todavía no existen) ---------- */
+
+    private Node lockedCard(String top, String bottom) {
+        Label tag = new Label("LOCKED");
+        tag.getStyleClass().add("bracket-lock-tag");
+
+        VBox card = new VBox(4, teamRow(top, false), teamRow(bottom, false), tag);
+        card.getStyleClass().addAll("bracket-card", "bracket-card-locked");
         return card;
+    }
+
+    private Node quarterPlaceholder(int index) {
+        int[] seed = QUARTER_SEEDS[index];
+        return lockedCard(seedLabel(seed[0], seed[1]), seedLabel(seed[2], seed[3]));
+    }
+
+    private Node semiPlaceholder(int index) {
+        int firstQf = index * 2 + 1;
+        int secondQf = index * 2 + 2;
+
+        return lockedCard(
+                "WINNER QF " + firstQf,
+                "WINNER QF " + secondQf
+        );
+    }
+
+    /* Nombre real del clasificado si la zona ya terminó; si no, "1st Group A", etc. */
+    private String seedLabel(int groupIndex, int position) {
+        List<Group> groups = tournament.getGroups();
+
+        if (groupIndex >= groups.size()) {
+            return ordinal(position) + " Group " + (char) ('A' + groupIndex);
+        }
+
+        Group group = groups.get(groupIndex);
+
+        if (isGroupFinished(group)) {
+            List<Team> qualified = group.getQualifiedTeams();
+            if (position < qualified.size()) {
+                return qualified.get(position).getName();
+            }
+        }
+
+        return ordinal(position) + " " + groupDisplayName(group, groupIndex);
+    }
+
+    private String ordinal(int position) {
+        return position == 0 ? "1st" : "2nd";
+    }
+
+    private String groupDisplayName(Group group, int index) {
+        String name = group.getName();
+
+        if (name == null || name.isBlank()) {
+            return "Group " + (char) ('A' + index);
+        }
+
+        String lower = name.toLowerCase();
+        return (lower.contains("group") || lower.contains("zone")) ? name : "Group " + name;
+    }
+
+
+    /* ---------- Detalle del partido (click en una tarjeta) ---------- */
+
+    private void showMatchDetails(String title, Match first, Match second, String outcome) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(title);
+        dialog.setHeaderText(null);
+
+        DialogPane pane = dialog.getDialogPane();
+        pane.getButtonTypes().add(ButtonType.CLOSE);
+        pane.setMinWidth(440);
+
+        // El diálogo es otra ventana: hay que pasarle los estilos y el tema actual.
+        if (bracketPane.getScene() != null) {
+            dialog.initOwner(bracketPane.getScene().getWindow());
+            pane.getStylesheets().addAll(bracketPane.getScene().getStylesheets());
+
+            if (bracketPane.getScene().getRoot().getStyleClass().contains("light-theme")) {
+                pane.getStyleClass().add("light-theme");
+            }
+        }
+        pane.getStyleClass().add("app-root");
+
+        VBox content = new VBox(12);
+        content.getStyleClass().add("page-content");
+
+        Label heading = new Label(title);
+        heading.getStyleClass().add("section-title");
+        content.getChildren().add(heading);
+
+        content.getChildren().add(legDetails(second == null ? "MATCH" : "1ST LEG", first));
+
+        if (second != null) {
+            content.getChildren().add(legDetails("2ND LEG", second));
+        }
+
+        if (outcome != null) {
+            Label outcomeChip = new Label(outcome);
+            outcomeChip.getStyleClass().add("green-chip");
+            content.getChildren().add(outcomeChip);
+        }
+
+        pane.setContent(content);
+        dialog.showAndWait();
+    }
+
+    private VBox legDetails(String heading, Match match) {
+        Label headingLabel = new Label(heading);
+        headingLabel.getStyleClass().add("small-text");
+
+        Label teams = new Label(match.getHomeTeam().getName() + "  vs  " + match.getAwayTeam().getName());
+        teams.getStyleClass().add("selected-match-title");
+
+        Label score = new Label(scoreText(match));
+        score.getStyleClass().add("metric-value");
+
+        VBox box = new VBox(6,
+                headingLabel,
+                teams,
+                score,
+                detailRow("DATE", matchDate(match)),
+                detailRow("STADIUM", matchStadium(match)),
+                detailRow("REFEREE", matchReferee(match))
+        );
+        box.getStyleClass().add("info-card");
+        return box;
+    }
+
+    private HBox detailRow(String caption, String value) {
+        Label captionLabel = new Label(caption);
+        captionLabel.setMinWidth(80);
+        captionLabel.getStyleClass().add("small-text");
+
+        Label valueLabel = new Label(value);
+        valueLabel.getStyleClass().add("info-value");
+
+        return new HBox(10, captionLabel, valueLabel);
     }
 
     private String scoreText(Match match) {
@@ -890,6 +1207,24 @@ public class TournamentController {
     }
 
 
+    /* ---------- ADAPTADORES DEL MODELO ----------
+     * Fecha, estadio y árbitro de un partido. Si en tu clase Match los getters
+     * se llaman distinto (getDate, getStadium, getReferee), se ajusta solo acá.
+     */
+
+    private String matchDate(Match match) {
+        return match.getMatchDate() == null ? "TBD" : String.valueOf(match.getMatchDate());
+    }
+
+    private String matchStadium(Match match) {
+        return match.getStadium() == null ? "TBD" : match.getStadium().getName();
+    }
+
+    private String matchReferee(Match match) {
+        return match.getReferee() == null ? "TBD" : match.getReferee().getName();
+    }
+
+
     /* =====================================================
        REPORTS (VISTAS RICAS Y DINÁMICAS)
        ===================================================== */
@@ -899,7 +1234,11 @@ public class TournamentController {
                 "I - Top Scorers",
                 "II - Fair Play",
                 "III - Most Minutes",
-                "IV - Championship Bracket"
+                "IV - Championship Bracket",
+                "Matches Summary",
+                "Teams",
+                "Referees",
+                "Players"
         );
 
         reportList.getSelectionModel().selectedItemProperty().addListener(
@@ -967,6 +1306,16 @@ public class TournamentController {
         if (selected == null) return;
 
         try {
+            if (List.of("Matches Summary", "Teams", "Referees", "Players").contains(selected)) {
+                reportContentHost.getChildren().clear();
+                switch (selected) {
+                    case "Matches Summary" -> showMatchesReportView();
+                    case "Teams" -> showTeamsSummaryView();
+                    case "Referees" -> showRefereesReportView();
+                    case "Players" -> showPlayersSummaryView();
+                }
+                return;
+            }
             Section section = switch (selected) {
                 case "I - Top Scorers" -> Section.TOP_SCORERS;
                 case "II - Fair Play" -> Section.FAIR_PLAY;
@@ -1001,6 +1350,552 @@ public class TournamentController {
         }
     }
 
+    // --- REPORTE I: TOP SCORERS ---
+    private void showScorersReportView() {
+        selectedReportTitle.setText("Top Goalscorers");
+        selectedReportSubtitle.setText("Players ranked by total goals scored in the tournament");
+
+        List<PlayerDirectoryEntry> scorers = new ArrayList<>();
+        for (Team team : tournament.getTeams()) {
+            for (Player player : team.getSquad()) {
+                if (player.getGoals() > 0) {
+                    scorers.add(new PlayerDirectoryEntry(player, team));
+                }
+            }
+        }
+        scorers.sort(Comparator.comparingInt(PlayerDirectoryEntry::getGoals).reversed()
+                .thenComparing(PlayerDirectoryEntry::getMinutesPlayed));
+
+        reportMetricChip.setText(scorers.size() + " SCORERS");
+
+        TableView<PlayerDirectoryEntry> table = new TableView<>();
+        table.getStyleClass().add("dark-table");
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TableColumn<PlayerDirectoryEntry, Number> rankCol = new TableColumn<>("#");
+        rankCol.setPrefWidth(45);
+        rankCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(table.getItems().indexOf(cell.getValue()) + 1));
+        rankCol.setCellFactory(col -> createRankBadgeCell());
+
+        TableColumn<PlayerDirectoryEntry, String> playerCol = new TableColumn<>("PLAYER");
+        playerCol.setPrefWidth(200);
+        playerCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPlayerName()));
+        playerCol.setCellFactory(col -> createBoldCell());
+
+        TableColumn<PlayerDirectoryEntry, String> teamCol = new TableColumn<>("TEAM");
+        teamCol.setPrefWidth(180);
+        teamCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTeamName()));
+
+        TableColumn<PlayerDirectoryEntry, Integer> matchesCol = new TableColumn<>("MP");
+        matchesCol.setPrefWidth(70);
+        matchesCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getMatchesPlayed()));
+        matchesCol.setCellFactory(col -> createIntegerCenterCell());
+
+        TableColumn<PlayerDirectoryEntry, Integer> minutesCol = new TableColumn<>("MIN");
+        minutesCol.setPrefWidth(80);
+        minutesCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getMinutesPlayed()));
+        minutesCol.setCellFactory(col -> createIntegerCenterCell());
+
+        TableColumn<PlayerDirectoryEntry, Integer> goalsCol = new TableColumn<>("GOALS");
+        goalsCol.setPrefWidth(90);
+        goalsCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getGoals()));
+        goalsCol.setCellFactory(col -> createHighlightStatCell());
+
+        table.getColumns().addAll(rankCol, playerCol, teamCol, matchesCol, minutesCol, goalsCol);
+        table.getItems().setAll(scorers);
+
+        reportContentHost.getChildren().add(table);
+    }
+
+    // --- REPORTE II: FAIR PLAY ---
+    private void showFairPlayReportView() {
+        selectedReportTitle.setText("Fair Play Ranking");
+        selectedReportSubtitle.setText("Teams ordered by lowest disciplinary points (Yellow: 1 pt, Red: 3 pts)");
+
+        TableView<TeamFairPlayEntry> table = new TableView<>();
+        table.getStyleClass().add("dark-table");
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TableColumn<TeamFairPlayEntry, Number> rankCol = new TableColumn<>("#");
+        rankCol.setPrefWidth(45);
+        rankCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(table.getItems().indexOf(cell.getValue()) + 1));
+        rankCol.setCellFactory(col -> createRankBadgeCell());
+
+        TableColumn<TeamFairPlayEntry, String> teamCol = new TableColumn<>("TEAM");
+        teamCol.setPrefWidth(220);
+        teamCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().team.getName()));
+        teamCol.setCellFactory(col -> createBoldCell());
+
+        TableColumn<TeamFairPlayEntry, Integer> yellowCol = new TableColumn<>("YELLOW CARDS");
+        yellowCol.setPrefWidth(120);
+        yellowCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().yellowCards));
+        yellowCol.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Integer val, boolean empty) {
+                super.updateItem(val, empty);
+                if (empty || val == null) { setText(null); setGraphic(null); }
+                else {
+                    Label l = new Label(String.valueOf(val));
+                    l.getStyleClass().add("card-yellow-chip");
+                    setGraphic(l); setText(null); setAlignment(Pos.CENTER);
+                }
+            }
+        });
+
+        TableColumn<TeamFairPlayEntry, Integer> redCol = new TableColumn<>("RED CARDS");
+        redCol.setPrefWidth(110);
+        redCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().redCards));
+        redCol.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Integer val, boolean empty) {
+                super.updateItem(val, empty);
+                if (empty || val == null) { setText(null); setGraphic(null); }
+                else {
+                    Label l = new Label(String.valueOf(val));
+                    l.getStyleClass().add("card-red-chip");
+                    setGraphic(l); setText(null); setAlignment(Pos.CENTER);
+                }
+            }
+        });
+
+        TableColumn<TeamFairPlayEntry, Integer> scoreCol = new TableColumn<>("PENALTY POINTS");
+        scoreCol.setPrefWidth(130);
+        scoreCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().totalPoints));
+        scoreCol.setCellFactory(col -> createIntegerCenterCell());
+
+        table.getColumns().addAll(rankCol, teamCol, yellowCol, redCol, scoreCol);
+
+        List<TeamFairPlayEntry> entries = new ArrayList<>();
+        for (Team team : tournament.getTeams()) {
+            int y = 0, r = 0;
+            for (Player p : team.getSquad()) {
+                y += p.getYellowCards();
+                r += p.getRedCards();
+            }
+            entries.add(new TeamFairPlayEntry(team, y, r, (y * 1) + (r * 3)));
+        }
+        entries.sort(Comparator.comparingInt(e -> e.totalPoints));
+        table.getItems().setAll(entries);
+
+        reportMetricChip.setText(entries.size() + " TEAMS");
+        reportContentHost.getChildren().add(table);
+    }
+
+    // --- REPORTE III: MOST MINUTES ---
+    private void showMinutesReportView() {
+        selectedReportTitle.setText("Most Minutes Played");
+        selectedReportSubtitle.setText("Players with highest physical endurance and match presence");
+
+        List<PlayerDirectoryEntry> list = new ArrayList<>();
+        for (Team team : tournament.getTeams()) {
+            for (Player p : team.getSquad()) {
+                if (p.getMinutesPlayed() > 0) {
+                    list.add(new PlayerDirectoryEntry(p, team));
+                }
+            }
+        }
+        list.sort(Comparator.comparingInt(PlayerDirectoryEntry::getMinutesPlayed).reversed());
+
+        TableView<PlayerDirectoryEntry> table = new TableView<>();
+        table.getStyleClass().add("dark-table");
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TableColumn<PlayerDirectoryEntry, Number> rankCol = new TableColumn<>("#");
+        rankCol.setPrefWidth(45);
+        rankCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(table.getItems().indexOf(cell.getValue()) + 1));
+        rankCol.setCellFactory(col -> createRankBadgeCell());
+
+        TableColumn<PlayerDirectoryEntry, String> playerCol = new TableColumn<>("PLAYER");
+        playerCol.setPrefWidth(210);
+        playerCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPlayerName()));
+        playerCol.setCellFactory(col -> createBoldCell());
+
+        TableColumn<PlayerDirectoryEntry, String> teamCol = new TableColumn<>("TEAM");
+        teamCol.setPrefWidth(180);
+        teamCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTeamName()));
+
+        TableColumn<PlayerDirectoryEntry, Integer> matchesCol = new TableColumn<>("MATCHES");
+        matchesCol.setPrefWidth(90);
+        matchesCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getMatchesPlayed()));
+        matchesCol.setCellFactory(col -> createIntegerCenterCell());
+
+        TableColumn<PlayerDirectoryEntry, Integer> minutesCol = new TableColumn<>("MINUTES PLAYED");
+        minutesCol.setPrefWidth(140);
+        minutesCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getMinutesPlayed()));
+        minutesCol.setCellFactory(col -> createHighlightStatCell());
+
+        table.getColumns().addAll(rankCol, playerCol, teamCol, matchesCol, minutesCol);
+        table.getItems().setAll(list);
+
+        reportMetricChip.setText(list.size() + " PLAYERS");
+        reportContentHost.getChildren().add(table);
+    }
+
+    // --- REPORT IV: MATCHES SUMMARY & INCIDENCES ---
+    private void showMatchesReportView() {
+        selectedReportTitle.setText("Matches Log & Incidences");
+        selectedReportSubtitle.setText("Comprehensive log of played matches, starting lineups, formations and match events");
+
+        // 1. Get all played matches and sort them by match date
+        List<Match> playedMatches = new ArrayList<>();
+        if (tournament.getAllMatches() != null) {
+            for (Match m : tournament.getAllMatches()) {
+                if (m.isPlayed()) {
+                    playedMatches.add(m);
+                }
+            }
+        }
+        playedMatches.sort(Comparator.comparing(Match::getMatchDate, Comparator.nullsLast(Comparator.naturalOrder())));
+
+        reportMetricChip.setText(playedMatches.size() + " PLAYED MATCHES");
+
+        if (playedMatches.isEmpty()) {
+            VBox emptyBox = new VBox(10);
+            emptyBox.setAlignment(Pos.CENTER);
+            Label emptyLabel = new Label("No played matches available yet.");
+            emptyLabel.getStyleClass().add("muted-text");
+            emptyBox.getChildren().add(emptyLabel);
+            reportContentHost.getChildren().add(emptyBox);
+            return;
+        }
+
+        VBox mainLayout = new VBox(12);
+        mainLayout.setFillWidth(true);
+
+        // --- FILTER BAR ---
+        HBox filterBar = new HBox(12);
+        filterBar.setAlignment(Pos.CENTER_LEFT);
+        filterBar.getStyleClass().add("info-card");
+
+        ComboBox<Team> teamFilter = new ComboBox<>();
+        teamFilter.setPromptText("ALL TEAMS");
+        teamFilter.getItems().setAll(tournament.getTeams());
+        teamFilter.getItems().sort(Comparator.comparing(Team::getName, String.CASE_INSENSITIVE_ORDER));
+        teamFilter.setPrefWidth(200);
+
+        teamFilter.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(Team item, boolean empty) {
+                super.updateItem(item, empty);
+                setText((empty || item == null) ? null : item.getName());
+            }
+        });
+        teamFilter.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Team item, boolean empty) {
+                super.updateItem(item, empty);
+                setText((empty || item == null) ? null : item.getName());
+            }
+        });
+
+        ComboBox<String> stageFilter = new ComboBox<>();
+        stageFilter.setPromptText("ALL STAGES");
+        stageFilter.getItems().setAll("GROUP STAGE", "QUARTER-FINALS", "SEMI-FINALS", "FINAL");
+        stageFilter.setPrefWidth(180);
+
+        Button btnReset = new Button("RESET FILTERS");
+        btnReset.getStyleClass().add("secondary-button");
+
+        Region filterSpacer = new Region();
+        HBox.setHgrow(filterSpacer, Priority.ALWAYS);
+
+        Label filterCountChip = new Label();
+        filterCountChip.getStyleClass().add("purple-chip");
+
+        filterBar.getChildren().addAll(
+                new Label("TEAM:"), teamFilter,
+                new Label("STAGE:"), stageFilter,
+                btnReset,
+                filterSpacer,
+                filterCountChip
+        );
+
+        // --- CONTENT (LIST + DETAILS) ---
+        HBox contentLayout = new HBox(16);
+        contentLayout.setFillHeight(true);
+        VBox.setVgrow(contentLayout, Priority.ALWAYS);
+
+        // Left column: Matches list
+        VBox leftSide = new VBox(10);
+        leftSide.setPrefWidth(300);
+
+        ListView<Match> playedList = new ListView<>();
+        playedList.getStyleClass().add("dark-list");
+        VBox.setVgrow(playedList, Priority.ALWAYS);
+
+        // Reactive filter configuration
+        ObservableList<Match> masterList = FXCollections.observableArrayList(playedMatches);
+        FilteredList<Match> filteredList = new FilteredList<>(masterList, m -> true);
+        playedList.setItems(filteredList);
+
+        playedList.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(Match m, boolean empty) {
+                super.updateItem(m, empty);
+                if (empty || m == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    VBox card = new VBox(2);
+                    Label teams = new Label(m.getHomeTeam().getName() + " vs " + m.getAwayTeam().getName());
+                    teams.setStyle("-fx-font-weight: 800; -fx-font-size: 12px;");
+
+                    String scoreStr = m.getHomeGoals() + " - " + m.getAwayGoals();
+                    if (m.getHomePenalties() != null) {
+                        scoreStr += " (" + m.getHomePenalties() + "-" + m.getAwayPenalties() + " pen)";
+                    }
+
+                    Label score = new Label(scoreStr + " · " + (m.getMatchDate() != null ? m.getMatchDate().toString() : "TBD"));
+                    score.getStyleClass().add("small-text");
+
+                    card.getChildren().addAll(teams, score);
+                    setGraphic(card);
+                    setText(null);
+                }
+            }
+        });
+
+        leftSide.getChildren().add(playedList);
+
+        // Right column: Dynamic match detail
+        VBox rightSide = new VBox(12);
+        rightSide.getStyleClass().add("info-card");
+        HBox.setHgrow(rightSide, Priority.ALWAYS);
+
+        playedList.getSelectionModel().selectedItemProperty().addListener((obs, oldM, selectedMatch) -> {
+            if (selectedMatch != null) {
+                renderMatchDetails(rightSide, selectedMatch);
+            }
+        });
+
+        // Filter update logic
+        Runnable updateFilters = () -> {
+            Team tSel = teamFilter.getValue();
+            String sSel = stageFilter.getValue();
+
+            filteredList.setPredicate(match -> {
+                boolean matchTeam = (tSel == null) || match.getHomeTeam().equals(tSel) || match.getAwayTeam().equals(tSel);
+                boolean matchStage = true;
+
+                if (sSel != null) {
+                    String stageName = getMatchStageName(match).toUpperCase();
+
+                    // Comparación exacta según el valor seleccionado en el ComboBox
+                    switch (sSel.toUpperCase()) {
+                        case "FINAL":
+                            matchStage = stageName.equals("FINAL");
+                            break;
+                        case "SEMI-FINALS":
+                        case "SEMIFINAL":
+                            matchStage = stageName.equals("SEMI-FINALS");
+                            break;
+                        case "QUARTER-FINALS":
+                        case "CUARTOS DE FINAL":
+                            matchStage = stageName.equals("QUARTER-FINALS");
+                            break;
+                        case "GROUP STAGE":
+                        case "FASE DE GRUPOS":
+                            matchStage = stageName.equals("GROUP STAGE");
+                            break;
+                        default:
+                            matchStage = stageName.contains(sSel.toUpperCase());
+                            break;
+                    }
+                }
+
+                return matchTeam && matchStage;
+            });
+
+            filterCountChip.setText(filteredList.size() + " MATCHES");
+
+            if (!filteredList.isEmpty()) {
+                playedList.getSelectionModel().selectFirst();
+            } else {
+                rightSide.getChildren().clear();
+                Label noResults = new Label("No matches found matching the active filters.");
+                noResults.getStyleClass().add("muted-text");
+                rightSide.getChildren().add(noResults);
+            }
+        };
+
+        teamFilter.valueProperty().addListener((obs, o, n) -> updateFilters.run());
+        stageFilter.valueProperty().addListener((obs, o, n) -> updateFilters.run());
+
+        btnReset.setOnAction(e -> {
+            teamFilter.setValue(null);
+            stageFilter.setValue(null);
+            updateFilters.run();
+        });
+
+        updateFilters.run();
+
+        contentLayout.getChildren().addAll(leftSide, rightSide);
+        mainLayout.getChildren().addAll(filterBar, contentLayout);
+
+        reportContentHost.getChildren().add(mainLayout);
+    }
+
+    private void renderMatchDetails(VBox container, Match match) {
+        container.getChildren().clear();
+
+        // 1. Scoreboard Header & Details
+        VBox scoreHeader = new VBox(6);
+        scoreHeader.setAlignment(Pos.CENTER);
+        scoreHeader.setStyle("-fx-background-color: -bg-panel; -fx-padding: 14; -fx-background-radius: 8; -fx-border-color: -border-card; -fx-border-radius: 8;");
+
+        Label teamsTitle = new Label(match.getHomeTeam().getName().toUpperCase() + "   VS   " + match.getAwayTeam().getName().toUpperCase());
+        teamsTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: -text-main;");
+
+        String scoreText = match.getHomeGoals() + "  -  " + match.getAwayGoals();
+        if (match.getHomePenalties() != null) {
+            scoreText += "  (" + match.getHomePenalties() + " - " + match.getAwayPenalties() + " pen)";
+        }
+        Label scoreLabel = new Label(scoreText);
+        scoreLabel.getStyleClass().add("metric-value");
+
+        String stageStr = getMatchStageName(match);
+        String infoStr = "Stage: " + stageStr
+                + "  |  Date: " + (match.getMatchDate() != null ? match.getMatchDate().toString() : "TBD")
+                + "  |  Stadium: " + (match.getStadium() != null ? match.getStadium().getName() : "TBD")
+                + "  |  Referee: " + (match.getReferee() != null ? match.getReferee().getName() : "TBD");
+
+        Label matchInfo = new Label(infoStr);
+        matchInfo.getStyleClass().add("small-text");
+
+        scoreHeader.getChildren().addAll(teamsTitle, scoreLabel, matchInfo);
+
+        // 2. Buttons to show starting lineups in a modal
+        HBox startersButtonsBox = new HBox(12);
+        startersButtonsBox.setAlignment(Pos.CENTER);
+
+        Button btnHomeStarters = new Button("SHOW " + match.getHomeTeam().getName().toUpperCase() + " STARTERS");
+        btnHomeStarters.getStyleClass().add("secondary-button");
+        btnHomeStarters.setOnAction(e -> showStartersModal(match.getHomeTeam(), match.getHomeFormation(), match.getHomeStarters()));
+
+        Button btnAwayStarters = new Button("SHOW " + match.getAwayTeam().getName().toUpperCase() + " STARTERS");
+        btnAwayStarters.getStyleClass().add("secondary-button");
+        btnAwayStarters.setOnAction(e -> showStartersModal(match.getAwayTeam(), match.getAwayFormation(), match.getAwayStarters()));
+
+        startersButtonsBox.getChildren().addAll(btnHomeStarters, btnAwayStarters);
+
+        // 3. Incidences & Timeline List
+        VBox eventsBox = new VBox(6);
+        VBox.setVgrow(eventsBox, Priority.ALWAYS);
+
+        Label eventsTitle = new Label("MATCH INCIDENCES & TIMELINE");
+        eventsTitle.getStyleClass().add("section-caption");
+
+        ListView<String> eventsList = new ListView<>();
+        eventsList.getStyleClass().add("dark-list");
+        VBox.setVgrow(eventsList, Priority.ALWAYS);
+
+        List<Event> sortedEvents = new ArrayList<>(match.getEvents());
+        sortedEvents.sort(Comparator.comparingInt(Event::getMinute));
+
+        if (sortedEvents.isEmpty()) {
+            eventsList.getItems().add("No match incidences recorded.");
+        } else {
+            for (Event ev : sortedEvents) {
+                eventsList.getItems().add(ev.getDescription());
+            }
+        }
+
+        eventsBox.getChildren().addAll(eventsTitle, eventsList);
+
+        container.getChildren().addAll(scoreHeader, startersButtonsBox, eventsBox);
+    }
+
+    // Modal dialog to display squad lineup and formation strategy
+    private void showStartersModal(Team team, Formation formation, List<Player> starters) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Starting Lineup - " + team.getName());
+        dialog.setHeaderText(null);
+
+        DialogPane pane = dialog.getDialogPane();
+        pane.getButtonTypes().add(ButtonType.CLOSE);
+        pane.setMinWidth(420);
+
+        if (reportsPane.getScene() != null) {
+            dialog.initOwner(reportsPane.getScene().getWindow());
+            pane.getStylesheets().addAll(reportsPane.getScene().getStylesheets());
+
+            if (reportsPane.getScene().getRoot().getStyleClass().contains("light-theme")) {
+                pane.getStyleClass().add("light-theme");
+            }
+        }
+        pane.getStyleClass().add("app-root");
+
+        VBox content = new VBox(12);
+        content.getStyleClass().add("page-content");
+
+        Label heading = new Label(team.getName().toUpperCase());
+        heading.getStyleClass().add("section-title");
+
+        String formName = (formation != null) ? formation.getLabel() : "Standard Strategy";
+        Label formationLabel = new Label("Tactical Formation: " + formName);
+        formationLabel.getStyleClass().add("accent-text");
+
+        ListView<String> startersList = new ListView<>();
+        startersList.getStyleClass().add("dark-list");
+        startersList.setPrefHeight(320);
+
+        if (starters == null || starters.isEmpty()) {
+            startersList.getItems().add("No starting players recorded.");
+        } else {
+            // Sort tactical order: GK -> DEF -> MID -> FWD
+            List<Player> sortedStarters = new ArrayList<>(starters);
+            sortedStarters.sort(Comparator.comparingInt(p -> getPositionOrder(p.getPosition())));
+
+            for (Player p : sortedStarters) {
+                startersList.getItems().add("[" + p.getPosition() + "]  " + p.getName());
+            }
+        }
+
+        content.getChildren().addAll(heading, formationLabel, startersList);
+        pane.setContent(content);
+
+        dialog.showAndWait();
+    }
+
+    // Tactical hierarchy sorting: 1. Goalkeeper, 2. Defender, 3. Midfielder, 4. Forward
+    private int getPositionOrder(Position pos) {
+        if (pos == null) return 99;
+        String name = pos.name().toUpperCase();
+        if (name.contains("GOALKEEPER") || name.contains("GK") || name.contains("ARQUERO")) return 1;
+        if (name.contains("DEFENDER") || name.contains("DEF") || name.contains("DEFENSA")) return 2;
+        if (name.contains("MIDFIELDER") || name.contains("MID") || name.contains("MEDIO")) return 3;
+        if (name.contains("FORWARD") || name.contains("FW") || name.contains("DELANTERO")) return 4;
+        return 5;
+    }
+
+    // Helper method to resolve match stage title
+    private String getMatchStageName(Match match) {
+        if (match == null) return "Unknown Stage";
+
+        // 1. Final
+        if (match.equals(tournament.getFinalMatch())) {
+            return "Final";
+        }
+
+        // 2. Semifinales (Ida o Vuelta)
+        if ((tournament.getSemiFinalFirstLegs() != null && tournament.getSemiFinalFirstLegs().contains(match))
+                || (tournament.getSemiFinalSecondLegs() != null && tournament.getSemiFinalSecondLegs().contains(match))) {
+            return "Semi-Finals";
+        }
+
+        // 3. Cuartos de Final (Ida o Vuelta)
+        if ((tournament.getQuarterFinalFirstLegs() != null && tournament.getQuarterFinalFirstLegs().contains(match))
+                || (tournament.getQuarterFinalSecondLegs() != null && tournament.getQuarterFinalSecondLegs().contains(match))) {
+            return "Quarter-Finals";
+        }
+
+        // 4. Si es Knockout por flag pero no cayó en las anteriores
+        if (match.isKnockout()) {
+            return "Knockout Stage";
+        }
+
+        return "Group Stage";
+    }
     // --- REPORTE V: TEAMS ---
     private void showTeamsSummaryView() {
         selectedReportTitle.setText("Participating Teams Analysis");
@@ -1382,6 +2277,7 @@ public class TournamentController {
             }
         };
     }
+
     private String formatStage() {
         switch (session.getStage()) {
             case GROUP_STAGE:
@@ -1403,6 +2299,16 @@ public class TournamentController {
     /* =====================================================
        HELPERS & DTOs PARA REPORTES
        ===================================================== */
+
+    private static class TeamFairPlayEntry {
+        final Team team;
+        final int yellowCards;
+        final int redCards;
+        final int totalPoints;
+        TeamFairPlayEntry(Team team, int y, int r, int pts) {
+            this.team = team; this.yellowCards = y; this.redCards = r; this.totalPoints = pts;
+        }
+    }
 
     public static class RefereeReportEntry {
         private final String name;
@@ -1431,7 +2337,9 @@ public class TournamentController {
         public int getIdNumber() { return idNumber; }
         public int getYearsOfficiated() { return yearsOfficiated; }
         public int getMatchesOfficiated() { return matchesOfficiated; }
-    }    public static class TeamSummaryEntry {
+    }
+
+    public static class TeamSummaryEntry {
         private final Team team;
         private final int squadSize;
         private final double squadAverageAge;
@@ -1503,5 +2411,223 @@ public class TournamentController {
                 }
             }
         };
+    }
+
+
+    /* =====================================================
+       BRACKET VIEW (clase de vista anidada)
+
+       Grilla de 8 filas iguales: cada cuarto ocupa 2 filas,
+       cada semi 4 y la final 8, todos centrados verticalmente,
+       así cada partido queda en el medio de los dos que lo
+       alimentan. Las líneas conectoras se dibujan en una capa
+       transparente usando las posiciones reales de las tarjetas.
+
+       Orden esperado: cuartos I, II, III, IV; (0,1) alimentan
+       la semi 0 y (2,3) alimentan la semi 1.
+
+       Si una tarjeta tiene la propiedad CHAMPION_PATH en true,
+       el tramo que sale de ella se repinta en dorado.
+       ===================================================== */
+
+    private static class BracketView extends StackPane {
+
+        static final String CHAMPION_PATH = "championPath";
+
+        private static final int BODY_ROWS = 8;
+        private static final double ROW_HEIGHT = 68;
+        private static final String[] HEADER_TITLES = {"QUARTER FINALS", "SEMIFINALS", "FINAL"};
+
+        private final GridPane grid = new GridPane();
+        private final Pane linesLayer = new Pane();
+        private final Label[] headers = new Label[HEADER_TITLES.length];
+
+        private List<Node> quarters = List.of();
+        private List<Node> semis = List.of();
+        private Node finalMatch;
+        private int activeRound = -1;
+        private boolean redrawPending;
+
+        BracketView() {
+            grid.setHgap(56); // espacio donde se dibujan las líneas
+            grid.setVgap(8);
+            grid.setAlignment(Pos.CENTER);
+
+            for (int i = 0; i < 3; i++) {
+                ColumnConstraints col = new ColumnConstraints();
+                col.setPercentWidth(100.0 / 3);
+                col.setHgrow(Priority.ALWAYS);
+                grid.getColumnConstraints().add(col);
+            }
+
+            // Fila 0: títulos de ronda. Filas 1..8: cuerpo del bracket (todas iguales).
+            RowConstraints header = new RowConstraints();
+            header.setMinHeight(28);
+            header.setPrefHeight(28);
+            header.setMaxHeight(28);
+            grid.getRowConstraints().add(header);
+
+            for (int i = 0; i < BODY_ROWS; i++) {
+                RowConstraints row = new RowConstraints();
+                row.setMinHeight(ROW_HEIGHT);
+                row.setPrefHeight(ROW_HEIGHT);
+                row.setVgrow(Priority.ALWAYS);
+                grid.getRowConstraints().add(row);
+            }
+
+            linesLayer.setMouseTransparent(true);
+            linesLayer.setPickOnBounds(false);
+            getChildren().addAll(grid, linesLayer);
+
+            // Redibujar los conectores cuando cambia el tamaño disponible.
+            widthProperty().addListener((obs, oldValue, newValue) -> requestRedraw());
+            heightProperty().addListener((obs, oldValue, newValue) -> requestRedraw());
+        }
+
+        /* Reemplaza el contenido del bracket y lo redibuja. */
+        void setMatches(List<? extends Node> quarters, List<? extends Node> semis, Node finalMatch) {
+            this.quarters = List.copyOf(quarters);
+            this.semis = List.copyOf(semis);
+            this.finalMatch = finalMatch;
+            rebuild();
+        }
+
+        /* Resalta el título de la ronda en juego: 0 cuartos, 1 semis, 2 final, -1 ninguna. */
+        void setActiveRound(int round) {
+            this.activeRound = round;
+            applyActiveRound();
+        }
+
+        private void applyActiveRound() {
+            for (int i = 0; i < headers.length; i++) {
+                if (headers[i] == null) {
+                    continue;
+                }
+                headers[i].getStyleClass().remove("bracket-stage-header-active");
+                if (i == activeRound) {
+                    headers[i].getStyleClass().add("bracket-stage-header-active");
+                }
+            }
+        }
+
+        private void rebuild() {
+            grid.getChildren().clear();
+
+            for (int i = 0; i < HEADER_TITLES.length; i++) {
+                addHeader(i);
+            }
+            applyActiveRound();
+
+            place(quarters, 0, 2);
+            place(semis, 1, 4);
+            if (finalMatch != null) {
+                place(List.of(finalMatch), 2, 8);
+            }
+
+            requestRedraw();
+        }
+
+        private void addHeader(int column) {
+            Label label = new Label(HEADER_TITLES[column]);
+            label.setMaxWidth(Double.MAX_VALUE);
+            label.getStyleClass().add("bracket-stage-header");
+            headers[column] = label;
+            grid.add(label, column, 0);
+        }
+
+        /* Coloca los nodos en una columna; cada uno ocupa 'span' filas, centrado. */
+        private void place(List<? extends Node> nodes, int column, int span) {
+            for (int i = 0; i < nodes.size(); i++) {
+                Node node = nodes.get(i);
+                if (node instanceof Region) {
+                    Region reg = (Region) node;
+                    reg.setMaxWidth(Double.MAX_VALUE);
+
+                    // Fijamos un alto máximo idéntico para todas las tarjetas (el tamaño estándar de cuartos)
+                    reg.setMaxHeight(125);
+                    reg.setPrefHeight(125);
+                }
+
+                grid.add(node, column, 1 + i * span, 1, span);
+                GridPane.setValignment(node, VPos.CENTER);
+            }
+        }
+
+        /* Agrupa varios pedidos de redibujo en uno solo, después del layout. */
+        private void requestRedraw() {
+            if (redrawPending) {
+                return;
+            }
+            redrawPending = true;
+            Platform.runLater(() -> {
+                redrawPending = false;
+                applyCss();
+                layout();
+                drawLines();
+            });
+        }
+
+        private void drawLines() {
+            linesLayer.getChildren().clear();
+
+            if (quarters.size() != 4 || semis.size() != 2 || finalMatch == null) {
+                return;
+            }
+
+            connect(quarters.get(0), quarters.get(1), semis.get(0));
+            connect(quarters.get(2), quarters.get(3), semis.get(1));
+            connect(semis.get(0), semis.get(1), finalMatch);
+        }
+
+        /*
+         * Conector en codo: [a] y [b] salen hacia una línea vertical que llega a [target].
+         * Si alguno de los dos es parte del camino del campeón, ese tramo se repinta en dorado.
+         */
+        private void connect(Node a, Node b, Node target) {
+            Bounds ba = toLayer(a);
+            Bounds bb = toLayer(b);
+            Bounds bt = toLayer(target);
+
+            double midX = (ba.getMaxX() + bt.getMinX()) / 2;
+            double targetY = bt.getCenterY();
+
+            Path base = new Path(
+                    new MoveTo(ba.getMaxX(), ba.getCenterY()),
+                    new LineTo(midX, ba.getCenterY()),
+                    new LineTo(midX, bb.getCenterY()),
+                    new LineTo(bb.getMaxX(), bb.getCenterY()),
+                    new MoveTo(midX, targetY),
+                    new LineTo(bt.getMinX(), targetY));
+
+            base.setFill(Color.TRANSPARENT);
+            base.getStyleClass().add("bracket-line");
+            linesLayer.getChildren().add(base);
+
+            for (Node feeder : new Node[]{a, b}) {
+                if (!isChampionPath(feeder)) {
+                    continue;
+                }
+
+                Bounds bf = toLayer(feeder);
+
+                Path gold = new Path(
+                        new MoveTo(bf.getMaxX(), bf.getCenterY()),
+                        new LineTo(midX, bf.getCenterY()),
+                        new LineTo(midX, targetY),
+                        new LineTo(bt.getMinX(), targetY));
+
+                gold.setFill(Color.TRANSPARENT);
+                gold.getStyleClass().add("bracket-line-champion");
+                linesLayer.getChildren().add(gold);
+            }
+        }
+
+        private boolean isChampionPath(Node node) {
+            return Boolean.TRUE.equals(node.getProperties().get(CHAMPION_PATH));
+        }
+
+        private Bounds toLayer(Node node) {
+            return linesLayer.sceneToLocal(node.localToScene(node.getBoundsInLocal()));
+        }
     }
 }

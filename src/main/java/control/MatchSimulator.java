@@ -173,6 +173,10 @@ public class MatchSimulator {
                     .addMatchOfficiated();
         }
 
+        match.setPlayed(
+                true
+        );
+
         if (match.requiresTieBreak()) {
             penaltySimulator.simulate(
                     match,
@@ -180,10 +184,6 @@ public class MatchSimulator {
                     awayPitch
             );
         }
-
-        match.setPlayed(
-                true
-        );
 
         registerPlayerStats(
                 match
