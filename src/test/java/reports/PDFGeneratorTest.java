@@ -23,7 +23,7 @@ class PDFGeneratorTest {
     @TempDir Path directory;
 
     @Test
-    void exportsAllEightSectionsAndAllCredentialsWhileFilteringOnlyPlayerProfiles() throws Exception {
+    void exportsOnlyIdentificationCardsForEveryParticipantDespiteProfileFilters() throws Exception {
         TournamentData participants = new TournamentDataLoader().load("torneo.json");
         ReportData data = ReportData.fromInitialData(participants);
         Player selected = data.getTeams().getFirst().getSquad().getFirst();
@@ -32,10 +32,11 @@ class PDFGeneratorTest {
 
         try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
             String text = text(pdf);
-            for (String heading : List.of("I. Participant identification cards", "II. Top scorers",
+            assertTrue(text.contains("I. Participant identification cards"));
+            for (String heading : List.of("II. Top scorers",
                     "III. Fair Play ranking", "IV. Most minutes played", "V. Championship bracket",
                     "VI. Team statistics", "VII. Referee ranking", "VIII. Player information")) {
-                assertTrue(text.contains(heading), "Missing section: " + heading);
+                assertFalse(text.contains(heading), "PDF must not include section: " + heading);
             }
             List<Person> people = new ArrayList<>(data.getReferees());
             data.getTeams().forEach(team -> { people.add(team.getCoach()); people.addAll(team.getSquad()); });
@@ -45,16 +46,12 @@ class PDFGeneratorTest {
                 assertTrue(text.contains(person.getIdType() + "-" + person.getIdNumber()), "Missing barcode identifier");
             }
             assertTrue(countXObjects(pdf, PdfName.Form) >= people.size(), "Each card must have a vector barcode");
-            String profiles = text.substring(text.lastIndexOf("VIII. Player information"));
-            assertTrue(profiles.contains(selected.getName()));
-            assertFalse(profiles.contains(data.getTeams().getFirst().getSquad().get(1).getName()));
-            assertTrue(profiles.contains("Goals conceded per match"));
-            assertTrue(profiles.contains("reflexes: 92"));
-            assertTrue(text.contains("Not drawn"));
-            assertTrue(text.contains("No goals have been scored"));
+            assertFalse(text.contains("Player information filter"));
+            assertFalse(text.contains("Completed matches:"));
+            assertFalse(text.contains("Goals conceded per match"));
             for (int page = 1; page <= pdf.getNumberOfPages(); page++) {
                 String pageText = PdfTextExtractor.getTextFromPage(pdf.getPage(page));
-                assertFalse(pageText.replaceAll("Continental Cup \\| Reports \\| Page \\d+", "").isBlank(), "Blank page " + page);
+                assertFalse(pageText.replaceAll("Continental Cup \\| Identification cards \\| Page \\d+", "").isBlank(), "Blank page " + page);
             }
         }
     }
@@ -88,83 +85,49 @@ class PDFGeneratorTest {
     }
 
     @Test
-    void handlesEmptyTournamentAndMissingExperienceWithoutInventingAverages() throws Exception {
+    void handlesEmptyTournamentWithoutAddingOtherReports() throws Exception {
         Path output = directory.resolve("empty.pdf");
         PDFGenerator.generate(new ReportData(new TournamentData(List.of(), List.of())), output,
                 new ReportOptions(null, null, directory));
         try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
             String text = text(pdf);
+            assertTrue(text.contains("I. Participant identification cards"));
             assertTrue(text.contains("No participants registered"));
-            assertTrue(text.contains("No players match"));
-            assertTrue(text.contains("Average refereeing experience: Not available"));
+            assertFalse(text.contains("No players match"));
+            assertFalse(text.contains("Average refereeing experience"));
+            assertEquals(1, pdf.getNumberOfPages());
         }
     }
 
     @Test
-    void exposesMissingMatchDetailsAndRejectsAnUnregisteredSelectedPlayer() throws Exception {
+    void exportsCredentialsWithIncompleteMatchDetailsAndIgnoresAnUnregisteredProfileSelection() throws Exception {
         ReportData data = fixture();
         Team home = data.getTeams().getFirst();
         Team away = data.getTeams().get(1);
         Match match = new GroupMatch(home, away, data.getReferees().getFirst(), null, LocalDate.of(2026, 1, 1));
-        match.addEvent(new Goal(20, home, home.getSquad().getFirst(), null, false, false, null));        match.setHomeGoals(1);
-        match.setPlayed(true);
-        data.addMatch(match);
-        Path output = directory.resolve("incomplete.pdf");
-        PDFGenerator.generate(data, output, new ReportOptions(null, null, directory));
-        try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
-            String text = text(pdf);
-            assertTrue(text.contains("Additional report details are missing for 1 completed matches"));
-            assertTrue(text.contains("Not available: starting lineups were not supplied for one or more completed matches"));
-            String profiles = text.substring(text.lastIndexOf("VIII. Player information"));
-            assertTrue(profiles.contains("Goals conceded: Not available | Goals conceded per match: Not available"));
-            assertTrue(profiles.contains("Not available Not available 1 Not available Not available 0 0"));
-        }
-        Player stranger = keeper("Unknown", 999);
-        assertThrows(IllegalArgumentException.class,
-                () -> PDFGenerator.generate(data, output, new ReportOptions(null, stranger, directory)));
-    }
-
-    @Test
-    void retainsLegitimateZeroesWhenMatchDetailsAreComplete() throws Exception {
-        ReportData data = fixture();
-        Team home = data.getTeams().getFirst();
-        Team away = data.getTeams().get(1);
-        Match match = new GroupMatch(home, away, data.getReferees().getFirst(), null, LocalDate.of(2026, 1, 1));
-        data.getMatchDetails(match).setStartingPlayers(home.getSquad(), away.getSquad());
-        match.setPlayed(true);
-        data.addMatch(match);
-
-        Path output = directory.resolve("complete-details.pdf");
-        PDFGenerator.generate(data, output, new ReportOptions(null, null, directory));
-
-        try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
-            String text = text(pdf);
-            assertFalse(text.contains("Not available: starting lineups were not supplied for one or more completed matches"));
-            assertTrue(text.contains("Goals conceded: 0 | Goals conceded per match: 0.00"));
-            assertTrue(text.contains("Keeper One Alpha 1 90"));
-        }
-    }
-
-    @Test
-    void registeredTotalsMatchTheChampionshipSnapshot() throws Exception {
-        ReportData data = fixture();
-        Team home = data.getTeams().getFirst();
-        Team away = data.getTeams().get(1);
-        Match match = new GroupMatch(home, away, data.getReferees().getFirst(), null, LocalDate.of(2026, 1, 1));
-        Player scorer = home.getSquad().getFirst();
-        Goal goal = new Goal(10, home, scorer, null, false, false, null);        data.getMatchDetails(match).setStartingPlayers(List.of(scorer), List.of());
-        data.getMatchDetails(match).setGoalDetails(goal, false, false, null);
-        match.addEvent(goal);
+        match.addEvent(new Goal(20, home, home.getSquad().getFirst(), null, false, false, null));
         match.setHomeGoals(1);
         match.setPlayed(true);
         data.addMatch(match);
-
-        Path output = directory.resolve("totals-sync.pdf");
-        PDFGenerator.generate(data, output, new ReportOptions(null, null, directory));
-
+        Path output = directory.resolve("incomplete.pdf");
+        Player stranger = keeper("Unknown", 999);
+        PDFGenerator.generate(data, output, new ReportOptions(null, stranger, directory));
         try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
             String text = text(pdf);
-            assertTrue(text.contains("Registered player totals - Matches: 1, minutes: 90, goals: 1, assists: 0, yellows: 0, reds: 0"));
+            assertTrue(text.contains("Keeper One"));
+            assertTrue(text.contains("Keeper Two"));
+            assertTrue(text.contains("Coach One"));
+            assertTrue(text.contains("Coach Two"));
+            assertTrue(text.contains("Referee One"));
+            assertTrue(text.contains("Head coach"));
+            assertTrue(text.contains("Player / Goalkeeper"));
+            assertTrue(text.contains("Born: 1995-01-01"));
+            assertTrue(text.contains("Nationality: Argentina"));
+            assertFalse(text.contains(stranger.getName()));
+            assertFalse(text.contains("Additional report details"));
+            assertFalse(text.contains("starting lineups"));
+            assertFalse(text.contains("Registered player totals"));
+            assertEquals(5, countXObjects(pdf, PdfName.Form));
         }
     }
 
