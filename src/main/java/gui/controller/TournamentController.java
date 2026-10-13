@@ -324,21 +324,45 @@ public class TournamentController {
             VBox matchCard = new VBox(4);
             matchCard.getStyleClass().add("bracket-card");
 
-            Label teams = new Label(finalMatch.getHomeTeam().getName() + " vs " + finalMatch.getAwayTeam().getName());
-            teams.getStyleClass().add("player-name-cell");
+            Team winner = finalMatch.isPlayed() ? finalMatch.getWinner() : null;
+            Team home = finalMatch.getHomeTeam();
+            Team away = finalMatch.getAwayTeam();
+
+            HBox teamsLine = new HBox(6);
+            teamsLine.setAlignment(Pos.CENTER_LEFT);
+
+            Label homeLabel = new Label(home.getName());
+            Label vsLabel = new Label("vs");
+            vsLabel.getStyleClass().add("muted-text");
+            Label awayLabel = new Label(away.getName());
+
+            if (winner != null) {
+                if (home.equals(winner)) {
+                    homeLabel.getStyleClass().add("team-passed");    // Celeste / Azul brillante
+                    awayLabel.getStyleClass().add("team-eliminated"); // Rojo
+                } else {
+                    homeLabel.getStyleClass().add("team-eliminated"); // Rojo
+                    awayLabel.getStyleClass().add("team-passed");    // Celeste / Azul brillante
+                }
+            } else {
+                homeLabel.getStyleClass().add("team-neutral");
+                awayLabel.getStyleClass().add("team-neutral");
+            }
+
+            teamsLine.getChildren().addAll(homeLabel, vsLabel, awayLabel);
 
             Label score = new Label(finalMatch.isPlayed() ? scoreText(finalMatch) : "NOT PLAYED YET");
             score.getStyleClass().add(finalMatch.isPlayed() ? "metric-value" : "muted-text");
             score.setStyle("-fx-font-size: 13px;");
 
-            matchCard.getChildren().addAll(teams, score);
+            matchCard.getChildren().addAll(teamsLine, score);
             overviewFinalBox.getChildren().add(matchCard);
         }
 
         // 4. Campeón
         if (tournament.getChampion() != null) {
             overviewChampionName.setText(tournament.getChampion().getName().toUpperCase());
-            overviewChampionName.setStyle("-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: -accent-gold;");
+            overviewChampionName.setStyle("-fx-font-size: 24px; -fx-font-weight: 900; -fx-text-fill: -status-qualified-text;");
 
             // Carga de la imagen del trofeo
             java.io.File trophyFile = new java.io.File("Images/trophy.png");
@@ -368,11 +392,35 @@ public class TournamentController {
             Match m1 = firstLegs.get(i);
             Match m2 = (secondLegs != null && i < secondLegs.size()) ? secondLegs.get(i) : null;
 
-            VBox seriesBox = new VBox(2);
+            VBox seriesBox = new VBox(4);
             seriesBox.getStyleClass().add("bracket-card");
 
-            Label matchLabel = new Label(m1.getHomeTeam().getName() + " vs " + m1.getAwayTeam().getName());
-            matchLabel.setStyle("-fx-font-weight: 800; -fx-font-size: 11px;");
+            Team winner = (m2 != null && m2.isPlayed()) ? m2.getWinner() : null;
+            Team home = m1.getHomeTeam();
+            Team away = m1.getAwayTeam();
+
+            HBox teamsLine = new HBox(6);
+            teamsLine.setAlignment(Pos.CENTER_LEFT);
+
+            Label homeLabel = new Label(home.getName());
+            Label vsLabel = new Label("vs");
+            vsLabel.getStyleClass().add("muted-text");
+            Label awayLabel = new Label(away.getName());
+
+            if (winner != null) {
+                if (home.equals(winner)) {
+                    homeLabel.getStyleClass().add("team-passed");
+                    awayLabel.getStyleClass().add("team-eliminated");
+                } else {
+                    homeLabel.getStyleClass().add("team-eliminated");
+                    awayLabel.getStyleClass().add("team-passed");
+                }
+            } else {
+                homeLabel.getStyleClass().add("team-neutral");
+                awayLabel.getStyleClass().add("team-neutral");
+            }
+
+            teamsLine.getChildren().addAll(homeLabel, vsLabel, awayLabel);
 
             String s1 = m1.isPlayed() ? (m1.getHomeGoals() + "-" + m1.getAwayGoals()) : "-";
             String s2 = (m2 != null && m2.isPlayed()) ? (m2.getHomeGoals() + "-" + m2.getAwayGoals()) : "-";
@@ -380,16 +428,13 @@ public class TournamentController {
             Label res = new Label(m1.isPlayed() ? ("Leg 1: " + s1 + " | Leg 2: " + s2) : "NOT PLAYED YET");
             res.getStyleClass().add(m1.isPlayed() ? "small-text" : "muted-text");
 
-            seriesBox.getChildren().addAll(matchLabel, res);
+            seriesBox.getChildren().addAll(teamsLine, res);
             container.getChildren().add(seriesBox);
         }
     }
 
     private void refreshGroups() {
-        if (allGroupsContainer == null) {
-            return;
-        }
-
+        if (allGroupsContainer == null) return;
         allGroupsContainer.getChildren().clear();
 
         if (tournament == null || tournament.getGroups().isEmpty()) {
@@ -403,7 +448,6 @@ public class TournamentController {
             VBox groupCard = new VBox(12);
             groupCard.getStyleClass().add("group-card");
 
-            // Título del Grupo
             HBox header = new HBox();
             header.getStyleClass().add("group-card-header");
             Label title = new Label(group.getName().toUpperCase());
@@ -411,7 +455,6 @@ public class TournamentController {
             header.getChildren().add(title);
             groupCard.getChildren().add(header);
 
-            // Cabecera de la tabla del grupo: # | TEAM | PTS | P | GD
             HBox tableHeader = new HBox(8);
             tableHeader.setAlignment(Pos.CENTER_LEFT);
             tableHeader.getChildren().addAll(
@@ -423,19 +466,17 @@ public class TournamentController {
             );
             groupCard.getChildren().add(tableHeader);
 
-            // Filas de Posiciones
             List<Standing> standings = group.getStandings();
             for (int i = 0; i < standings.size(); i++) {
                 Standing standing = standings.get(i);
-
                 HBox row = new HBox(8);
                 row.setAlignment(Pos.CENTER_LEFT);
 
-                // Clasifican los 2 primeros (resaltados con verde/acento)
+                // Verde para los 2 primeros (clasificando), Rojo para los eliminados
                 if (i < 2) {
                     row.getStyleClass().add("standing-qualified");
                 } else {
-                    row.getStyleClass().add("standing-normal");
+                    row.getStyleClass().add("standing-eliminated");
                 }
 
                 Label rankLabel = createColumn(String.valueOf(i + 1), 20);
@@ -1230,13 +1271,15 @@ public class TournamentController {
        ===================================================== */
 
     private void configureReports() {
+        reportList.getItems().clear();
         reportList.getItems().addAll(
-                "I - Top Scorers",
-                "II - Fair Play",
-                "III - Most Minutes",
-                "IV - Championship Bracket",
+                "Top Scorers",
+                "Fair Play",
+                "Most Minutes",
+                "Championship Bracket",
                 "Matches Summary",
                 "Teams",
+                "Coaches",
                 "Referees",
                 "Players"
         );
@@ -1306,48 +1349,75 @@ public class TournamentController {
         if (selected == null) return;
 
         try {
-            if (List.of("Matches Summary", "Teams", "Referees", "Players").contains(selected)) {
+            if (List.of("Matches Summary", "Teams", "Coaches", "Referees", "Players", "Championship Bracket").contains(selected)) {
                 reportContentHost.getChildren().clear();
                 switch (selected) {
                     case "Matches Summary" -> showMatchesReportView();
                     case "Teams" -> showTeamsSummaryView();
+                    case "Coaches" -> showCoachesReportView();
                     case "Referees" -> showRefereesReportView();
                     case "Players" -> showPlayersSummaryView();
+                    case "Championship Bracket" -> showBracketInReportsView();
                 }
                 return;
             }
+
             Section section = switch (selected) {
-                case "I - Top Scorers" -> Section.TOP_SCORERS;
-                case "II - Fair Play" -> Section.FAIR_PLAY;
-                case "III - Most Minutes" -> Section.MOST_MINUTES;
-                case "IV - Championship Bracket" -> Section.BRACKET;
+                case "Top Scorers" -> Section.TOP_SCORERS;
+                case "Fair Play" -> Section.FAIR_PLAY;
+                case "Most Minutes" -> Section.MOST_MINUTES;
                 default -> throw new IllegalArgumentException("Unknown report: " + selected);
             };
+
             selectedReportTitle.setText(switch (section) {
                 case TOP_SCORERS -> "Top Scorers";
                 case FAIR_PLAY -> "Fair Play Ranking";
                 case MOST_MINUTES -> "Most Minutes Played";
-                case BRACKET -> "Championship Bracket";
+                default -> "";
             });
+
             selectedReportSubtitle.setText(switch (section) {
                 case TOP_SCORERS -> "Goals and penalties scored in this championship";
                 case FAIR_PLAY -> "Teams ranked by disciplinary points in this championship";
                 case MOST_MINUTES -> "Player participation and minutes in this championship";
-                case BRACKET -> "Group qualifiers, knockout bracket and match details";
+                default -> "";
             });
+
             long played = tournament.getAllMatches().stream().filter(Match::isPlayed).count();
             reportMetricChip.setText(played + " MATCHES PLAYED");
+
             if (statisticsReportView == null) statisticsReportView = new StatisticsReportView();
             if (!reportContentHost.getChildren().contains(statisticsReportView)) {
                 reportContentHost.getChildren().setAll(statisticsReportView);
             }
             statisticsReportView.showReport(tournament, section);
+
         } catch (Exception ex) {
             Label errorLabel = new Label("Error loading visual report: " + ex.getMessage());
             errorLabel.getStyleClass().add("muted-text");
             reportContentHost.getChildren().setAll(errorLabel);
             ex.printStackTrace();
         }
+    }
+
+    private void showBracketInReportsView() {
+        selectedReportTitle.setText("Championship Bracket");
+        selectedReportSubtitle.setText("Knockout stage roadmap and match results");
+
+        Team champion = tournament.getChampion();
+        bracketView.setMatches(
+                buildRound(tournament.getQuarterFinalFirstLegs(), tournament.getQuarterFinalSecondLegs(), 4, 0, "QUARTER-FINAL", champion, this::quarterPlaceholder),
+                buildRound(tournament.getSemiFinalFirstLegs(), tournament.getSemiFinalSecondLegs(), 2, 4, "SEMI-FINAL", champion, this::semiPlaceholder),
+                buildFinalCard(champion)
+        );
+        bracketView.setActiveRound(activeRound());
+
+        ScrollPane scrollPane = new ScrollPane(bracketView);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
+
+        reportMetricChip.setText(champion != null ? "CHAMPION: " + champion.getName().toUpperCase() : "IN PROGRESS");
+        reportContentHost.getChildren().add(scrollPane);
     }
 
     // --- REPORTE I: TOP SCORERS ---
@@ -1406,6 +1476,7 @@ public class TournamentController {
 
         reportContentHost.getChildren().add(table);
     }
+
 
     // --- REPORTE II: FAIR PLAY ---
     private void showFairPlayReportView() {
@@ -1531,12 +1602,12 @@ public class TournamentController {
         reportContentHost.getChildren().add(table);
     }
 
-    // --- REPORT IV: MATCHES SUMMARY & INCIDENCES ---
+    // --- REPORTE IV: MATCHES SUMMARY & INCIDENCES ---
     private void showMatchesReportView() {
         selectedReportTitle.setText("Matches Log & Incidences");
         selectedReportSubtitle.setText("Comprehensive log of played matches, starting lineups, formations and match events");
 
-        // 1. Get all played matches and sort them by match date
+        // 1. Obtener partidos jugados y ordenarlos por fecha
         List<Match> playedMatches = new ArrayList<>();
         if (tournament.getAllMatches() != null) {
             for (Match m : tournament.getAllMatches()) {
@@ -1561,36 +1632,26 @@ public class TournamentController {
 
         VBox mainLayout = new VBox(12);
         mainLayout.setFillWidth(true);
+        VBox.setVgrow(mainLayout, Priority.ALWAYS);
 
-        // --- FILTER BAR ---
+        // --- BARRA DE FILTROS ---
         HBox filterBar = new HBox(12);
         filterBar.setAlignment(Pos.CENTER_LEFT);
         filterBar.getStyleClass().add("info-card");
 
-        ComboBox<Team> teamFilter = new ComboBox<>();
-        teamFilter.setPromptText("ALL TEAMS");
-        teamFilter.getItems().setAll(tournament.getTeams());
-        teamFilter.getItems().sort(Comparator.comparing(Team::getName, String.CASE_INSENSITIVE_ORDER));
+        // Filtro de Equipos con opción ALL TEAMS
+        ComboBox<String> teamFilter = new ComboBox<>();
+        teamFilter.getItems().add("ALL TEAMS");
+        for (Team t : tournament.getTeams()) {
+            teamFilter.getItems().add(t.getName());
+        }
+        teamFilter.setValue("ALL TEAMS");
         teamFilter.setPrefWidth(200);
 
-        teamFilter.setCellFactory(lv -> new ListCell<>() {
-            @Override
-            protected void updateItem(Team item, boolean empty) {
-                super.updateItem(item, empty);
-                setText((empty || item == null) ? null : item.getName());
-            }
-        });
-        teamFilter.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(Team item, boolean empty) {
-                super.updateItem(item, empty);
-                setText((empty || item == null) ? null : item.getName());
-            }
-        });
-
+        // Filtro de Etapas con opción ALL STAGES
         ComboBox<String> stageFilter = new ComboBox<>();
-        stageFilter.setPromptText("ALL STAGES");
-        stageFilter.getItems().setAll("GROUP STAGE", "QUARTER-FINALS", "SEMI-FINALS", "FINAL");
+        stageFilter.getItems().addAll("ALL STAGES", "GROUP STAGE", "QUARTER-FINALS", "SEMI-FINALS", "FINAL");
+        stageFilter.setValue("ALL STAGES");
         stageFilter.setPrefWidth(180);
 
         Button btnReset = new Button("RESET FILTERS");
@@ -1610,12 +1671,12 @@ public class TournamentController {
                 filterCountChip
         );
 
-        // --- CONTENT (LIST + DETAILS) ---
+        // --- CONTENIDO (LISTA + DETALLES) ---
         HBox contentLayout = new HBox(16);
         contentLayout.setFillHeight(true);
         VBox.setVgrow(contentLayout, Priority.ALWAYS);
 
-        // Left column: Matches list
+        // Columna izquierda: Lista de partidos
         VBox leftSide = new VBox(10);
         leftSide.setPrefWidth(300);
 
@@ -1623,7 +1684,6 @@ public class TournamentController {
         playedList.getStyleClass().add("dark-list");
         VBox.setVgrow(playedList, Priority.ALWAYS);
 
-        // Reactive filter configuration
         ObservableList<Match> masterList = FXCollections.observableArrayList(playedMatches);
         FilteredList<Match> filteredList = new FilteredList<>(masterList, m -> true);
         playedList.setItems(filteredList);
@@ -1657,7 +1717,7 @@ public class TournamentController {
 
         leftSide.getChildren().add(playedList);
 
-        // Right column: Dynamic match detail
+        // Columna derecha: Detalle del partido seleccionado
         VBox rightSide = new VBox(12);
         rightSide.getStyleClass().add("info-card");
         HBox.setHgrow(rightSide, Priority.ALWAYS);
@@ -1668,33 +1728,31 @@ public class TournamentController {
             }
         });
 
-        // Filter update logic
+        // Lógica del filtro reactivo contemplando las opciones "ALL"
         Runnable updateFilters = () -> {
-            Team tSel = teamFilter.getValue();
+            String tSel = teamFilter.getValue();
             String sSel = stageFilter.getValue();
 
             filteredList.setPredicate(match -> {
-                boolean matchTeam = (tSel == null) || match.getHomeTeam().equals(tSel) || match.getAwayTeam().equals(tSel);
-                boolean matchStage = true;
+                boolean matchTeam = "ALL TEAMS".equalsIgnoreCase(tSel) || tSel == null
+                        || match.getHomeTeam().getName().equalsIgnoreCase(tSel)
+                        || match.getAwayTeam().getName().equalsIgnoreCase(tSel);
 
-                if (sSel != null) {
+                boolean matchStage = "ALL STAGES".equalsIgnoreCase(sSel) || sSel == null;
+
+                if (!matchStage) {
                     String stageName = getMatchStageName(match).toUpperCase();
-
-                    // Comparación exacta según el valor seleccionado en el ComboBox
                     switch (sSel.toUpperCase()) {
                         case "FINAL":
                             matchStage = stageName.equals("FINAL");
                             break;
                         case "SEMI-FINALS":
-                        case "SEMIFINAL":
                             matchStage = stageName.equals("SEMI-FINALS");
                             break;
                         case "QUARTER-FINALS":
-                        case "CUARTOS DE FINAL":
                             matchStage = stageName.equals("QUARTER-FINALS");
                             break;
                         case "GROUP STAGE":
-                        case "FASE DE GRUPOS":
                             matchStage = stageName.equals("GROUP STAGE");
                             break;
                         default:
@@ -1722,8 +1780,8 @@ public class TournamentController {
         stageFilter.valueProperty().addListener((obs, o, n) -> updateFilters.run());
 
         btnReset.setOnAction(e -> {
-            teamFilter.setValue(null);
-            stageFilter.setValue(null);
+            teamFilter.setValue("ALL TEAMS");
+            stageFilter.setValue("ALL STAGES");
             updateFilters.run();
         });
 
@@ -1897,76 +1955,79 @@ public class TournamentController {
         return "Group Stage";
     }
     // --- REPORTE V: TEAMS ---
+    // --- REPORTE TEAMS ---
     private void showTeamsSummaryView() {
         selectedReportTitle.setText("Participating Teams Analysis");
-        selectedReportSubtitle.setText("Comprehensive technical and demographic overview of all clubs");
+        selectedReportSubtitle.setText("Comprehensive technical, staff and performance metrics for all clubs");
+
+        VBox layout = new VBox(12);
+        layout.setFillWidth(true);
+        VBox.setVgrow(layout, Priority.ALWAYS);
 
         TableView<TeamSummaryEntry> table = new TableView<>();
         table.getStyleClass().add("dark-table");
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        VBox.setVgrow(table, Priority.ALWAYS);
 
         TableColumn<TeamSummaryEntry, String> teamCol = new TableColumn<>("TEAM");
-        teamCol.setPrefWidth(180);
+        teamCol.setPrefWidth(160);
         teamCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTeamName()));
         teamCol.setCellFactory(col -> createBoldCell());
 
         TableColumn<TeamSummaryEntry, String> countryCol = new TableColumn<>("COUNTRY");
-        countryCol.setPrefWidth(120);
+        countryCol.setPrefWidth(110);
         countryCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getCountryName()));
 
         TableColumn<TeamSummaryEntry, Integer> rankCol = new TableColumn<>("RANK");
-        rankCol.setPrefWidth(70);
+        rankCol.setPrefWidth(60);
         rankCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getRanking()));
         rankCol.setCellFactory(col -> createIntegerCenterCell());
 
-        TableColumn<TeamSummaryEntry, String> ovrCol = new TableColumn<>("OVR");
-        ovrCol.setPrefWidth(75);
-        ovrCol.setCellValueFactory(cell -> new SimpleStringProperty(String.format("%.1f", cell.getValue().getOverall())));
-        ovrCol.setCellFactory(col -> new TableCell<>() {
-            @Override
-            protected void updateItem(String val, boolean empty) {
-                super.updateItem(val, empty);
-                if (empty || val == null) { setText(null); setGraphic(null); }
-                else {
-                    Label b = new Label(val);
-                    b.getStyleClass().add("ovr-badge");
-                    setGraphic(b); setText(null); setAlignment(Pos.CENTER);
-                }
-            }
-        });
-
         TableColumn<TeamSummaryEntry, String> coachCol = new TableColumn<>("HEAD COACH");
-        coachCol.setPrefWidth(160);
+        coachCol.setPrefWidth(150);
         coachCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getCoachName()));
 
-        TableColumn<TeamSummaryEntry, Integer> squadCol = new TableColumn<>("SQUAD");
-        squadCol.setPrefWidth(70);
-        squadCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getSquadSize()));
-        squadCol.setCellFactory(col -> createIntegerCenterCell());
-
-        TableColumn<TeamSummaryEntry, String> ageCol = new TableColumn<>("AVG AGE");
-        ageCol.setPrefWidth(80);
-        ageCol.setCellValueFactory(cell -> new SimpleStringProperty(String.format("%.1f", cell.getValue().getSquadAverageAge())));
-        ageCol.setCellFactory(col -> new TableCell<>() {
-            @Override
-            protected void updateItem(String val, boolean empty) {
-                super.updateItem(val, empty);
-                if (empty || val == null) setText(null);
-                else { setText(val); setAlignment(Pos.CENTER); getStyleClass().add("table-stat-cell"); }
-            }
-        });
+        TableColumn<TeamSummaryEntry, String> coachNatCol = new TableColumn<>("COACH NAT");
+        coachNatCol.setPrefWidth(110);
+        coachNatCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getCoachNationality()));
 
         TableColumn<TeamSummaryEntry, Integer> gfCol = new TableColumn<>("GF");
-        gfCol.setPrefWidth(60);
+        gfCol.setPrefWidth(50);
         gfCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getTotalGoalsScored()));
         gfCol.setCellFactory(col -> createIntegerCenterCell());
 
         TableColumn<TeamSummaryEntry, Integer> gaCol = new TableColumn<>("GA");
-        gaCol.setPrefWidth(60);
+        gaCol.setPrefWidth(50);
         gaCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getTotalGoalsConceded()));
         gaCol.setCellFactory(col -> createIntegerCenterCell());
 
-        table.getColumns().addAll(teamCol, countryCol, rankCol, ovrCol, coachCol, squadCol, ageCol, gfCol, gaCol);
+        TableColumn<TeamSummaryEntry, String> effCol = new TableColumn<>("EFFECTIVENESS");
+        effCol.setPrefWidth(110);
+        effCol.setCellValueFactory(cell -> new SimpleStringProperty(String.format("%.1f%%", cell.getValue().getEffectiveness())));
+        effCol.setCellFactory(col -> createHighlightStatStringCell());
+
+        // NUEVA COLUMNA: OVERALL DEL EQUIPO A LA DERECHA DEL TODO (REDONDEADO A ENTERO CON BADGE VERDE)
+        TableColumn<TeamSummaryEntry, Integer> ovrCol = new TableColumn<>("OVR");
+        ovrCol.setPrefWidth(60);
+        ovrCol.setCellValueFactory(cell -> new SimpleObjectProperty<>((int) Math.round(cell.getValue().getOverall())));
+        ovrCol.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Integer val, boolean empty) {
+                super.updateItem(val, empty);
+                if (empty || val == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    Label badge = new Label(String.valueOf(val));
+                    badge.getStyleClass().add("ovr-badge");
+                    setGraphic(badge);
+                    setText(null);
+                    setAlignment(Pos.CENTER);
+                }
+            }
+        });
+
+        table.getColumns().addAll(teamCol, countryCol, rankCol, coachCol, coachNatCol, gfCol, gaCol, effCol, ovrCol);
 
         List<TeamSummaryEntry> list = new ArrayList<>();
         for (Team t : tournament.getTeams()) {
@@ -1983,24 +2044,30 @@ public class TournamentController {
                 }
             }
             double avgAge = squadSize > 0 ? (totalAge / squadSize) : 0;
-            list.add(new TeamSummaryEntry(t, squadSize, avgAge, gf, ga));
+            list.add(new TeamSummaryEntry(t, squadSize, avgAge, gf, ga, tournament.getGroups()));
         }
 
         list.sort(Comparator.comparing(TeamSummaryEntry::getRanking));
         table.getItems().setAll(list);
 
+        layout.getChildren().add(table);
         reportMetricChip.setText(list.size() + " CLUBS");
-        reportContentHost.getChildren().add(table);
+        reportContentHost.getChildren().add(layout);
     }
 
     // --- REPORTE VI: REFEREES ---
     private void showRefereesReportView() {
         selectedReportTitle.setText("Match Officials Registry");
-        selectedReportSubtitle.setText("Registered referees, identification details, career experience and assignments");
+        selectedReportSubtitle.setText("Registered referees, experience and average officiating career duration");
+
+        VBox layout = new VBox(12);
+        layout.setFillWidth(true);
+        VBox.setVgrow(layout, Priority.ALWAYS);
 
         TableView<RefereeReportEntry> table = new TableView<>();
         table.getStyleClass().add("dark-table");
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        VBox.setVgrow(table, Priority.ALWAYS);
 
         TableColumn<RefereeReportEntry, Number> rankCol = new TableColumn<>("#");
         rankCol.setPrefWidth(45);
@@ -2017,7 +2084,7 @@ public class TournamentController {
         natCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNationality()));
 
         TableColumn<RefereeReportEntry, Integer> expCol = new TableColumn<>("EXP (YRS)");
-        expCol.setPrefWidth(80);
+        expCol.setPrefWidth(90);
         expCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getYearsOfficiated()));
         expCol.setCellFactory(col -> createIntegerCenterCell());
 
@@ -2040,16 +2107,17 @@ public class TournamentController {
 
         TableColumn<RefereeReportEntry, String> idNumCol = new TableColumn<>("ID NUMBER");
         idNumCol.setPrefWidth(110);
-        idNumCol.setCellValueFactory(cell -> new SimpleStringProperty(
-                String.valueOf(cell.getValue().getIdNumber()))); // <--- Convertido a String
+        idNumCol.setCellValueFactory(cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getIdNumber())));
         idNumCol.setCellFactory(col -> createCenterStringCell());
 
         table.getColumns().addAll(rankCol, nameCol, natCol, expCol, matchesCol, birthCol, idTypeCol, idNumCol);
 
         List<RefereeReportEntry> list = new ArrayList<>();
+        int totalYears = 0;
         if (tournament.getReferees() != null) {
             for (Referee ref : tournament.getReferees()) {
                 String nat = ref.getNationality() != null ? ref.getNationality().getName() : "-";
+                totalYears += ref.getYearsOfficiated();
                 list.add(new RefereeReportEntry(
                         ref.getName(),
                         nat,
@@ -2065,48 +2133,149 @@ public class TournamentController {
         list.sort(Comparator.comparingInt(RefereeReportEntry::getMatchesOfficiated).reversed());
         table.getItems().setAll(list);
 
+        double avgExp = !list.isEmpty() ? (double) totalYears / list.size() : 0.0;
+
+        HBox summaryBar = new HBox(12);
+        summaryBar.getStyleClass().add("info-card");
+        summaryBar.setAlignment(Pos.CENTER_RIGHT);
+
+        Label avgLabel = new Label(String.format("Average Referee Experience: %.1f years", avgExp));
+        avgLabel.getStyleClass().add("accent-text");
+        summaryBar.getChildren().add(avgLabel);
+
+        layout.getChildren().addAll(table, summaryBar);
         reportMetricChip.setText(list.size() + " OFFICIALS");
-        reportContentHost.getChildren().add(table);
+        reportContentHost.getChildren().add(layout);
+    }
+
+    private void showCoachesReportView() {
+        selectedReportTitle.setText("Head Coaches Directory");
+        selectedReportSubtitle.setText("Technical directors, nationalities, titles won and club assignments");
+
+        VBox layout = new VBox(12);
+        layout.setFillWidth(true);
+        VBox.setVgrow(layout, Priority.ALWAYS);
+
+        TableView<CoachReportEntry> table = new TableView<>();
+        table.getStyleClass().add("dark-table");
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        VBox.setVgrow(table, Priority.ALWAYS);
+
+        TableColumn<CoachReportEntry, String> nameCol = new TableColumn<>("COACH");
+        nameCol.setPrefWidth(180);
+        nameCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getName()));
+        nameCol.setCellFactory(col -> createBoldCell());
+
+        TableColumn<CoachReportEntry, String> teamCol = new TableColumn<>("CLUB");
+        teamCol.setPrefWidth(160);
+        teamCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTeamName()));
+
+        TableColumn<CoachReportEntry, String> natCol = new TableColumn<>("NATIONALITY");
+        natCol.setPrefWidth(120);
+        natCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNationality()));
+
+        TableColumn<CoachReportEntry, Integer> titlesCol = new TableColumn<>("TITLES WON");
+        titlesCol.setPrefWidth(100);
+        titlesCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getTitlesWon()));
+        titlesCol.setCellFactory(col -> createHighlightStatCell());
+
+        TableColumn<CoachReportEntry, String> birthCol = new TableColumn<>("BIRTH DATE");
+        birthCol.setPrefWidth(110);
+        birthCol.setCellValueFactory(cell -> new SimpleStringProperty(
+                cell.getValue().getBirthDate() != null ? cell.getValue().getBirthDate().toString() : "-"));
+        birthCol.setCellFactory(col -> createCenterStringCell());
+
+        table.getColumns().addAll(nameCol, teamCol, natCol, titlesCol, birthCol);
+
+        List<CoachReportEntry> list = new ArrayList<>();
+        for (Team team : tournament.getTeams()) {
+            if (team.getCoach() != null) {
+                var coach = team.getCoach();
+                String nat = coach.getNationality() != null ? coach.getNationality().getName() : "-";
+                list.add(new CoachReportEntry(
+                        coach.getName(),
+                        team.getName(),
+                        nat,
+                        coach.getTitlesObtained(),
+                        coach.getBirthDate()
+                ));
+            }
+        }
+
+        list.sort(Comparator.comparingInt(CoachReportEntry::getTitlesWon).reversed());
+        table.getItems().setAll(list);
+
+        layout.getChildren().add(table);
+        reportMetricChip.setText(list.size() + " COACHES");
+        reportContentHost.getChildren().add(layout);
+    }
+
+    public static class CoachReportEntry {
+        private final String name;
+        private final String teamName;
+        private final String nationality;
+        private final int titlesWon;
+        private final java.time.LocalDate birthDate;
+
+        public CoachReportEntry(String name, String teamName, String nationality, int titlesWon, java.time.LocalDate birthDate) {
+            this.name = name;
+            this.teamName = teamName;
+            this.nationality = nationality;
+            this.titlesWon = titlesWon;
+            this.birthDate = birthDate;
+        }
+
+        public String getName() { return name; }
+        public String getTeamName() { return teamName; }
+        public String getNationality() { return nationality; }
+        public int getTitlesWon() { return titlesWon; }
+        public java.time.LocalDate getBirthDate() { return birthDate; }
+    }
+
+    private <T> TableCell<T, String> createHighlightStatStringCell() {
+        return new TableCell<>() {
+            @Override
+            protected void updateItem(String val, boolean empty) {
+                super.updateItem(val, empty);
+                if (empty || val == null) { setText(null); }
+                else {
+                    setText(val);
+                    setAlignment(Pos.CENTER);
+                    getStyleClass().add("metric-value");
+                    setStyle("-fx-font-size: 13px;");
+                }
+            }
+        };
     }
 
     // --- REPORTE VII: PLAYERS ---
     private void showPlayersSummaryView() {
         selectedReportTitle.setText("Tournament Players Directory");
-        selectedReportSubtitle.setText("Master database of registered athletes with filters, identity records and match stats");
+        selectedReportSubtitle.setText("Master database of registered athletes with disciplinary records, ratings and performance metrics");
 
         VBox layout = new VBox(12);
         layout.setFillWidth(true);
+        VBox.setVgrow(layout, Priority.ALWAYS);
 
-        // Barra de Filtros
         HBox filterBar = new HBox(12);
         filterBar.setAlignment(Pos.CENTER_LEFT);
         filterBar.getStyleClass().add("info-card");
 
-        ComboBox<Position> posFilter = new ComboBox<>();
-        posFilter.setPromptText("ALL POSITIONS");
-        posFilter.getItems().setAll(Position.values());
+        ComboBox<String> posFilter = new ComboBox<>();
+        posFilter.getItems().add("ALL POSITIONS");
+        for (Position p : Position.values()) {
+            posFilter.getItems().add(p.name());
+        }
+        posFilter.setValue("ALL POSITIONS");
         posFilter.setPrefWidth(160);
 
-        ComboBox<Team> teamFilter = new ComboBox<>();
-        teamFilter.setPromptText("ALL TEAMS");
-        teamFilter.getItems().setAll(tournament.getTeams());
-        teamFilter.getItems().sort(Comparator.comparing(Team::getName, String.CASE_INSENSITIVE_ORDER));
+        ComboBox<String> teamFilter = new ComboBox<>();
+        teamFilter.getItems().add("ALL TEAMS");
+        for (Team t : tournament.getTeams()) {
+            teamFilter.getItems().add(t.getName());
+        }
+        teamFilter.setValue("ALL TEAMS");
         teamFilter.setPrefWidth(200);
-
-        teamFilter.setCellFactory(lv -> new ListCell<>() {
-            @Override
-            protected void updateItem(Team item, boolean empty) {
-                super.updateItem(item, empty);
-                setText((empty || item == null) ? null : item.getName());
-            }
-        });
-        teamFilter.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(Team item, boolean empty) {
-                super.updateItem(item, empty);
-                setText((empty || item == null) ? null : item.getName());
-            }
-        });
 
         Button btnReset = new Button("RESET FILTERS");
         btnReset.getStyleClass().add("secondary-button");
@@ -2125,19 +2294,18 @@ public class TournamentController {
                 countLabel
         );
 
-        // Tabla de Jugadores
         TableView<PlayerDirectoryEntry> table = new TableView<>();
         table.getStyleClass().add("dark-table");
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         VBox.setVgrow(table, Priority.ALWAYS);
 
         TableColumn<PlayerDirectoryEntry, String> playerCol = new TableColumn<>("PLAYER");
-        playerCol.setPrefWidth(170);
+        playerCol.setPrefWidth(160);
         playerCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPlayerName()));
         playerCol.setCellFactory(col -> createBoldCell());
 
         TableColumn<PlayerDirectoryEntry, String> posCol = new TableColumn<>("POS");
-        posCol.setPrefWidth(80);
+        posCol.setPrefWidth(70);
         posCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPosition().toString()));
         posCol.setCellFactory(col -> new TableCell<>() {
             @Override
@@ -2149,79 +2317,132 @@ public class TournamentController {
                     Label badge = new Label(item);
                     badge.getStyleClass().add("pos-badge");
                     String posUpper = item.toUpperCase();
-                    if (posUpper.contains("GOALKEEPER") || posUpper.contains("GK") || posUpper.contains("ARQUERO")) {
-                        badge.getStyleClass().add("pos-gk");
-                    } else if (posUpper.contains("DEFENDER") || posUpper.contains("DEF") || posUpper.contains("DEFENSA")) {
-                        badge.getStyleClass().add("pos-def");
-                    } else if (posUpper.contains("MIDFIELDER") || posUpper.contains("MID") || posUpper.contains("MEDIO")) {
-                        badge.getStyleClass().add("pos-mid");
-                    } else {
-                        badge.getStyleClass().add("pos-fwd");
-                    }
+                    if (posUpper.contains("GOALKEEPER") || posUpper.contains("GK") || posUpper.contains("ARQUERO")) badge.getStyleClass().add("pos-gk");
+                    else if (posUpper.contains("DEFENDER") || posUpper.contains("DEF") || posUpper.contains("DEFENSA")) badge.getStyleClass().add("pos-def");
+                    else if (posUpper.contains("MIDFIELDER") || posUpper.contains("MID") || posUpper.contains("MEDIO")) badge.getStyleClass().add("pos-mid");
+                    else badge.getStyleClass().add("pos-fwd");
                     setGraphic(badge); setText(null); setAlignment(Pos.CENTER);
                 }
             }
         });
 
         TableColumn<PlayerDirectoryEntry, String> teamCol = new TableColumn<>("TEAM");
-        teamCol.setPrefWidth(150);
+        teamCol.setPrefWidth(140);
         teamCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTeamName()));
 
-        TableColumn<PlayerDirectoryEntry, Integer> matchesCol = new TableColumn<>("MP");
-        matchesCol.setPrefWidth(60);
-        matchesCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getMatchesPlayed()));
-        matchesCol.setCellFactory(col -> createIntegerCenterCell());
-
-        TableColumn<PlayerDirectoryEntry, Integer> minCol = new TableColumn<>("MIN");
-        minCol.setPrefWidth(65);
-        minCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getMinutesPlayed()));
-        minCol.setCellFactory(col -> createIntegerCenterCell());
-
-        TableColumn<PlayerDirectoryEntry, Integer> goalsCol = new TableColumn<>("GLS");
-        goalsCol.setPrefWidth(60);
-        goalsCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getGoals()));
-        goalsCol.setCellFactory(col -> createIntegerCenterCell());
-
-        TableColumn<PlayerDirectoryEntry, Integer> concededCol = new TableColumn<>("GA");
-        concededCol.setPrefWidth(60);
-        concededCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getGoalsConceded()));
-
-
-        TableColumn<PlayerDirectoryEntry, String> birthCol = new TableColumn<>("BIRTH DATE");
-        birthCol.setPrefWidth(100);
-        birthCol.setCellValueFactory(cell -> new SimpleStringProperty(
-                cell.getValue().getPlayer().getBirthDate() != null ? cell.getValue().getPlayer().getBirthDate().toString() : "-"));
-        birthCol.setCellFactory(col -> createCenterStringCell());
-
-        TableColumn<PlayerDirectoryEntry, String> idTypeCol = new TableColumn<>("ID TYPE");
-        idTypeCol.setPrefWidth(80);
-        idTypeCol.setCellValueFactory(cell -> new SimpleStringProperty(
-                cell.getValue().getPlayer().getIdType() != null ? cell.getValue().getPlayer().getIdType().toString() : "-"));
-        idTypeCol.setCellFactory(col -> createCenterStringCell());
-
-        TableColumn<PlayerDirectoryEntry, String> idNumCol = new TableColumn<>("ID NUMBER");
-        idNumCol.setPrefWidth(100);
-        idNumCol.setCellValueFactory(cell -> new SimpleStringProperty(
-                String.valueOf(cell.getValue().getPlayer().getIdNumber())));
-        idNumCol.setCellFactory(col -> createCenterStringCell());
-
-        concededCol.setCellFactory(col -> new TableCell<>() {
+        TableColumn<PlayerDirectoryEntry, Integer> ovrCol = new TableColumn<>("OVR");
+        ovrCol.setPrefWidth(55);
+        ovrCol.setCellValueFactory(cell -> new SimpleObjectProperty<>((int) Math.round(cell.getValue().getPlayer().getOverall())));
+        ovrCol.setCellFactory(col -> new TableCell<>() {
             @Override
-            protected void updateItem(Integer item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
+            protected void updateItem(Integer val, boolean empty) {
+                super.updateItem(val, empty);
+                if (empty || val == null) {
                     setText(null);
-                } else if (item == null) {
-                    setText("-"); setAlignment(Pos.CENTER); getStyleClass().add("table-stat-cell");
+                    setGraphic(null);
                 } else {
-                    setText(String.valueOf(item)); setAlignment(Pos.CENTER); getStyleClass().add("table-stat-cell");
+                    Label badge = new Label(String.valueOf(val));
+                    badge.getStyleClass().add("ovr-badge");
+                    setGraphic(badge);
+                    setText(null);
+                    setAlignment(Pos.CENTER);
                 }
             }
         });
 
-        table.getColumns().addAll(playerCol, posCol, teamCol, matchesCol, minCol, goalsCol, concededCol, birthCol, idTypeCol, idNumCol);
+        TableColumn<PlayerDirectoryEntry, Integer> matchesCol = new TableColumn<>("MP");
+        matchesCol.setPrefWidth(50);
+        matchesCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getMatchesPlayed()));
+        matchesCol.setCellFactory(col -> createIntegerCenterCell());
 
-        // Carga maestra y configuración de filtros
+        TableColumn<PlayerDirectoryEntry, Integer> minCol = new TableColumn<>("MIN");
+        minCol.setPrefWidth(55);
+        minCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getMinutesPlayed()));
+        minCol.setCellFactory(col -> createIntegerCenterCell());
+
+        TableColumn<PlayerDirectoryEntry, Integer> goalsCol = new TableColumn<>("GLS");
+        goalsCol.setPrefWidth(50);
+        goalsCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getGoals()));
+        goalsCol.setCellFactory(col -> createIntegerCenterCell());
+
+        TableColumn<PlayerDirectoryEntry, Integer> yellowCol = new TableColumn<>("YC");
+        yellowCol.setPrefWidth(50);
+        yellowCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getPlayer().getYellowCards()));
+        yellowCol.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Integer val, boolean empty) {
+                super.updateItem(val, empty);
+                if (empty || val == null) { setText(null); setGraphic(null); }
+                else {
+                    Label l = new Label(String.valueOf(val));
+                    l.getStyleClass().add("card-yellow-chip");
+                    setGraphic(l); setText(null); setAlignment(Pos.CENTER);
+                }
+            }
+        });
+
+        TableColumn<PlayerDirectoryEntry, Integer> redCol = new TableColumn<>("RC");
+        redCol.setPrefWidth(50);
+        redCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getPlayer().getRedCards()));
+        redCol.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Integer val, boolean empty) {
+                super.updateItem(val, empty);
+                if (empty || val == null) { setText(null); setGraphic(null); }
+                else {
+                    Label l = new Label(String.valueOf(val));
+                    l.getStyleClass().add("card-red-chip");
+                    setGraphic(l); setText(null); setAlignment(Pos.CENTER);
+                }
+            }
+        });
+
+        TableColumn<PlayerDirectoryEntry, String> availCol = new TableColumn<>("AVAILABLE");
+        availCol.setPrefWidth(90);
+        availCol.setCellValueFactory(cell -> {
+            Player p = cell.getValue().getPlayer();
+            if (p.isSuspended()) return new SimpleStringProperty("SUSPENDED");
+            if (p.isInjured()) return new SimpleStringProperty("INJURED");
+            return new SimpleStringProperty("YES");
+        });
+        availCol.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String status, boolean empty) {
+                super.updateItem(status, empty);
+                if (empty || status == null) {
+                    setText(null); setGraphic(null);
+                } else {
+                    Label chip = new Label(status);
+                    if ("YES".equalsIgnoreCase(status)) {
+                        chip.getStyleClass().add("green-chip");
+                    } else {
+                        chip.getStyleClass().add("blocked-chip");
+                    }
+                    setGraphic(chip); setText(null); setAlignment(Pos.CENTER);
+                }
+            }
+        });
+
+        TableColumn<PlayerDirectoryEntry, Integer> concededCol = new TableColumn<>("GA");
+        concededCol.setPrefWidth(50);
+        concededCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getGoalsConceded()));
+        concededCol.setCellFactory(col -> createIntegerCenterCell());
+
+        TableColumn<PlayerDirectoryEntry, String> gkAvgCol = new TableColumn<>("GA/MATCH");
+        gkAvgCol.setPrefWidth(85);
+        gkAvgCol.setCellValueFactory(cell -> {
+            Player p = cell.getValue().getPlayer();
+            if (p instanceof Goalkeeper) {
+                Goalkeeper gk = (Goalkeeper) p;
+                double avg = gk.getMatchesPlayed() > 0 ? (double) gk.getGoalsConceded() / gk.getMatchesPlayed() : 0.0;
+                return new SimpleStringProperty(String.format("%.2f", avg));
+            }
+            return new SimpleStringProperty("-");
+        });
+        gkAvgCol.setCellFactory(col -> createCenterStringCell());
+
+        table.getColumns().addAll(playerCol, posCol, teamCol, ovrCol, matchesCol, minCol, goalsCol, yellowCol, redCol, availCol, concededCol, gkAvgCol);
+
         ObservableList<PlayerDirectoryEntry> masterList = FXCollections.observableArrayList();
         for (Team t : tournament.getTeams()) {
             for (Player p : t.getSquad()) {
@@ -2235,11 +2456,11 @@ public class TournamentController {
         table.setItems(sortedList);
 
         Runnable updateFilter = () -> {
-            Position pSel = posFilter.getValue();
-            Team tSel = teamFilter.getValue();
+            String pSel = posFilter.getValue();
+            String tSel = teamFilter.getValue();
             filteredList.setPredicate(entry -> {
-                boolean matchPos = (pSel == null) || entry.getPosition() == pSel;
-                boolean matchTeam = (tSel == null) || (entry.getTeam() != null && entry.getTeam().equals(tSel));
+                boolean matchPos = "ALL POSITIONS".equalsIgnoreCase(pSel) || pSel == null || entry.getPosition().name().equalsIgnoreCase(pSel);
+                boolean matchTeam = "ALL TEAMS".equalsIgnoreCase(tSel) || tSel == null || (entry.getTeam() != null && entry.getTeam().getName().equalsIgnoreCase(tSel));
                 return matchPos && matchTeam;
             });
             countLabel.setText(filteredList.size() + " PLAYERS");
@@ -2250,8 +2471,8 @@ public class TournamentController {
         teamFilter.valueProperty().addListener((obs, o, n) -> updateFilter.run());
 
         btnReset.setOnAction(e -> {
-            posFilter.setValue(null);
-            teamFilter.setValue(null);
+            posFilter.setValue("ALL POSITIONS");
+            teamFilter.setValue("ALL TEAMS");
             updateFilter.run();
         });
 
@@ -2260,7 +2481,6 @@ public class TournamentController {
         layout.getChildren().addAll(filterBar, table);
         reportContentHost.getChildren().add(layout);
     }
-
     // Helper para celdas de texto centradas
     private <T> TableCell<T, String> createCenterStringCell() {
         return new TableCell<>() {
@@ -2345,13 +2565,15 @@ public class TournamentController {
         private final double squadAverageAge;
         private final int totalGoalsScored;
         private final int totalGoalsConceded;
+        private final List<Group> tournamentGroups;
 
-        public TeamSummaryEntry(Team team, int squadSize, double avgAge, int gf, int ga) {
+        public TeamSummaryEntry(Team team, int squadSize, double avgAge, int gf, int ga, List<Group> groups) {
             this.team = team;
             this.squadSize = squadSize;
             this.squadAverageAge = avgAge;
             this.totalGoalsScored = gf;
             this.totalGoalsConceded = ga;
+            this.tournamentGroups = groups;
         }
 
         public String getTeamName() { return team.getName(); }
@@ -2359,6 +2581,33 @@ public class TournamentController {
         public int getRanking() { return team.getRanking(); }
         public double getOverall() { return team.getOverall(); }
         public String getCoachName() { return team.getCoach() != null ? team.getCoach().getName() : "-"; }
+
+        public String getCoachNationality() {
+            return (team.getCoach() != null && team.getCoach().getNationality() != null)
+                    ? team.getCoach().getNationality().getName()
+                    : "-";
+        }
+
+        public double getEffectiveness() {
+            int points = 0;
+            int matchesPlayed = 0;
+
+            if (tournamentGroups != null) {
+                for (Group group : tournamentGroups) {
+                    for (Standing s : group.getStandings()) {
+                        if (s.getTeam().equals(team)) {
+                            points = s.getPoints();
+                            matchesPlayed = s.getPlayed();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (matchesPlayed == 0) return 0.0;
+            return ((double) points / (matchesPlayed * 3)) * 100.0;
+        }
+
         public int getSquadSize() { return squadSize; }
         public double getSquadAverageAge() { return squadAverageAge; }
         public int getTotalGoalsScored() { return totalGoalsScored; }

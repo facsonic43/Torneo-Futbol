@@ -19,8 +19,7 @@ import service.TournamentSessionService;
 
 /*
  * Controla la navegación principal de la aplicación.
- * Carga los módulos una sola vez y comparte la misma
- * sesión del campeonato entre todas las pantallas.
+ * Carga los módulos una sola vez y comparte la misma sesión del campeonato.
  */
 public class MainController {
 
@@ -28,13 +27,7 @@ public class MainController {
     private Button tournamentButton;
 
     @FXML
-    private Button teamsButton;
-
-    @FXML
     private Button matchDayButton;
-
-    @FXML
-    private Button bracketButton;
 
     @FXML
     private Button reportsButton;
@@ -42,8 +35,8 @@ public class MainController {
     @FXML
     private Button databaseButton;
 
-        @FXML
-        private Button themeButton;
+    @FXML
+    private Button themeButton;
 
     @FXML
     private ImageView brandLogo;
@@ -102,9 +95,7 @@ public class MainController {
             }
 
             loadModules();
-
             handleTournament();
-
             updateGlobalStatus();
 
             statusLabel.setText(
@@ -118,182 +109,61 @@ public class MainController {
         }
     }
 
-    // Carga cada módulo una sola vez.
-    private void loadModules()
-            throws Exception {
+    private void loadModules() throws Exception {
+        FXMLLoader tournamentLoader = new FXMLLoader(getClass().getResource("/view/tournament-view.fxml"));
+        tournamentView = tournamentLoader.load();
+        tournamentController = tournamentLoader.getController();
+        tournamentController.setSession(session);
 
-        FXMLLoader tournamentLoader =
-                new FXMLLoader(
-                        getClass()
-                                .getResource(
-                                        "/view/tournament-view.fxml"
-                                )
-                );
+        FXMLLoader matchDayLoader = new FXMLLoader(getClass().getResource("/view/match-day-view.fxml"));
+        matchDayView = matchDayLoader.load();
+        matchDayController = matchDayLoader.getController();
+        matchDayController.setSession(session);
 
-        tournamentView =
-                tournamentLoader.load();
-
-        tournamentController =
-                tournamentLoader.getController();
-
-        tournamentController.setSession(
-                session
-        );
-
-
-        FXMLLoader matchDayLoader =
-                new FXMLLoader(
-                        getClass()
-                                .getResource(
-                                        "/view/match-day-view.fxml"
-                                )
-                );
-
-        matchDayView =
-                matchDayLoader.load();
-
-        matchDayController =
-                matchDayLoader.getController();
-
-        matchDayController.setSession(
-                session
-        );
-
-
-        FXMLLoader databaseLoader =
-                new FXMLLoader(
-                        getClass()
-                                .getResource(
-                                        "/view/database-view.fxml"
-                                )
-                );
-
-        databaseView =
-                databaseLoader.load();
-
-        databaseController =
-                databaseLoader.getController();
-
-        databaseController.setSession(
-                session
-        );
+        FXMLLoader databaseLoader = new FXMLLoader(getClass().getResource("/view/database-view.fxml"));
+        databaseView = databaseLoader.load();
+        databaseController = databaseLoader.getController();
+        databaseController.setSession(session);
     }
 
     @FXML
     private void handleTournament() {
         contentHost.getChildren().setAll(tournamentView);
-
         tournamentController.showOverview();
         tournamentController.refreshAll();
-
         updateGlobalStatus();
-
         setActiveButton(tournamentButton);
-
         updateHeader("Tournament Overview - International Club Cup 2026", null);
-    }
-
-    @FXML
-    private void handleTeams() {
-
-        contentHost
-                .getChildren()
-                .setAll(
-                        tournamentView
-                );
-
-        tournamentController
-                .showTeams();
-
-        tournamentController
-                .refreshAll();
-
-        setActiveButton(
-                teamsButton
-        );
-
-        updateHeader("Teams Directory", "Club profiles, squad analysis and technical staff");
     }
 
     @FXML
     private void handleMatchDay() {
         contentHost.getChildren().setAll(matchDayView);
-
         matchDayController.refreshFromMain();
-
         updateGlobalStatus();
-
         setActiveButton(matchDayButton);
-
         updateHeader("Match Center", "Play selected matches or simulate the current stage");
     }
 
     @FXML
-    private void handleBracket() {
-
-        contentHost
-                .getChildren()
-                .setAll(
-                        tournamentView
-                );
-
-        tournamentController
-                .showBracket();
-
-        tournamentController
-                .refreshAll();
-
-        setActiveButton(
-                bracketButton
-        );
-
-        updateHeader("Championship Bracket", "Knockout stage tracker and finals roadmap");
-    }
-
-    @FXML
     private void handleReports() {
-
-        contentHost
-                .getChildren()
-                .setAll(
-                        tournamentView
-                );
-
-        tournamentController
-                .showReports();
-
-        tournamentController
-                .refreshAll();
-
-        setActiveButton(
-                reportsButton
-        );
-
-        updateHeader("Analytics & Reports", "Comprehensive tournament statistics and disciplinary logs");
+        contentHost.getChildren().setAll(tournamentView);
+        tournamentController.showReports();
+        tournamentController.refreshAll();
+        setActiveButton(reportsButton);
+        updateHeader("Analytics, Reports & Bracket", "Comprehensive tournament statistics, bracket tracker and disciplinary logs");
     }
 
     @FXML
     private void handleDatabase() {
-
-        contentHost
-                .getChildren()
-                .setAll(
-                        databaseView
-                );
-
-        databaseController
-                .refreshFromMain();
-
-        setActiveButton(
-                databaseButton
-        );
-
+        contentHost.getChildren().setAll(databaseView);
+        databaseController.refreshFromMain();
+        setActiveButton(databaseButton);
         updateHeader("Database Management", "Persistent records, imports and system integrity");
     }
 
     @FXML
     private void handleContinue() {
-
         handleMatchDay();
     }
 
@@ -302,7 +172,7 @@ public class MainController {
         Parent root = tournamentButton.getScene().getRoot();
         if (root.getStyleClass().contains("light-theme")) {
             root.getStyleClass().remove("light-theme");
-            themeButton.setText("☀");
+            themeButton.setText("☼");
         } else {
             root.getStyleClass().add("light-theme");
             themeButton.setText("🌙");
@@ -311,21 +181,11 @@ public class MainController {
 
     @FXML
     private void handleSave() {
-
         try {
-
             session.save();
-
-            statusLabel.setText(
-                    "Tournament saved successfully."
-            );
-
+            statusLabel.setText("Tournament saved successfully.");
         } catch (Exception exception) {
-
-            showError(
-                    "Error saving tournament",
-                    exception
-            );
+            showError("Error saving tournament", exception);
         }
     }
 
@@ -344,13 +204,8 @@ public class MainController {
 
             ButtonType result = alert.showAndWait().orElse(ButtonType.CANCEL);
 
-            if (result == ButtonType.CANCEL) {
-                return;
-            }
-
-            if (result == ButtonType.YES) {
-                session.save();
-            }
+            if (result == ButtonType.CANCEL) return;
+            if (result == ButtonType.YES) session.save();
 
             Stage stage = (Stage) contentHost.getScene().getWindow();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/main-menu-view.fxml"));
@@ -366,7 +221,6 @@ public class MainController {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
             }
 
-            // Propagación del tema activo al menú
             if (contentHost.getScene().getRoot().getStyleClass().contains("light-theme")) {
                 root.getStyleClass().add("light-theme");
             }
@@ -378,75 +232,27 @@ public class MainController {
         }
     }
 
-    private void setActiveButton(
-            Button selectedButton) {
-
-        tournamentButton
-                .getStyleClass()
-                .remove(
-                        "nav-button-active"
-                );
-
-        teamsButton
-                .getStyleClass()
-                .remove(
-                        "nav-button-active"
-                );
-
-        matchDayButton
-                .getStyleClass()
-                .remove(
-                        "nav-button-active"
-                );
-
-        bracketButton
-                .getStyleClass()
-                .remove(
-                        "nav-button-active"
-                );
-
-        reportsButton
-                .getStyleClass()
-                .remove(
-                        "nav-button-active"
-                );
-
-        databaseButton
-                .getStyleClass()
-                .remove(
-                        "nav-button-active"
-                );
+    private void setActiveButton(Button selectedButton) {
+        tournamentButton.getStyleClass().remove("nav-button-active");
+        matchDayButton.getStyleClass().remove("nav-button-active");
+        reportsButton.getStyleClass().remove("nav-button-active");
+        databaseButton.getStyleClass().remove("nav-button-active");
 
         if (selectedButton != null) {
-            selectedButton
-                    .getStyleClass()
-                    .add(
-                            "nav-button-active"
-                    );
+            selectedButton.getStyleClass().add("nav-button-active");
         }
     }
 
-
-    private void showError(
-            String message,
-            Exception exception) {
-
-        statusLabel.setText(
-                message
-                        + ": "
-                        + exception.getMessage()
-        );
-
+    private void showError(String message, Exception exception) {
+        statusLabel.setText(message + ": " + exception.getMessage());
         exception.printStackTrace();
     }
+
     public void updateGlobalStatus() {
-        if (session == null || session.getTournament() == null) {
-            return;
-        }
+        if (session == null || session.getTournament() == null) return;
 
         Tournament tournament = session.getTournament();
 
-        // Formato de la etapa actual
         switch (session.getStage()) {
             case GROUP_STAGE -> mainStageLabel.setText("GROUP STAGE");
             case QUARTER_FINALS -> mainStageLabel.setText("QUARTER-FINALS");
@@ -456,12 +262,9 @@ public class MainController {
             default -> mainStageLabel.setText("NOT STARTED");
         }
 
-        // Cálculo de partidos jugados
         int played = 0;
         for (model.match.Match m : tournament.getAllMatches()) {
-            if (m.isPlayed()) {
-                played++;
-            }
+            if (m.isPlayed()) played++;
         }
         mainMatchesLabel.setText(played + " / 37");
     }

@@ -38,9 +38,14 @@
     -accent-gold: #facc15;
     -accent-cyan-bg: #0e3742;
     -accent-cyan-text: #38bdf8;
-}
 
-/* Modo Claro: Se sobreescriben solo las variables de color */
+    -status-passed-text: #f472b6;
+    -status-qualified-text: #f472b6;
+    -status-qualified-border: #c026d3;
+
+    -status-eliminated-text: #728099;
+    -status-eliminated-border: #475569;
+}
 .light-theme {
     -bg-app: #f1f5f9;
     -bg-nav: #ffffff;
@@ -61,7 +66,7 @@
     -text-disabled: #94a3b8;
 
     -accent-primary: #0d9488;
-    -accent-primary-gradient: linear-gradient(to right, #0f766e, #0d9488);
+    -accent-primary-gradient: linear-gradient(to right, #032926, #0d9488);
     -accent-hover: #115e59;
     -accent-text: #0f766e;
 
@@ -76,6 +81,13 @@
     -accent-gold: #b45309;
     -accent-cyan-bg: #e0f2fe;
     -accent-cyan-text: #0369a1;
+
+    -status-passed-text: #0f766e;
+    -status-qualified-text: #0f766e;
+    -status-qualified-border: #115e59;
+
+    -status-eliminated-text: #8d9696;
+    -status-eliminated-border: #64748b;
 }
 
 /* =========================================================
@@ -117,6 +129,10 @@
     -fx-border-radius: 6;
     -fx-border-width: 1px;
     -fx-padding: 10px 12px;
+}
+.info-card .label {
+    -fx-text-fill: -text-main;
+    -fx-font-weight: 700;
 }
 
 /* =========================================================
@@ -603,7 +619,7 @@
 
 .bracket-score,
 .champion-text {
-    -fx-text-fill: -accent-gold;
+    -fx-text-fill: -status-qualified-text;
     -fx-font-size: 18px;
     -fx-font-weight: 900;
 }
@@ -646,25 +662,47 @@
     -fx-font-weight: 700;
 }
 
+/* Posiciones 1° y 2° en Grupos (Verde Adaptable) */
 .standing-qualified {
     -fx-background-color: -bg-panel-secondary;
-    -fx-border-color: transparent transparent transparent -accent-primary;
-    -fx-border-width: 0 0 0 3px;
+    -fx-border-color: transparent transparent transparent -status-qualified-border;
+    -fx-border-width: 0 0 0 4px;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
     -fx-padding: 8px 12px;
 }
+.standing-qualified .label {
+    -fx-text-fill: -status-qualified-text;
+    -fx-font-weight: 800;
+}
 
-.standing-normal {
-    -fx-background-color: -bg-input;
+/* Posiciones 3° y 4° en Grupos (Rojo Adaptable) */
+.standing-eliminated {
+    -fx-background-color: -bg-panel-secondary;
+    -fx-border-color: transparent transparent transparent -status-eliminated-border;
+    -fx-border-width: 0 0 0 4px;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
     -fx-padding: 8px 12px;
 }
+.standing-eliminated .label {
+    -fx-text-fill: -status-eliminated-text;
+}
 
-.standing-qualified .label,
-.standing-normal .label {
-    -fx-text-fill: -text-secondary;
+/* Tarjetas de Eliminatorias en Overview */
+.team-passed {
+    -fx-text-fill: -status-passed-text;
+    -fx-font-weight: 900;
+}
+
+.team-eliminated {
+    -fx-text-fill: -status-eliminated-text;
+    -fx-font-weight: 700;
+}
+
+.team-neutral {
+    -fx-text-fill: -text-main;
+    -fx-font-weight: 700;
 }
 
 .report-area {
@@ -970,7 +1008,7 @@
 
 /* Camino del campeón */
 .bracket-line-champion {
-    -fx-stroke: -accent-gold;
+    -fx-stroke: -status-qualified-text;
     -fx-stroke-width: 3;
     -fx-stroke-line-join: round;
 }
@@ -1016,7 +1054,7 @@
 /* ---------- Contenido de la tarjeta ---------- */
 
 .bracket-team {
-    -fx-text-fill: -text-main;
+    -fx-text-fill: -status-eliminated-text;
     -fx-font-weight: 700;
 }
 
@@ -1028,7 +1066,7 @@
 /* Equipo ganador del cruce */
 .bracket-team-winner .bracket-team,
 .bracket-team-winner .bracket-score-cell {
-    -fx-text-fill: -accent-gold;
+    -fx-text-fill: -status-qualified-text;
     -fx-font-weight: 900;
 }
 
