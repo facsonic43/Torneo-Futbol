@@ -60,6 +60,8 @@ public class TournamentSessionService {
 
     public Tournament createNewTournament()
             throws Exception {
+        
+        refreshStadiums();
 
         refreshStadiums();
 
