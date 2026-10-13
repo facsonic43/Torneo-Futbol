@@ -388,6 +388,11 @@
                       VBox.vgrow="ALWAYS"
                       styleClass="dark-list"/>
 
+            <Button text="Generete PDF"
+                    maxWidth="Infinity"
+                    styleClass="primary-button"
+                    onAction="#handleGeneratePdf"/>
+
             <Button text="REFRESH CURRENT"
                     maxWidth="Infinity"
                     styleClass="secondary-button"

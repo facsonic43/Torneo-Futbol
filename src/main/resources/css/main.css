@@ -1044,3 +1044,53 @@
     -fx-font-size: 10px;
     -fx-font-weight: 800;
 }
+
+/* Native report tables and bracket cards */
+.statistics-report .report-note {
+    -fx-background-color: -bg-panel-secondary;
+    -fx-background-radius: 6;
+    -fx-border-color: transparent transparent transparent -accent-primary;
+    -fx-border-width: 0 0 0 3;
+    -fx-padding: 12 14;
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 12px;
+    -fx-line-spacing: 3px;
+}
+
+.statistics-report .report-highlight-cell {
+    -fx-text-fill: -accent-text;
+    -fx-font-weight: 800;
+    -fx-alignment: CENTER;
+}
+
+.statistics-report .report-detail {
+    -fx-text-fill: -text-main;
+}
+
+.statistics-report .report-winner {
+    -fx-text-fill: -accent-text;
+    -fx-font-weight: 700;
+}
+
+.statistics-report .report-bracket-arrow {
+    -fx-stroke: -accent-primary;
+    -fx-stroke-width: 1.5;
+    -fx-fill: transparent;
+}
+
+.statistics-report .statistics-table .column-header .label {
+    -fx-wrap-text: true;
+}
+
+.statistics-report .statistics-table .table-cell {
+    -fx-border-color: transparent -border-subtle transparent transparent;
+}
+
+.statistics-report .statistics-table .table-row-cell:empty {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.statistics-report .statistics-table .table-row-cell:empty .table-cell {
+    -fx-border-color: transparent;
+}

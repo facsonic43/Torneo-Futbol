@@ -1,6 +1,7 @@
 package gui.controller;
 
 import gui.PlayerDirectoryEntry;
+import gui.StatisticsReportView;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -29,6 +30,8 @@ import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+import main.loader.TournamentData;
 import model.match.Event;
 import model.match.Formation;
 import model.match.GroupMatch;
@@ -42,12 +45,19 @@ import model.tournament.Group;
 import model.tournament.Standing;
 import model.tournament.Tournament;
 import reports.ReportService;
+import reports.ReportData;
+import reports.ReportOptions;
+import reports.pdf.PDFGenerator;
+import reports.pdf.StatisticsPreviewGenerator.Section;
 import service.TournamentDashboardService;
 import service.TournamentSessionService;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.IntFunction;
 
 /*
@@ -205,6 +215,7 @@ public class TournamentController {
 
     private TournamentDashboardService dashboardService;
     private ReportService reportService;
+    private StatisticsReportView statisticsReportView;
 
     private final BracketView bracketView = new BracketView();
 
@@ -1223,10 +1234,11 @@ public class TournamentController {
                 "I - Top Scorers",
                 "II - Fair Play",
                 "III - Most Minutes",
-                "IV - Matches Summary",
-                "V - Teams",
-                "VI - Referees",
-                "VII - Players"
+                "IV - Championship Bracket",
+                "Matches Summary",
+                "Teams",
+                "Referees",
+                "Players"
         );
 
         reportList.getSelectionModel().selectedItemProperty().addListener(
@@ -1251,34 +1263,89 @@ public class TournamentController {
         generateReport();
     }
 
+    @FXML
+    private void handleGeneratePdf() {
+        if (tournament == null) return;
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Save participant report");
+        chooser.setInitialFileName("Tournament-Participants.pdf");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF files (*.pdf)", "*.pdf"));
+        File destination = chooser.showSaveDialog(reportsPane.getScene().getWindow());
+        if (destination == null) return;
+
+        if (!destination.getName().toLowerCase(Locale.ROOT).endsWith(".pdf")) {
+            destination = new File(destination.getParentFile(), destination.getName() + ".pdf");
+        }
+
+        try {
+            TournamentData participants = new TournamentData(tournament.getTeams(), tournament.getReferees());
+            ReportData data = new ReportData(participants);
+            PDFGenerator.generate(data, destination.toPath(), ReportOptions.defaults());
+
+            Alert success = new Alert(Alert.AlertType.INFORMATION);
+            success.setTitle("PDF generated");
+            success.setHeaderText("Participant report saved");
+            success.setContentText(destination.getAbsolutePath());
+            success.initOwner(reportsPane.getScene().getWindow());
+            success.showAndWait();
+        } catch (IOException | RuntimeException ex) {
+            Alert error = new Alert(Alert.AlertType.ERROR);
+            error.setTitle("PDF export failed");
+            error.setHeaderText("Could not generate the participant report");
+            error.setContentText(ex.getMessage());
+            error.initOwner(reportsPane.getScene().getWindow());
+            error.showAndWait();
+        }
+    }
+
     private void generateReport() {
         if (tournament == null) return;
 
         String selected = reportList.getSelectionModel().getSelectedItem();
         if (selected == null) return;
 
-        reportContentHost.getChildren().clear();
-
         try {
-            if (selected.startsWith("I -")) {
-                showScorersReportView();
-            } else if (selected.startsWith("II -")) {
-                showFairPlayReportView();
-            } else if (selected.startsWith("III -")) {
-                showMinutesReportView();
-            } else if (selected.startsWith("IV -")) {
-                showMatchesReportView();
-            } else if (selected.startsWith("V -")) {
-                showTeamsSummaryView();
-            } else if (selected.startsWith("VI -")) {
-                showRefereesReportView();
-            } else {
-                showPlayersSummaryView();
+            if (List.of("Matches Summary", "Teams", "Referees", "Players").contains(selected)) {
+                reportContentHost.getChildren().clear();
+                switch (selected) {
+                    case "Matches Summary" -> showMatchesReportView();
+                    case "Teams" -> showTeamsSummaryView();
+                    case "Referees" -> showRefereesReportView();
+                    case "Players" -> showPlayersSummaryView();
+                }
+                return;
             }
+            Section section = switch (selected) {
+                case "I - Top Scorers" -> Section.TOP_SCORERS;
+                case "II - Fair Play" -> Section.FAIR_PLAY;
+                case "III - Most Minutes" -> Section.MOST_MINUTES;
+                case "IV - Championship Bracket" -> Section.BRACKET;
+                default -> throw new IllegalArgumentException("Unknown report: " + selected);
+            };
+            selectedReportTitle.setText(switch (section) {
+                case TOP_SCORERS -> "Top Scorers";
+                case FAIR_PLAY -> "Fair Play Ranking";
+                case MOST_MINUTES -> "Most Minutes Played";
+                case BRACKET -> "Championship Bracket";
+            });
+            selectedReportSubtitle.setText(switch (section) {
+                case TOP_SCORERS -> "Goals and penalties scored in this championship";
+                case FAIR_PLAY -> "Teams ranked by disciplinary points in this championship";
+                case MOST_MINUTES -> "Player participation and minutes in this championship";
+                case BRACKET -> "Group qualifiers, knockout bracket and match details";
+            });
+            long played = tournament.getAllMatches().stream().filter(Match::isPlayed).count();
+            reportMetricChip.setText(played + " MATCHES PLAYED");
+            if (statisticsReportView == null) statisticsReportView = new StatisticsReportView();
+            if (!reportContentHost.getChildren().contains(statisticsReportView)) {
+                reportContentHost.getChildren().setAll(statisticsReportView);
+            }
+            statisticsReportView.showReport(tournament, section);
         } catch (Exception ex) {
             Label errorLabel = new Label("Error loading visual report: " + ex.getMessage());
             errorLabel.getStyleClass().add("muted-text");
-            reportContentHost.getChildren().add(errorLabel);
+            reportContentHost.getChildren().setAll(errorLabel);
             ex.printStackTrace();
         }
     }
