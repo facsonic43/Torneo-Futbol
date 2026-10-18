@@ -16,50 +16,32 @@ import java.util.Comparator;
 import java.util.List;
 
 /*
- * Controla la ejecución manual del campeonato.
- * Permite jugar un partido, una fecha completa o toda la fase pendiente,
- * respetando siempre el orden cronológico y generando la etapa siguiente
- * cuando corresponde.
+ * Coordina la ejecución manual del campeonato.
+ * La GUI puede jugar un partido, una fecha o una fase completa, pero las
+ * tandas de penales quedan pendientes hasta que el usuario las simula.
  */
 public class TournamentExecutionService {
-
     private MatchSimulator simulator;
 
     public TournamentExecutionService() {
-        simulator =
-                new MatchSimulator();
+        simulator = new MatchSimulator();
     }
 
-    // Permite utilizar una simulación repetible durante los tests.
-    public TournamentExecutionService(
-            long seed) {
-
-        simulator =
-                new MatchSimulator(
-                        seed
-                );
+    // Permite una simulación repetible durante los tests.
+    public TournamentExecutionService(long seed) {
+        simulator = new MatchSimulator(seed);
     }
 
-    /*
-     * Juega solamente el partido seleccionado.
-     * El partido debe pertenecer a la fecha actualmente habilitada.
-     */
+    // Simula únicamente los 90 minutos del partido seleccionado.
     public Match playMatch(
             Tournament tournament,
             Match match,
             List<Stadium> stadiums) {
 
-        if (tournament == null) {
-            throw new IllegalArgumentException(
-                    "Tournament cannot be null."
-            );
-        }
-
-        if (match == null) {
-            throw new IllegalArgumentException(
-                    "Match cannot be null."
-            );
-        }
+        validateTournamentAndMatch(
+                tournament,
+                match
+        );
 
         if (match.isPlayed()) {
             throw new IllegalStateException(
@@ -71,27 +53,23 @@ public class TournamentExecutionService {
                 tournament,
                 match
         )) {
-
             throw new IllegalStateException(
                     "This match is currently locked."
             );
         }
 
-        /*
-         * La final necesita usar el método del Tournament
-         * porque además de simularla debe guardar al campeón.
-         */
-        if (match
-                == tournament.getFinalMatch()) {
+        simulator.simulateRegularTime(
+                match
+        );
 
+        /*
+         * Tournament.simulateFinal() registra al campeón.
+         * Como MatchSimulator no vuelve a jugar un Match ya jugado,
+         * los 90 minutos no se repiten.
+         */
+        if (match == tournament.getFinalMatch()) {
             tournament.simulateFinal(
                     simulator
-            );
-
-        } else {
-
-            simulator.simulateMatch(
-                    match
             );
         }
 
@@ -103,52 +81,100 @@ public class TournamentExecutionService {
         return match;
     }
 
-    /*
-     * Simula todos los partidos pendientes de la fecha actual.
-     * No avanza automáticamente sobre la siguiente fecha.
-     */
+    // Resuelve únicamente la tanda de penales pendiente del partido elegido.
+    public Match simulatePenalties(
+            Tournament tournament,
+            Match match,
+            List<Stadium> stadiums) {
+
+        validateTournamentAndMatch(
+                tournament,
+                match
+        );
+
+        if (!requiresPenalties(match)) {
+            throw new IllegalStateException(
+                    "This match does not have a pending penalty shootout."
+            );
+        }
+
+        simulator.simulatePenaltyShootout(
+                match
+        );
+
+        /*
+         * Si es la final, ahora sí Tournament puede registrar
+         * al ganador de la tanda como campeón.
+         */
+        if (match == tournament.getFinalMatch()) {
+            tournament.simulateFinal(
+                    simulator
+            );
+        }
+
+        synchronizeTournament(
+                tournament,
+                stadiums
+        );
+
+        return match;
+    }
+
+    // Indica si los 90 minutos terminaron pero todavía falta definir por penales.
+    public boolean requiresPenalties(Match match) {
+        return match != null
+                && match.isPlayed()
+                && match.requiresTieBreak();
+    }
+
+    // Devuelve las definiciones por penales pendientes de la fase actual.
+    public List<Match> getPendingPenaltyMatches(
+            Tournament tournament) {
+
+        List<Match> pending =
+                new ArrayList<>();
+
+        for (Match match :
+                getCurrentPhaseMatches(tournament)) {
+
+            if (requiresPenalties(match)) {
+                pending.add(match);
+            }
+        }
+
+        return pending;
+    }
+
+    // Simula todos los 90 minutos pendientes de la fecha actual.
     public int simulateCurrentMatchday(
             Tournament tournament,
             List<Stadium> stadiums) {
 
         List<Match> playableMatches =
                 new ArrayList<>(
-                        getCurrentPlayableMatches(
-                                tournament
-                        )
+                        getCurrentPlayableMatches(tournament)
                 );
 
-        int simulated = 0;
-
-        for (Match match :
-                playableMatches) {
-
+        for (Match match : playableMatches) {
             playMatch(
                     tournament,
                     match,
                     stadiums
             );
-
-            simulated++;
         }
 
-        return simulated;
+        return playableMatches.size();
     }
 
     /*
-     * Simula todos los partidos que todavía faltan
-     * de la fase actual.
+     * Simula todos los 90 minutos pendientes de la fase actual.
+     * Si alguna serie necesita penales, la siguiente fase no se genera todavía.
      */
     public int simulateRemainingPhase(
             Tournament tournament,
             List<Stadium> stadiums) {
 
-        TournamentStage stage =
-                getCurrentStage(
-                        tournament
-                );
-
-        if (stage
+        if (getCurrentStage(tournament)
                 == TournamentStage.FINISHED) {
 
             return 0;
@@ -156,9 +182,7 @@ public class TournamentExecutionService {
 
         List<Match> phaseMatches =
                 new ArrayList<>(
-                        getCurrentPhaseMatches(
-                                tournament
-                        )
+                        getCurrentPhaseMatches(tournament)
                 );
 
         phaseMatches.sort(
@@ -169,15 +193,8 @@ public class TournamentExecutionService {
 
         int simulated = 0;
 
-        for (Match match :
-                phaseMatches) {
-
+        for (Match match : phaseMatches) {
             if (!match.isPlayed()) {
-
-                /*
-                 * Como están ordenados por fecha,
-                 * playMatch siempre recibe un partido habilitado.
-                 */
                 playMatch(
                         tournament,
                         match,
@@ -192,34 +209,25 @@ public class TournamentExecutionService {
     }
 
     /*
-     * Devuelve únicamente los partidos que pueden jugarse ahora.
-     * Son los partidos pendientes de la fecha más próxima.
+     * Devuelve los partidos pendientes de la fecha más próxima.
+     * Un partido ya jugado que espera penales no vuelve a aparecer como jugable.
      */
     public List<Match> getCurrentPlayableMatches(
             Tournament tournament) {
 
         List<Match> phaseMatches =
-                getCurrentPhaseMatches(
-                        tournament
-                );
+                getCurrentPhaseMatches(tournament);
 
         LocalDate nextDate =
                 null;
 
-        for (Match match :
-                phaseMatches) {
+        for (Match match : phaseMatches) {
+            if (!match.isPlayed()
+                    && (nextDate == null
+                    || match.getMatchDate().isBefore(nextDate))) {
 
-            if (!match.isPlayed()) {
-
-                if (nextDate == null
-                        || match.getMatchDate()
-                        .isBefore(
-                                nextDate
-                        )) {
-
-                    nextDate =
-                            match.getMatchDate();
-                }
+                nextDate =
+                        match.getMatchDate();
             }
         }
 
@@ -230,29 +238,19 @@ public class TournamentExecutionService {
             return playable;
         }
 
-        for (Match match :
-                phaseMatches) {
-
+        for (Match match : phaseMatches) {
             if (!match.isPlayed()
-                    && match.getMatchDate()
-                    .equals(
-                            nextDate
-                    )) {
+                    && match.getMatchDate().equals(nextDate)) {
 
-                playable.add(
-                        match
-                );
+                playable.add(match);
             }
         }
 
         playable.sort(
-                Comparator
-                        .comparing(
-                                match ->
-                                        match
-                                                .getHomeTeam()
-                                                .getName()
-                        )
+                Comparator.comparing(
+                        match ->
+                                match.getHomeTeam().getName()
+                )
         );
 
         return playable;
@@ -266,58 +264,39 @@ public class TournamentExecutionService {
                 new ArrayList<>();
 
         TournamentStage stage =
-                getCurrentStage(
-                        tournament
-                );
+                getCurrentStage(tournament);
 
-        if (stage
-                == TournamentStage.GROUP_STAGE) {
-
-            for (Group group :
-                    tournament.getGroups()) {
-
+        if (stage == TournamentStage.GROUP_STAGE) {
+            for (Group group : tournament.getGroups()) {
                 matches.addAll(
                         group.getMatches()
                 );
             }
 
-        } else if (stage
-                == TournamentStage.QUARTER_FINALS) {
-
+        } else if (stage == TournamentStage.QUARTER_FINALS) {
             matches.addAll(
-                    tournament
-                            .getQuarterFinalFirstLegs()
+                    tournament.getQuarterFinalFirstLegs()
             );
 
             matches.addAll(
-                    tournament
-                            .getQuarterFinalSecondLegs()
+                    tournament.getQuarterFinalSecondLegs()
             );
 
-        } else if (stage
-                == TournamentStage.SEMI_FINALS) {
-
+        } else if (stage == TournamentStage.SEMI_FINALS) {
             matches.addAll(
-                    tournament
-                            .getSemiFinalFirstLegs()
+                    tournament.getSemiFinalFirstLegs()
             );
 
             matches.addAll(
-                    tournament
-                            .getSemiFinalSecondLegs()
+                    tournament.getSemiFinalSecondLegs()
             );
 
-        } else if (stage
-                == TournamentStage.FINAL) {
+        } else if (stage == TournamentStage.FINAL
+                && tournament.getFinalMatch() != null) {
 
-            if (tournament.getFinalMatch()
-                    != null) {
-
-                matches.add(
-                        tournament
-                                .getFinalMatch()
-                );
-            }
+            matches.add(
+                    tournament.getFinalMatch()
+            );
         }
 
         matches.sort(
@@ -327,16 +306,14 @@ public class TournamentExecutionService {
                         )
                         .thenComparing(
                                 match ->
-                                        match
-                                                .getHomeTeam()
-                                                .getName()
+                                        match.getHomeTeam().getName()
                         )
         );
 
         return matches;
     }
 
-    // Indica si el usuario puede ejecutar un partido en este momento.
+    // Indica si el usuario puede ejecutar los 90 minutos de ese partido ahora.
     public boolean isMatchPlayable(
             Tournament tournament,
             Match match) {
@@ -347,15 +324,24 @@ public class TournamentExecutionService {
             return false;
         }
 
-        List<Match> playable =
-                getCurrentPlayableMatches(
-                        tournament
-                );
+        for (Match playable :
+                getCurrentPlayableMatches(tournament)) {
 
-        for (Match current :
-                playable) {
+            if (playable == match) {
+                return true;
+            }
+        }
 
-            if (current == match) {
+        return false;
+    }
+
+    public boolean hasUnplayedMatchesInCurrentPhase(
+            Tournament tournament) {
+
+        for (Match match :
+                getCurrentPhaseMatches(tournament)) {
+
+            if (!match.isPlayed()) {
                 return true;
             }
         }
@@ -364,8 +350,8 @@ public class TournamentExecutionService {
     }
 
     /*
-     * Si una fase terminó, genera solamente la siguiente.
-     * No la simula. El usuario sigue teniendo el control.
+     * Genera la etapa siguiente sólo cuando la actual está completamente resuelta.
+     * Un partido de vuelta pendiente de penales todavía no tiene ganador.
      */
     public void synchronizeTournament(
             Tournament tournament,
@@ -375,13 +361,7 @@ public class TournamentExecutionService {
             return;
         }
 
-        /*
-         * Terminó fase de grupos:
-         * generamos cuartos pero no los jugamos.
-         */
-        if (allGroupMatchesPlayed(
-                tournament
-        )
+        if (allGroupMatchesPlayed(tournament)
                 && tournament
                 .getQuarterFinalFirstLegs()
                 .isEmpty()) {
@@ -393,21 +373,18 @@ public class TournamentExecutionService {
             return;
         }
 
-        /*
-         * Terminó cuartos:
-         * generamos semifinales.
-         */
         if (!tournament
                 .getQuarterFinalSecondLegs()
                 .isEmpty()
+
                 && allMatchesPlayed(
-                tournament
-                        .getQuarterFinalFirstLegs()
+                tournament.getQuarterFinalFirstLegs()
         )
-                && allMatchesPlayed(
-                tournament
-                        .getQuarterFinalSecondLegs()
+
+                && allKnockoutSeriesResolved(
+                tournament.getQuarterFinalSecondLegs()
         )
+
                 && tournament
                 .getSemiFinalFirstLegs()
                 .isEmpty()) {
@@ -417,23 +394,19 @@ public class TournamentExecutionService {
             return;
         }
 
-        /*
-         * Terminó semifinal:
-         * generamos final.
-         */
         if (!tournament
                 .getSemiFinalSecondLegs()
                 .isEmpty()
+
                 && allMatchesPlayed(
-                tournament
-                        .getSemiFinalFirstLegs()
+                tournament.getSemiFinalFirstLegs()
         )
-                && allMatchesPlayed(
-                tournament
-                        .getSemiFinalSecondLegs()
+
+                && allKnockoutSeriesResolved(
+                tournament.getSemiFinalSecondLegs()
         )
-                && tournament
-                .getFinalMatch()
+
+                && tournament.getFinalMatch()
                 == null) {
 
             tournament.generateFinal();
@@ -486,12 +459,11 @@ public class TournamentExecutionService {
     public int getPlayedMatchesInCurrentPhase(
             Tournament tournament) {
 
-        int played = 0;
+        int played =
+                0;
 
         for (Match match :
-                getCurrentPhaseMatches(
-                        tournament
-                )) {
+                getCurrentPhaseMatches(tournament)) {
 
             if (match.isPlayed()) {
                 played++;
@@ -509,80 +481,59 @@ public class TournamentExecutionService {
         ).size();
     }
 
-    /*
-     * Devuelve un texto sencillo para mostrar en Match Day.
-     */
+    // Texto utilizado por Match Day para indicar la ronda habilitada.
     public String getCurrentRoundName(
             Tournament tournament) {
 
         TournamentStage stage =
-                getCurrentStage(
-                        tournament
-                );
+                getCurrentStage(tournament);
 
         List<Match> playable =
-                getCurrentPlayableMatches(
-                        tournament
-                );
+                getCurrentPlayableMatches(tournament);
 
-        if (stage
-                == TournamentStage.FINISHED) {
-
+        if (stage == TournamentStage.FINISHED) {
             return "TOURNAMENT FINISHED";
         }
 
-        if (playable.isEmpty()) {
+        if (playable.isEmpty()
+                && !getPendingPenaltyMatches(tournament)
+                .isEmpty()) {
 
-            return formatStage(
-                    stage
-            );
+            return formatStage(stage)
+                    + " - PENALTIES PENDING";
+        }
+
+        if (playable.isEmpty()) {
+            return formatStage(stage);
         }
 
         Match next =
                 playable.get(0);
 
-        if (stage
-                == TournamentStage.GROUP_STAGE) {
-
+        if (stage == TournamentStage.GROUP_STAGE) {
             return getGroupMatchdayName(
                     tournament,
                     next.getMatchDate()
             );
         }
 
-        if (stage
-                == TournamentStage.QUARTER_FINALS) {
-
-            if (next
-                    instanceof FirstLegMatch) {
-
-                return "QUARTER-FINALS - FIRST LEG";
-            }
-
-            return "QUARTER-FINALS - SECOND LEG";
+        if (stage == TournamentStage.QUARTER_FINALS) {
+            return next instanceof FirstLegMatch
+                    ? "QUARTER-FINALS - FIRST LEG"
+                    : "QUARTER-FINALS - SECOND LEG";
         }
 
-        if (stage
-                == TournamentStage.SEMI_FINALS) {
-
-            if (next
-                    instanceof FirstLegMatch) {
-
-                return "SEMI-FINALS - FIRST LEG";
-            }
-
-            return "SEMI-FINALS - SECOND LEG";
+        if (stage == TournamentStage.SEMI_FINALS) {
+            return next instanceof FirstLegMatch
+                    ? "SEMI-FINALS - FIRST LEG"
+                    : "SEMI-FINALS - SECOND LEG";
         }
 
-        if (stage
-                == TournamentStage.FINAL) {
-
+        if (stage == TournamentStage.FINAL) {
             return "FINAL";
         }
 
-        return formatStage(
-                stage
-        );
+        return formatStage(stage);
     }
 
     private String getGroupMatchdayName(
@@ -617,9 +568,7 @@ public class TournamentExecutionService {
              i < dates.size();
              i++) {
 
-            if (dates.get(i)
-                    .equals(date)) {
-
+            if (dates.get(i).equals(date)) {
                 return "GROUP STAGE - MATCHDAY "
                         + (i + 1);
             }
@@ -631,7 +580,8 @@ public class TournamentExecutionService {
     private boolean allGroupMatchesPlayed(
             Tournament tournament) {
 
-        if (tournament.getGroups()
+        if (tournament
+                .getGroups()
                 .isEmpty()) {
 
             return false;
@@ -659,9 +609,7 @@ public class TournamentExecutionService {
             return false;
         }
 
-        for (Match match :
-                matches) {
-
+        for (Match match : matches) {
             if (!match.isPlayed()) {
                 return false;
             }
@@ -670,36 +618,67 @@ public class TournamentExecutionService {
         return true;
     }
 
+    /*
+     * Una ronda eliminatoria sólo está resuelta cuando cada partido de vuelta
+     * fue jugado y cada serie tiene un ganador definitivo.
+     */
+    private boolean allKnockoutSeriesResolved(
+            List<SecondLegMatch> secondLegMatches) {
+
+        if (secondLegMatches.isEmpty()) {
+            return false;
+        }
+
+        for (SecondLegMatch match :
+                secondLegMatches) {
+
+            if (!match.isPlayed()
+                    || match.getWinner() == null) {
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void validateTournamentAndMatch(
+            Tournament tournament,
+            Match match) {
+
+        if (tournament == null) {
+            throw new IllegalArgumentException(
+                    "Tournament cannot be null."
+            );
+        }
+
+        if (match == null) {
+            throw new IllegalArgumentException(
+                    "Match cannot be null."
+            );
+        }
+    }
+
     private String formatStage(
             TournamentStage stage) {
 
-        if (stage
-                == TournamentStage.GROUP_STAGE) {
-
+        if (stage == TournamentStage.GROUP_STAGE) {
             return "GROUP STAGE";
         }
 
-        if (stage
-                == TournamentStage.QUARTER_FINALS) {
-
+        if (stage == TournamentStage.QUARTER_FINALS) {
             return "QUARTER-FINALS";
         }
 
-        if (stage
-                == TournamentStage.SEMI_FINALS) {
-
+        if (stage == TournamentStage.SEMI_FINALS) {
             return "SEMI-FINALS";
         }
 
-        if (stage
-                == TournamentStage.FINAL) {
-
+        if (stage == TournamentStage.FINAL) {
             return "FINAL";
         }
 
-        if (stage
-                == TournamentStage.FINISHED) {
-
+        if (stage == TournamentStage.FINISHED) {
             return "FINISHED";
         }
 

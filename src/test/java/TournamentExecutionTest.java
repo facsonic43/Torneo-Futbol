@@ -13,9 +13,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /*
- * Comprueba que el usuario pueda controlar manualmente la ejecución.
- * Verifica partidos individuales, fechas completas, fases completas,
- * bloqueos cronológicos y avance hasta el campeón.
+ * Comprueba la ejecución manual del campeonato.
+ * Verifica partidos individuales, fechas, fases, bloqueos cronológicos y que
+ * cualquier tanda de penales quede pendiente hasta que el usuario la resuelva.
  */
 public class TournamentExecutionTest {
 
@@ -23,13 +23,11 @@ public class TournamentExecutionTest {
     void userShouldControlTournamentExecution()
             throws Exception {
 
-        TournamentDataLoader loader =
-                new TournamentDataLoader();
-
         TournamentData data =
-                loader.load(
-                        "torneo.json"
-                );
+                new TournamentDataLoader()
+                        .load(
+                                "torneo.json"
+                        );
 
         Tournament tournament =
                 new Tournament(
@@ -51,37 +49,21 @@ public class TournamentExecutionTest {
                         20260920L
                 );
 
-        /*
-         * --------------------------------------------------
-         * INICIO
-         * --------------------------------------------------
-         */
-
         assertEquals(
                 TournamentStage.GROUP_STAGE,
-                execution.getCurrentStage(
-                        tournament
-                )
+                execution.getCurrentStage(tournament)
         );
 
         assertEquals(
                 24,
                 execution
-                        .getCurrentPhaseMatches(
-                                tournament
-                        )
+                        .getCurrentPhaseMatches(tournament)
                         .size()
         );
 
-        /*
-         * Cada fecha de grupos tiene:
-         * 4 grupos × 2 partidos = 8 partidos.
-         */
         List<Match> firstMatchday =
                 execution
-                        .getCurrentPlayableMatches(
-                                tournament
-                        );
+                        .getCurrentPlayableMatches(tournament);
 
         assertEquals(
                 8,
@@ -90,17 +72,8 @@ public class TournamentExecutionTest {
 
         assertEquals(
                 "GROUP STAGE - MATCHDAY 1",
-                execution
-                        .getCurrentRoundName(
-                                tournament
-                        )
+                execution.getCurrentRoundName(tournament)
         );
-
-        /*
-         * --------------------------------------------------
-         * PARTIDO INDIVIDUAL
-         * --------------------------------------------------
-         */
 
         Match selectedMatch =
                 firstMatchday.get(0);
@@ -117,48 +90,22 @@ public class TournamentExecutionTest {
 
         assertEquals(
                 1,
-                countPlayedMatches(
-                        tournament
-                )
+                countPlayedMatches(tournament)
         );
 
-        /*
-         * Quedan 7 partidos de la misma fecha.
-         */
         assertEquals(
                 7,
                 execution
-                        .getCurrentPlayableMatches(
-                                tournament
-                        )
+                        .getCurrentPlayableMatches(tournament)
                         .size()
         );
 
-        /*
-         * Buscamos un partido de la siguiente fecha.
-         * Todavía tiene que estar bloqueado.
-         */
         Match futureMatch =
-                null;
-
-        for (Match match :
-                execution.getCurrentPhaseMatches(
-                        tournament
-                )) {
-
-            if (!match.isPlayed()
-                    && match.getMatchDate()
-                    .isAfter(
-                            selectedMatch
-                                    .getMatchDate()
-                    )) {
-
-                futureMatch =
-                        match;
-
-                break;
-            }
-        }
+                findFutureMatch(
+                        execution,
+                        tournament,
+                        selectedMatch
+                );
 
         assertNotNull(
                 futureMatch
@@ -171,31 +118,21 @@ public class TournamentExecutionTest {
                 )
         );
 
-        Match lockedMatch =
-                futureMatch;
-
         assertThrows(
                 IllegalStateException.class,
                 () ->
                         execution.playMatch(
                                 tournament,
-                                lockedMatch,
+                                futureMatch,
                                 stadiums
                         )
         );
 
-        /*
-         * --------------------------------------------------
-         * COMPLETAR FECHA
-         * --------------------------------------------------
-         */
-
         int simulatedMatchday =
-                execution
-                        .simulateCurrentMatchday(
-                                tournament,
-                                stadiums
-                        );
+                execution.simulateCurrentMatchday(
+                        tournament,
+                        stadiums
+                );
 
         assertEquals(
                 7,
@@ -204,40 +141,26 @@ public class TournamentExecutionTest {
 
         assertEquals(
                 8,
-                countPlayedMatches(
-                        tournament
-                )
+                countPlayedMatches(tournament)
         );
 
         assertEquals(
                 "GROUP STAGE - MATCHDAY 2",
-                execution
-                        .getCurrentRoundName(
-                                tournament
-                        )
+                execution.getCurrentRoundName(tournament)
         );
 
         assertEquals(
                 8,
                 execution
-                        .getCurrentPlayableMatches(
-                                tournament
-                        )
+                        .getCurrentPlayableMatches(tournament)
                         .size()
         );
 
-        /*
-         * --------------------------------------------------
-         * COMPLETAR FASE DE GRUPOS
-         * --------------------------------------------------
-         */
-
         int remainingGroupMatches =
-                execution
-                        .simulateRemainingPhase(
-                                tournament,
-                                stadiums
-                        );
+                execution.simulateRemainingPhase(
+                        tournament,
+                        stadiums
+                );
 
         assertEquals(
                 16,
@@ -246,20 +169,12 @@ public class TournamentExecutionTest {
 
         assertEquals(
                 24,
-                countPlayedGroupMatches(
-                        tournament
-                )
+                countPlayedGroupMatches(tournament)
         );
 
-        /*
-         * Al terminar grupos se generan cuartos,
-         * pero todavía no se juegan.
-         */
         assertEquals(
                 TournamentStage.QUARTER_FINALS,
-                execution.getCurrentStage(
-                        tournament
-                )
+                execution.getCurrentStage(tournament)
         );
 
         assertEquals(
@@ -279,31 +194,18 @@ public class TournamentExecutionTest {
         assertEquals(
                 4,
                 execution
-                        .getCurrentPlayableMatches(
-                                tournament
-                        )
+                        .getCurrentPlayableMatches(tournament)
                         .size()
         );
 
         assertEquals(
                 "QUARTER-FINALS - FIRST LEG",
-                execution
-                        .getCurrentRoundName(
-                                tournament
-                        )
+                execution.getCurrentRoundName(tournament)
         );
-
-        /*
-         * --------------------------------------------------
-         * JUGAR UNA IDA DE CUARTOS
-         * --------------------------------------------------
-         */
 
         Match quarterFinal =
                 execution
-                        .getCurrentPlayableMatches(
-                                tournament
-                        )
+                        .getCurrentPlayableMatches(tournament)
                         .get(0);
 
         execution.playMatch(
@@ -316,23 +218,12 @@ public class TournamentExecutionTest {
                 quarterFinal.isPlayed()
         );
 
-        /*
-         * Quedan tres partidos de ida.
-         */
         assertEquals(
                 3,
                 execution
-                        .getCurrentPlayableMatches(
-                                tournament
-                        )
+                        .getCurrentPlayableMatches(tournament)
                         .size()
         );
-
-        /*
-         * --------------------------------------------------
-         * COMPLETAR TODAS LAS IDAS
-         * --------------------------------------------------
-         */
 
         execution.simulateCurrentMatchday(
                 tournament,
@@ -341,37 +232,35 @@ public class TournamentExecutionTest {
 
         assertEquals(
                 "QUARTER-FINALS - SECOND LEG",
-                execution
-                        .getCurrentRoundName(
-                                tournament
-                        )
+                execution.getCurrentRoundName(tournament)
         );
 
         assertEquals(
                 4,
                 execution
-                        .getCurrentPlayableMatches(
-                                tournament
-                        )
+                        .getCurrentPlayableMatches(tournament)
                         .size()
         );
 
         /*
-         * --------------------------------------------------
-         * COMPLETAR CUARTOS
-         * --------------------------------------------------
+         * Se simulan los 90 minutos de los cuartos.
+         * Si alguna serie necesita penales, los resolvemos
+         * manualmente mediante simulatePenalties().
          */
-
         execution.simulateRemainingPhase(
+                tournament,
+                stadiums
+        );
+
+        resolvePendingPenalties(
+                execution,
                 tournament,
                 stadiums
         );
 
         assertEquals(
                 TournamentStage.SEMI_FINALS,
-                execution.getCurrentStage(
-                        tournament
-                )
+                execution.getCurrentStage(tournament)
         );
 
         assertEquals(
@@ -391,28 +280,24 @@ public class TournamentExecutionTest {
         assertEquals(
                 2,
                 execution
-                        .getCurrentPlayableMatches(
-                                tournament
-                        )
+                        .getCurrentPlayableMatches(tournament)
                         .size()
         );
-
-        /*
-         * --------------------------------------------------
-         * COMPLETAR SEMIFINALES
-         * --------------------------------------------------
-         */
 
         execution.simulateRemainingPhase(
                 tournament,
                 stadiums
         );
 
+        resolvePendingPenalties(
+                execution,
+                tournament,
+                stadiums
+        );
+
         assertEquals(
                 TournamentStage.FINAL,
-                execution.getCurrentStage(
-                        tournament
-                )
+                execution.getCurrentStage(tournament)
         );
 
         assertNotNull(
@@ -422,21 +307,12 @@ public class TournamentExecutionTest {
         assertEquals(
                 1,
                 execution
-                        .getCurrentPlayableMatches(
-                                tournament
-                        )
+                        .getCurrentPlayableMatches(tournament)
                         .size()
         );
 
-        /*
-         * --------------------------------------------------
-         * JUGAR FINAL MANUALMENTE
-         * --------------------------------------------------
-         */
-
         Match finalMatch =
-                tournament
-                        .getFinalMatch();
+                tournament.getFinalMatch();
 
         execution.playMatch(
                 tournament,
@@ -448,37 +324,133 @@ public class TournamentExecutionTest {
                 finalMatch.isPlayed()
         );
 
+        /*
+         * Si la final termina empatada, todavía no debe existir campeón.
+         * Recién después de simulatePenalties() queda definido.
+         */
+        if (execution.requiresPenalties(finalMatch)) {
+            assertNull(
+                    tournament.getChampion()
+            );
+
+            assertNull(
+                    finalMatch.getHomePenalties()
+            );
+
+            assertNull(
+                    finalMatch.getAwayPenalties()
+            );
+
+            execution.simulatePenalties(
+                    tournament,
+                    finalMatch,
+                    stadiums
+            );
+        }
+
         assertNotNull(
                 tournament.getChampion()
         );
 
         assertEquals(
                 TournamentStage.FINISHED,
-                execution.getCurrentStage(
-                        tournament
-                )
+                execution.getCurrentStage(tournament)
         );
 
         assertEquals(
                 37,
-                countPlayedMatches(
-                        tournament
-                )
+                countPlayedMatches(tournament)
         );
 
         assertTrue(
                 execution
-                        .getCurrentPlayableMatches(
-                                tournament
-                        )
+                        .getCurrentPlayableMatches(tournament)
                         .isEmpty()
         );
+
+        assertTrue(
+                execution
+                        .getPendingPenaltyMatches(tournament)
+                        .isEmpty()
+        );
+    }
+
+    private void resolvePendingPenalties(
+            TournamentExecutionService execution,
+            Tournament tournament,
+            List<Stadium> stadiums) {
+
+        while (!execution
+                .getPendingPenaltyMatches(tournament)
+                .isEmpty()) {
+
+            Match pending =
+                    execution
+                            .getPendingPenaltyMatches(tournament)
+                            .get(0);
+
+            assertTrue(
+                    pending.isPlayed()
+            );
+
+            assertTrue(
+                    execution.requiresPenalties(pending)
+            );
+
+            assertNull(
+                    pending.getHomePenalties()
+            );
+
+            assertNull(
+                    pending.getAwayPenalties()
+            );
+
+            execution.simulatePenalties(
+                    tournament,
+                    pending,
+                    stadiums
+            );
+
+            assertNotNull(
+                    pending.getHomePenalties()
+            );
+
+            assertNotNull(
+                    pending.getAwayPenalties()
+            );
+
+            assertNotNull(
+                    pending.getWinner()
+            );
+        }
+    }
+
+    private Match findFutureMatch(
+            TournamentExecutionService execution,
+            Tournament tournament,
+            Match selectedMatch) {
+
+        for (Match match :
+                execution.getCurrentPhaseMatches(tournament)) {
+
+            if (!match.isPlayed()
+                    && match.getMatchDate()
+                    .isAfter(
+                            selectedMatch.getMatchDate()
+                    )) {
+
+                return match;
+            }
+        }
+
+        return null;
     }
 
     private int countPlayedMatches(
             Tournament tournament) {
 
-        int count = 0;
+        int count =
+                0;
 
         for (Match match :
                 tournament.getAllMatches()) {
@@ -494,7 +466,8 @@ public class TournamentExecutionTest {
     private int countPlayedGroupMatches(
             Tournament tournament) {
 
-        int count = 0;
+        int count =
+                0;
 
         for (model.tournament.Group group :
                 tournament.getGroups()) {
@@ -512,7 +485,6 @@ public class TournamentExecutionTest {
     }
 
     private List<Stadium> createTestStadiums() {
-
         List<Stadium> stadiums =
                 new ArrayList<>();
 

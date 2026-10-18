@@ -18,6 +18,7 @@
         <VBox>
 
             <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
+
             <HBox alignment="CENTER_LEFT"
                   spacing="10"
                   styleClass="top-navigation">
@@ -28,7 +29,8 @@
                            preserveRatio="true"
                            styleClass="brand-logo"/>
 
-                <!-- SOLAPAS DE NAVEGACIÓN -->
+                <!-- SOLAPAS -->
+
                 <Button fx:id="tournamentButton"
                         text="TOURNAMENT"
                         styleClass="nav-button"
@@ -51,37 +53,47 @@
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <!-- INDICADORES GLOBALES -->
+                <!-- ESTADO GLOBAL DEL TORNEO -->
+
                 <HBox fx:id="globalTournamentStatusBox"
                       alignment="CENTER"
                       spacing="28"
                       style="-fx-padding: 0 16;">
 
-                    <VBox alignment="CENTER" spacing="3">
+                    <VBox alignment="CENTER"
+                          spacing="3">
+
                         <Label text="CURRENT STAGE"
                                styleClass="small-text"
                                style="-fx-font-size: 11px; -fx-font-weight: 800;"/>
+
                         <Label fx:id="mainStageLabel"
                                text="GROUP STAGE"
                                styleClass="metric-value"
                                style="-fx-font-size: 16px; -fx-font-weight: 900;"/>
+
                     </VBox>
 
-                    <VBox alignment="CENTER" spacing="3">
+                    <VBox alignment="CENTER"
+                          spacing="3">
+
                         <Label text="MATCHES"
                                styleClass="small-text"
                                style="-fx-font-size: 11px; -fx-font-weight: 800;"/>
+
                         <Label fx:id="mainMatchesLabel"
                                text="0 / 37"
                                styleClass="metric-value"
                                style="-fx-font-size: 16px; -fx-font-weight: 900;"/>
+
                     </VBox>
 
                 </HBox>
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <!-- BOTONES DE ACCIÓN -->
+                <!-- ACCIONES -->
+
                 <Button text="SAVE"
                         styleClass="utility-button"
                         onAction="#handleSave"/>
@@ -101,7 +113,8 @@
 
             </HBox>
 
-            <!-- ENCABEZADO DE PÁGINA -->
+            <!-- ENCABEZADO DE LA PÁGINA -->
+
             <HBox alignment="CENTER"
                   styleClass="page-header">
 
@@ -129,16 +142,31 @@
         </VBox>
     </top>
 
+
+    <!--
+        IMPORTANTE:
+        No usamos ScrollPane general.
+        Cada vista administra sus propios scrolls.
+    -->
+
     <center>
+
         <StackPane fx:id="contentHost"
+                   minHeight="0"
                    styleClass="content-host"/>
+
     </center>
 
+
+    <!-- BARRA INFERIOR -->
+
     <bottom>
+
         <Label fx:id="statusLabel"
                maxWidth="Infinity"
                text="Application ready."
                styleClass="status-bar"/>
+
     </bottom>
 
 </BorderPane>

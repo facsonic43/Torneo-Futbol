@@ -5,42 +5,56 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="gui.controller.MatchDayController"
       spacing="16"
+      minHeight="0"
       styleClass="match-day-wrapper">
 
-    <!-- LISTA DE PARTIDOS -->
+    <!-- PANEL IZQUIERDO -->
 
     <VBox prefWidth="560"
           minWidth="450"
+          maxWidth="620"
+          minHeight="0"
           spacing="12"
           styleClass="panel">
 
-        <HBox alignment="CENTER_LEFT">
+        <VBox spacing="8">
 
             <VBox spacing="3">
+
                 <Label text="CURRENT ROUND"
                        styleClass="small-label"/>
 
                 <Label fx:id="currentRoundLabel"
                        text="-"
+                       wrapText="true"
                        styleClass="section-title-large"/>
+
             </VBox>
 
-            <Region HBox.hgrow="ALWAYS"/>
+            <HBox alignment="CENTER_LEFT">
 
-            <Label fx:id="phaseProgressLabel"
-                   text="0 / 0 MATCHES"
-                   styleClass="status-chip"/>
+                <Label fx:id="phaseProgressLabel"
+                       text="0 / 0 MATCHES"
+                       styleClass="status-chip"/>
 
-        </HBox>
+            </HBox>
+
+        </VBox>
+
+
+        <!-- SOLO LOS PARTIDOS TIENEN SCROLL -->
 
         <ScrollPane fitToWidth="true"
-                    HBox.hgrow="ALWAYS"
+                    hbarPolicy="NEVER"
+                    vbarPolicy="AS_NEEDED"
+                    minHeight="0"
                     VBox.vgrow="ALWAYS"
                     styleClass="match-list-scroll">
 
@@ -50,11 +64,13 @@
 
         </ScrollPane>
 
+
         <Button fx:id="simulateRoundButton"
                 text="SIMULATE MATCHDAY"
                 maxWidth="Infinity"
                 styleClass="secondary-action-button"
                 onAction="#handleSimulateRound"/>
+
 
         <Button fx:id="simulatePhaseButton"
                 text="SIMULATE REMAINING PHASE"
@@ -65,72 +81,381 @@
     </VBox>
 
 
-    <!-- PARTIDO SELECCIONADO -->
+    <!-- PANEL DERECHO -->
 
-    <VBox spacing="14"
-          HBox.hgrow="ALWAYS"
-          styleClass="panel">
+    <StackPane minHeight="0"
+               HBox.hgrow="ALWAYS">
 
-        <HBox alignment="CENTER_LEFT">
 
-            <VBox spacing="4">
+        <!-- PARTIDO NORMAL -->
 
-                <Label text="SELECTED MATCH"
-                       styleClass="small-label"/>
+        <VBox fx:id="normalMatchPane"
+              minHeight="0"
+              spacing="14"
+              styleClass="panel">
 
-                <Label fx:id="selectedMatchTitle"
-                       text="No match selected"
-                       styleClass="selected-match-title"/>
+            <HBox alignment="CENTER_LEFT">
+
+                <VBox spacing="4"
+                      HBox.hgrow="ALWAYS">
+
+                    <Label text="SELECTED MATCH"
+                           styleClass="small-label"/>
+
+                    <Label fx:id="selectedMatchTitle"
+                           text="No match selected"
+                           wrapText="true"
+                           styleClass="selected-match-title"/>
+
+                </VBox>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label fx:id="selectedScore"
+                       text="VS"
+                       styleClass="selected-score"/>
+
+            </HBox>
+
+
+            <HBox spacing="18"
+                  styleClass="selected-match-info">
+
+                <Label fx:id="selectedDate"
+                       text="DATE  -"
+                       styleClass="match-detail"/>
+
+                <Label fx:id="selectedStadium"
+                       text="STADIUM  -"
+                       styleClass="match-detail"/>
+
+                <Label fx:id="selectedReferee"
+                       text="REFEREE  -"
+                       styleClass="match-detail"/>
+
+            </HBox>
+
+
+            <Label fx:id="selectedResolution"
+                   text="STATUS  -"
+                   styleClass="ready-chip"/>
+
+
+            <Button fx:id="playSelectedButton"
+                    text="PLAY SELECTED MATCH"
+                    maxWidth="Infinity"
+                    styleClass="continue-button"
+                    onAction="#handlePlaySelected"/>
+
+
+            <Label text="MATCH EVENTS"
+                   styleClass="section-title"/>
+
+
+            <ScrollPane fitToWidth="true"
+                        hbarPolicy="NEVER"
+                        vbarPolicy="AS_NEEDED"
+                        minHeight="0"
+                        VBox.vgrow="ALWAYS"
+                        styleClass="events-scroll">
+
+                <VBox fx:id="eventsBox"
+                      spacing="7"
+                      styleClass="events-box"/>
+
+            </ScrollPane>
+
+        </VBox>
+
+
+        <!-- PENALTY SHOOTOUT -->
+
+        <VBox fx:id="penaltyShootoutPane"
+              visible="false"
+              managed="false"
+              minHeight="0"
+              spacing="10"
+              styleClass="panel">
+
+            <!-- HEADER -->
+
+            <HBox alignment="CENTER_LEFT">
+
+                <VBox spacing="3">
+
+                    <Label fx:id="penaltyRoundLabel"
+                           text="SEMI-FINALS"
+                           styleClass="small-label"/>
+
+                    <Label text="PENALTY SHOOTOUT"
+                           styleClass="section-title-large"/>
+
+                </VBox>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label fx:id="penaltyStatusLabel"
+                       text="PENALTIES REQUIRED"
+                       styleClass="purple-chip"/>
+
+            </HBox>
+
+
+            <!-- CONTEXTO -->
+
+            <Label fx:id="penaltyContextLabel"
+                   text="Series remains tied after tournament criteria."
+                   wrapText="true"
+                   styleClass="muted-text"/>
+
+
+            <!-- TABLERO -->
+
+            <VBox spacing="8"
+                  styleClass="selected-match-info">
+
+                <HBox alignment="CENTER_LEFT"
+                      spacing="12">
+
+                    <Label text="TEAM"
+                           prefWidth="190"
+                           minWidth="190"
+                           styleClass="small-label"/>
+
+                    <HBox fx:id="penaltyColumnHeaderBox"
+                          spacing="6"
+                          HBox.hgrow="ALWAYS"/>
+
+                    <Label text="SCORE"
+                           prefWidth="60"
+                           minWidth="60"
+                           alignment="CENTER"
+                           styleClass="small-label"/>
+
+                </HBox>
+
+
+                <!-- LOCAL -->
+
+                <HBox alignment="CENTER_LEFT"
+                      spacing="12">
+
+                    <VBox prefWidth="190"
+                          minWidth="190"
+                          spacing="2">
+
+                        <Label fx:id="penaltyHomeTeamLabel"
+                               text="HOME TEAM"
+                               wrapText="true"
+                               styleClass="selected-match-title"/>
+
+                        <Label fx:id="penaltyHomeGoalkeeperLabel"
+                               text="GK: -"
+                               wrapText="true"
+                               styleClass="small-label"/>
+
+                    </VBox>
+
+
+                    <HBox fx:id="penaltyHomeKicksBox"
+                          spacing="6"
+                          alignment="CENTER_LEFT"
+                          HBox.hgrow="ALWAYS"/>
+
+
+                    <Label fx:id="penaltyHomeScoreLabel"
+                           text="0"
+                           prefWidth="60"
+                           minWidth="60"
+                           alignment="CENTER"
+                           styleClass="selected-score"/>
+
+                </HBox>
+
+
+                <!-- VISITANTE -->
+
+                <HBox alignment="CENTER_LEFT"
+                      spacing="12">
+
+                    <VBox prefWidth="190"
+                          minWidth="190"
+                          spacing="2">
+
+                        <Label fx:id="penaltyAwayTeamLabel"
+                               text="AWAY TEAM"
+                               wrapText="true"
+                               styleClass="selected-match-title"/>
+
+                        <Label fx:id="penaltyAwayGoalkeeperLabel"
+                               text="GK: -"
+                               wrapText="true"
+                               styleClass="small-label"/>
+
+                    </VBox>
+
+
+                    <HBox fx:id="penaltyAwayKicksBox"
+                          spacing="6"
+                          alignment="CENTER_LEFT"
+                          HBox.hgrow="ALWAYS"/>
+
+
+                    <Label fx:id="penaltyAwayScoreLabel"
+                           text="0"
+                           prefWidth="60"
+                           minWidth="60"
+                           alignment="CENTER"
+                           styleClass="selected-score"/>
+
+                </HBox>
 
             </VBox>
 
-            <Region HBox.hgrow="ALWAYS"/>
 
-            <Label fx:id="selectedScore"
-                   text="VS"
-                   styleClass="selected-score"/>
+            <!-- LEYENDA -->
 
-        </HBox>
+            <HBox spacing="18"
+                  alignment="CENTER_LEFT">
 
-        <HBox spacing="18"
-              styleClass="selected-match-info">
+                <HBox spacing="6"
+                      alignment="CENTER_LEFT">
 
-            <Label fx:id="selectedDate"
-                   text="DATE  -"
-                   styleClass="match-detail"/>
+                    <Label text="✓"
+                           styleClass="ready-chip"/>
 
-            <Label fx:id="selectedStadium"
-                   text="STADIUM  -"
-                   styleClass="match-detail"/>
+                    <Label text="SCORED"
+                           styleClass="small-label"/>
 
-            <Label fx:id="selectedReferee"
-                   text="REFEREE  -"
-                   styleClass="match-detail"/>
+                </HBox>
 
-        </HBox>
 
-        <Label fx:id="selectedResolution"
-               text="STATUS  -"
-               styleClass="ready-chip"/>
+                <HBox spacing="6"
+                      alignment="CENTER_LEFT">
 
-        <Button fx:id="playSelectedButton"
-                text="PLAY SELECTED MATCH"
-                maxWidth="Infinity"
-                styleClass="continue-button"
-                onAction="#handlePlaySelected"/>
+                    <Label text="✕"
+                           styleClass="blocked-chip"/>
 
-        <Label text="MATCH EVENTS"
-               styleClass="section-title"/>
+                    <Label text="MISSED"
+                           styleClass="small-label"/>
 
-        <ScrollPane fitToWidth="true"
-                    VBox.vgrow="ALWAYS"
-                    styleClass="events-scroll">
+                </HBox>
 
-            <VBox fx:id="eventsBox"
-                  spacing="7"
-                  styleClass="events-box"/>
 
-        </ScrollPane>
+                <HBox spacing="6"
+                      alignment="CENTER_LEFT">
+
+                    <Label text="•"
+                           styleClass="purple-chip"/>
+
+                    <Label text="PENDING"
+                           styleClass="small-label"/>
+
+                </HBox>
+
+            </HBox>
+
+
+            <!-- BOTÓN PREVIO A LA TANDA -->
+
+            <Button fx:id="simulatePenaltiesButton"
+                    text="SIMULATE PENALTIES"
+                    maxWidth="Infinity"
+                    styleClass="phase-action-button"
+                    onAction="#handleSimulatePenalties"/>
+
+
+            <!-- KICK DETAILS -->
+
+            <VBox spacing="5"
+                  minHeight="0"
+                  VBox.vgrow="ALWAYS">
+
+                <Label text="KICK DETAILS"
+                       styleClass="section-title"/>
+
+
+                <ScrollPane fitToWidth="true"
+                            hbarPolicy="NEVER"
+                            vbarPolicy="AS_NEEDED"
+                            minHeight="130"
+                            prefHeight="170"
+                            maxHeight="220"
+                            VBox.vgrow="ALWAYS"
+                            styleClass="events-scroll">
+
+                    <VBox fx:id="penaltyKickDetailsBox"
+                          visible="false"
+                          managed="false"
+                          spacing="7"
+                          styleClass="events-box"/>
+
+                </ScrollPane>
+
+            </VBox>
+
+
+            <!--
+                GANADOR COMPACTO
+
+                IMPORTANTE:
+                penaltyWinnerBox SIGUE SIENDO VBox porque
+                MatchDayController lo declara como VBox.
+            -->
+
+            <VBox fx:id="penaltyWinnerBox"
+                  visible="false"
+                  managed="false"
+                  maxHeight="62"
+                  prefHeight="58"
+                  minHeight="52"
+                  spacing="0"
+                  style="-fx-padding: 6 12 6 12;">
+
+                <HBox alignment="CENTER_LEFT"
+                      spacing="12"
+                      maxHeight="48">
+
+                    <Label text="WINNER"
+                           styleClass="small-label"/>
+
+                    <Label fx:id="penaltyWinnerLabel"
+                           text="-"
+                           styleClass="section-title"/>
+
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <Label fx:id="penaltyWinnerDetailLabel"
+                           text="-"
+                           styleClass="ready-chip"/>
+
+                </HBox>
+
+            </VBox>
+
+
+            <!-- BOTÓN SIEMPRE FUERA DEL SCROLL -->
+
+            <Button fx:id="continueAfterPenaltiesButton"
+                    text="CONTINUE TO NEXT ROUND"
+                    visible="false"
+                    managed="false"
+                    maxWidth="Infinity"
+                    styleClass="continue-button"
+                    onAction="#handleContinueAfterPenalties"/>
+
+        </VBox>
+
+    </StackPane>
+
+
+    <!-- ESTADO INTERNO -->
+
+    <VBox prefWidth="0"
+          minWidth="0"
+          maxWidth="0"
+          visible="false"
+          managed="false">
 
         <Label fx:id="localStatus"
                text="Select a match to continue."
