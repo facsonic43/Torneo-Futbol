@@ -1,6 +1,8 @@
 package model.participant;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /*
  * Representa a un arquero con sus habilidades específicas.
@@ -40,11 +42,30 @@ public class Goalkeeper extends Player {
         return Position.GOALKEEPER;
     }
 
+    @Override
+    public boolean isGoalkeeper() {
+        return true;
+    }
+
+    @Override
     public void addGoalConceded() {
         goalsConceded++;
     }
 
+    @Override
     public int getGoalsConceded() {
         return goalsConceded;
+    }
+
+    @Override
+    public Map<String, Integer> getTechnicalAttributes() {
+        Map<String, Integer> attributes = new LinkedHashMap<>();
+        attributes.put("Reflexes", reflexes);
+        attributes.put("One On One", oneOnOne);
+        attributes.put("Kicking", kicking);
+        attributes.put("Passing", passing);
+        attributes.put("Speed", speed);
+        attributes.put("Jumping", jumping);
+        return attributes;
     }
 }

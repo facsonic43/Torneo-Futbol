@@ -120,7 +120,8 @@ public final class BracketReport {
         Map<Set<Team>, GroupMatch> fixtures = new HashMap<>();
         boolean duplicatePair = false;
         for (Match match : allMatches) {
-            if (!(match instanceof GroupMatch gm) || !rows.containsKey(match.getHomeTeam())
+            GroupMatch gm = match.asGroupMatch().orElse(null);
+            if (gm == null || !rows.containsKey(match.getHomeTeam())
                     || !rows.containsKey(match.getAwayTeam()) || match.getHomeTeam() == match.getAwayTeam()) continue;
             Set<Team> pair = Set.of(match.getHomeTeam(), match.getAwayTeam());
             if (fixtures.putIfAbsent(pair, gm) != null) duplicatePair = true;
@@ -175,10 +176,10 @@ public final class BracketReport {
         if (home == null || away == null)
             return new BracketNode(id, round, homeSource, awaySource, home, away, null, null, null,
                     null, "Awaiting qualification", "");
-        List<FirstLegMatch> firsts = matches.stream().filter(m -> m instanceof FirstLegMatch && pair(m, home, away))
-                .map(m -> (FirstLegMatch) m).toList();
-        List<SecondLegMatch> seconds = matches.stream().filter(m -> m instanceof SecondLegMatch && pair(m, home, away))
-                .map(m -> (SecondLegMatch) m).toList();
+        List<FirstLegMatch> firsts = matches.stream().map(Match::asFirstLeg).flatMap(Optional::stream)
+                .filter(m -> pair(m, home, away)).toList();
+        List<SecondLegMatch> seconds = matches.stream().map(Match::asSecondLeg).flatMap(Optional::stream)
+                .filter(m -> pair(m, home, away)).toList();
         if (firsts.size() > 1 || seconds.size() > 1)
             return new BracketNode(id, round, homeSource, awaySource, home, away, null, null, null,
                     null, "Conflicting tie records", "");
@@ -224,7 +225,8 @@ public final class BracketReport {
         String status = "Awaiting qualification";
         String resolution = "";
         if (home != null && away != null) {
-            List<Match> finals = matches.stream().filter(m -> m instanceof FinalMatch && pair(m, home, away)).toList();
+            List<FinalMatch> finals = matches.stream().map(Match::asFinal).flatMap(Optional::stream)
+                    .filter(m -> pair(m, home, away)).toList();
             status = finals.size() > 1 ? "Conflicting final records" : "Not scheduled";
             if (finals.size() == 1) {
                 match = finals.get(0);

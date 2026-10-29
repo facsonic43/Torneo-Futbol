@@ -2,7 +2,7 @@ package model.tournament;
 
 import model.participant.Team;
 
-public class Standing implements Comparable<Standing> {
+public class Standing {
     private Team team;
     private int played = 0;
     private int won = 0;
@@ -65,14 +65,4 @@ public class Standing implements Comparable<Standing> {
         return conceded;
     }
 
-    @Override
-    public int compareTo(Standing t2) {
-        if (this.getPoints() != t2.getPoints()) {
-            return Integer.compare(t2.getPoints(), this.getPoints());
-        }
-        if (this.getGoalDifference() != t2.getGoalDifference()) {
-            return Integer.compare(t2.getGoalDifference(), this.getGoalDifference());
-        }
-        return Integer.compare(t2.getScored(), this.getScored());
-    }
 }

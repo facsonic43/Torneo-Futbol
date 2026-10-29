@@ -1,6 +1,7 @@
 package reports;
 
 import model.match.Event;
+import model.match.EventVisitor;
 import model.match.Goal;
 import model.match.Match;
 import model.match.RedCard;
@@ -63,13 +64,19 @@ public class ReportMatchDetails {
 
         for (Event event : match.getEvents().stream().sorted(Comparator.comparingInt(Event::getMinute)).toList()) {
             int minute = Math.max(0, Math.min(duration, event.getMinute()));
-            if (event instanceof Substitution substitution) {
-                finishParticipation(substitution.getPlayerOut(), minute, entered, minutes);
-                entered.put(substitution.getPlayerIn(), minute);
-                minutes.putIfAbsent(substitution.getPlayerIn(), 0);
-            } else if (event instanceof RedCard) {
-                finishParticipation(event.getPlayer(), minute, entered, minutes);
-            }
+            event.accept(new EventVisitor() {
+                @Override
+                public void visit(Substitution substitution) {
+                    finishParticipation(substitution.getPlayerOut(), minute, entered, minutes);
+                    entered.put(substitution.getPlayerIn(), minute);
+                    minutes.putIfAbsent(substitution.getPlayerIn(), 0);
+                }
+
+                @Override
+                public void visit(RedCard redCard) {
+                    finishParticipation(redCard.getPlayer(), minute, entered, minutes);
+                }
+            });
         }
         entered.forEach((player, start) -> minutes.merge(player, duration - start, Integer::sum));
         return Map.copyOf(minutes);

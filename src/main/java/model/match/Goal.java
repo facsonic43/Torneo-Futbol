@@ -23,10 +23,6 @@ public class Goal extends Event {
         this.goalkeeperConceded = goalkeeperConceded;
     }
 
-    public Player getScorer() {
-        return player;
-    }
-
     public Player getAssistPlayer() {
         return assistPlayer;
     }
@@ -63,5 +59,10 @@ public class Goal extends Event {
                 " [" + team.getName() + "]";
 
         return description;
+    }
+
+    @Override
+    public void accept(EventVisitor visitor) {
+        visitor.visit(this);
     }
 }

@@ -2,7 +2,6 @@ package model.participant;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.Objects;
 import java.io.Serializable;
 
 public abstract class Person implements Serializable{
@@ -48,12 +47,4 @@ public abstract class Person implements Serializable{
         return age;
     }
 
-    public String getInformation(){
-        StringBuilder sb=new StringBuilder();
-        sb.append("Name: "+name+"\tID Number: "+idNumber+"\tID Type: "+idType+"\tBirth Date: "+birthDate+"\tNationality: "+nationality.getName()+"\n");
-        sb.append(getAditionalInfo());
-        return sb.toString();
-    }
-
-    protected abstract String getAditionalInfo();
 }

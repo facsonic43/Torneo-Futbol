@@ -1,7 +1,6 @@
 package service;
 
 import control.MatchSimulator;
-import model.match.FirstLegMatch;
 import model.match.GroupMatch;
 import model.match.Match;
 import model.match.SecondLegMatch;
@@ -518,13 +517,13 @@ public class TournamentExecutionService {
         }
 
         if (stage == TournamentStage.QUARTER_FINALS) {
-            return next instanceof FirstLegMatch
+            return next.asFirstLeg().isPresent()
                     ? "QUARTER-FINALS - FIRST LEG"
                     : "QUARTER-FINALS - SECOND LEG";
         }
 
         if (stage == TournamentStage.SEMI_FINALS) {
-            return next instanceof FirstLegMatch
+            return next.asFirstLeg().isPresent()
                     ? "SEMI-FINALS - FIRST LEG"
                     : "SEMI-FINALS - SECOND LEG";
         }

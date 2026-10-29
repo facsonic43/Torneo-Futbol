@@ -20,4 +20,9 @@ public class RedCard extends Event {
         String motive = directRed ? "Straight Red card" : "Double Yellow Card / Red Card";
         return minute + "' Red Card (" + motive + ") - " + player.getName() + " [" + team.getName() + "]";
     }
+
+    @Override
+    public void accept(EventVisitor visitor) {
+        visitor.visit(this);
+    }
 }

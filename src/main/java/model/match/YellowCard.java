@@ -13,4 +13,9 @@ public class YellowCard extends Event {
     public String getDescription() {
         return minute + "' Yellow Card - " + player.getName() + " [" + team.getName() + "]";
     }
+
+    @Override
+    public void accept(EventVisitor visitor) {
+        visitor.visit(this);
+    }
 }

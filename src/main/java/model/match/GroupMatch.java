@@ -1,5 +1,6 @@
 package model.match;
 
+import java.util.Optional;
 import model.participant.Referee;
 import model.participant.Team;
 
@@ -22,19 +23,6 @@ public class GroupMatch extends Match {
     }
 
     @Override
-    public Team getWinner() {
-        Team winner = null;
-        if (played) {
-            if (homeGoals > awayGoals) {
-                winner = homeTeam;
-            } else if (awayGoals > homeGoals) {
-                winner = awayTeam;
-            }
-        }
-        return winner;
-    }
-
-    @Override
     public String getResolutionCriteria() {
         String criteria = "Not Played";
         if (played) {
@@ -45,5 +33,10 @@ public class GroupMatch extends Match {
             }
         }
         return criteria;
+    }
+
+    @Override
+    public Optional<GroupMatch> asGroupMatch() {
+        return Optional.of(this);
     }
 }

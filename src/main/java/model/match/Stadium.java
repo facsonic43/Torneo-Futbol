@@ -1,6 +1,5 @@
 package model.match;
 
-import java.util.Objects;
 import java.io.Serializable;
 
 public class Stadium implements Serializable{
@@ -24,10 +23,8 @@ public class Stadium implements Serializable{
     public void setId(int id) { this.id = id; }
 
     public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
 
     public int getCityId() { return cityId; }
-    public void setCityId(int cityId) { this.cityId = cityId; }
 
     @Override
     public String toString() {

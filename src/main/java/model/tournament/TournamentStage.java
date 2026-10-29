@@ -6,10 +6,21 @@ package model.tournament;
  * de cargar una partida guardada.
  */
 public enum TournamentStage {
-    NOT_STARTED, //sin grupos
-    GROUP_STAGE, //grupos creados
-    QUARTER_FINALS, // cuartos creados
-    SEMI_FINALS, // semis creadas
-    FINAL, // final creada
-    FINISHED // campeon existente
+    NOT_STARTED("NOT STARTED"), //sin grupos
+    GROUP_STAGE("GROUP STAGE"), //grupos creados
+    QUARTER_FINALS("QUARTER-FINALS"), // cuartos creados
+    SEMI_FINALS("SEMI-FINALS"), // semis creadas
+    FINAL("FINAL"), // final creada
+    FINISHED("FINISHED"); // campeon existente
+
+    private final String label;
+
+    TournamentStage(String label) {
+        this.label = label;
+    }
+
+    /** Name of the stage as shown to the user. */
+    public String getLabel() {
+        return label;
+    }
 }

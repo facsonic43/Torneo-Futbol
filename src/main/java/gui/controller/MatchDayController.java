@@ -1,28 +1,23 @@
 package gui.controller;
 
+import gui.MatchEventsView;
+import gui.PenaltyKicksView;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import model.match.Event;
-import model.match.FirstLegMatch;
 import model.match.Match;
 import model.match.PenaltyTaken;
-import model.match.SecondLegMatch;
 import model.participant.Player;
-import model.participant.PlayerParticipation;
-import model.participant.Position;
 import model.participant.Team;
 import model.tournament.Tournament;
 import model.tournament.TournamentStage;
 import service.TournamentExecutionService;
 import service.TournamentSessionService;
 
-import java.util.ArrayList;
 import java.util.List;
+import static gui.MatchFormat.penaltyContext;
 
 /*
  * Controla la pantalla Match Day.
@@ -119,6 +114,8 @@ public class MatchDayController {
 
     @FXML
     private VBox penaltyKickDetailsBox;
+    private PenaltyKicksView penaltyKicksView;
+    private MatchEventsView matchEventsView;
 
     @FXML
     private Button simulatePenaltiesButton;
@@ -170,6 +167,15 @@ public class MatchDayController {
 
         this.session =
                 session;
+
+        if (matchEventsView == null) {
+            matchEventsView = new MatchEventsView(eventsBox);
+        }
+
+        if (penaltyKicksView == null) {
+            penaltyKicksView = new PenaltyKicksView(penaltyColumnHeaderBox, penaltyHomeKicksBox,
+                    penaltyAwayKicksBox, penaltyKickDetailsBox);
+        }
 
         tournament =
                 session.getTournament();
@@ -648,7 +654,7 @@ public class MatchDayController {
             );
         }
 
-        renderMatchEvents(
+        matchEventsView.render(
                 match
         );
     }
@@ -663,69 +669,6 @@ public class MatchDayController {
         return match.getHomeGoals()
                 + "  -  "
                 + match.getAwayGoals();
-    }
-
-    /*
-     * Muestra las incidencias normales del partido.
-     */
-    private void renderMatchEvents(
-            Match match) {
-
-        eventsBox
-                .getChildren()
-                .clear();
-
-        if (match.getEvents()
-                .isEmpty()) {
-
-            Label empty =
-                    new Label(
-                            match.isPlayed()
-                                    ? "No events registered."
-                                    : "Match has not been played yet."
-                    );
-
-            empty.getStyleClass()
-                    .add(
-                            "muted-text"
-                    );
-
-            eventsBox
-                    .getChildren()
-                    .add(
-                            empty
-                    );
-
-            return;
-        }
-
-        for (Event event :
-                match.getEvents()) {
-
-            if (!(event
-                    instanceof PenaltyTaken)) {
-
-                Label eventLabel =
-                        new Label(
-                                event.getDescription()
-                        );
-
-                eventLabel.setWrapText(
-                        true
-                );
-
-                eventLabel.getStyleClass()
-                        .add(
-                                "event-row"
-                        );
-
-                eventsBox
-                        .getChildren()
-                        .add(
-                                eventLabel
-                        );
-            }
-        }
     }
 
     private void showNormalMatchPane() {
@@ -778,9 +721,7 @@ public class MatchDayController {
                 );
 
         penaltyRoundLabel.setText(
-                getMatchRoundName(
-                        match
-                )
+                tournament.getStageOf(match).getLabel()
         );
 
         penaltyStatusLabel.setText(
@@ -803,16 +744,10 @@ public class MatchDayController {
          * Mostramos los arqueros que participan de la tanda.
          */
         Player homeGoalkeeper =
-                findShootoutGoalkeeper(
-                        match,
-                        match.getHomeTeam()
-                );
+                match.getShootoutGoalkeeper(match.getHomeTeam());
 
         Player awayGoalkeeper =
-                findShootoutGoalkeeper(
-                        match,
-                        match.getAwayTeam()
-                );
+                match.getShootoutGoalkeeper(match.getAwayTeam());
 
         penaltyHomeGoalkeeperLabel.setText(
                 "GK: "
@@ -833,22 +768,16 @@ public class MatchDayController {
         );
 
         penaltyContextLabel.setText(
-                buildPenaltyContext(
+                penaltyContext(
                         match
                 )
         );
 
         List<PenaltyTaken> homePenalties =
-                getPenaltyEvents(
-                        match,
-                        match.getHomeTeam()
-                );
+                match.getPenaltyKicks(match.getHomeTeam());
 
         List<PenaltyTaken> awayPenalties =
-                getPenaltyEvents(
-                        match,
-                        match.getAwayTeam()
-                );
+                match.getPenaltyKicks(match.getAwayTeam());
 
         int homeScore =
                 match.getHomePenalties()
@@ -874,7 +803,7 @@ public class MatchDayController {
                 )
         );
 
-        renderPenaltyColumns(
+        penaltyKicksView.renderColumns(
                 homePenalties,
                 awayPenalties,
                 finished
@@ -883,7 +812,7 @@ public class MatchDayController {
         /*
          * El detalle con nombres aparece después de ejecutar la tanda.
          */
-        renderPenaltyKickDetails(
+        penaltyKicksView.renderKickDetails(
                 homePenalties,
                 awayPenalties
         );
@@ -948,591 +877,6 @@ public class MatchDayController {
 
             configureContinueButton();
         }
-    }
-
-    /*
-     * Genera las columnas 1 a 5 y las necesarias para muerte súbita.
-     */
-    private void renderPenaltyColumns(
-            List<PenaltyTaken> homePenalties,
-            List<PenaltyTaken> awayPenalties,
-            boolean finished) {
-
-        penaltyColumnHeaderBox
-                .getChildren()
-                .clear();
-
-        penaltyHomeKicksBox
-                .getChildren()
-                .clear();
-
-        penaltyAwayKicksBox
-                .getChildren()
-                .clear();
-
-        int columns =
-                Math.max(
-                        5,
-                        Math.max(
-                                homePenalties.size(),
-                                awayPenalties.size()
-                        )
-                );
-
-        for (int i = 0;
-             i < columns;
-             i++) {
-
-            String header;
-
-            if (i < 5) {
-
-                header =
-                        String.valueOf(
-                                i + 1
-                        );
-
-            } else {
-
-                header =
-                        "SD"
-                                + (i - 4);
-            }
-
-            penaltyColumnHeaderBox
-                    .getChildren()
-                    .add(
-                            createPenaltyHeader(
-                                    header
-                            )
-                    );
-
-            penaltyHomeKicksBox
-                    .getChildren()
-                    .add(
-                            createPenaltyCell(
-                                    i < homePenalties.size()
-                                            ? homePenalties.get(i)
-                                            : null,
-                                    finished
-                            )
-                    );
-
-            penaltyAwayKicksBox
-                    .getChildren()
-                    .add(
-                            createPenaltyCell(
-                                    i < awayPenalties.size()
-                                            ? awayPenalties.get(i)
-                                            : null,
-                                    finished
-                            )
-                    );
-        }
-    }
-
-    /*
-     * Muestra de manera visible quién convirtió o falló cada penal.
-     */
-    private void renderPenaltyKickDetails(
-            List<PenaltyTaken> homePenalties,
-            List<PenaltyTaken> awayPenalties) {
-
-        penaltyKickDetailsBox
-                .getChildren()
-                .clear();
-
-        int rounds =
-                Math.max(
-                        homePenalties.size(),
-                        awayPenalties.size()
-                );
-
-        /*
-         * Antes de ejecutar la tanda no mostramos detalles vacíos.
-         */
-        if (rounds == 0) {
-
-            penaltyKickDetailsBox.setVisible(
-                    false
-            );
-
-            penaltyKickDetailsBox.setManaged(
-                    false
-            );
-
-            return;
-        }
-
-        penaltyKickDetailsBox.setVisible(
-                true
-        );
-
-        penaltyKickDetailsBox.setManaged(
-                true
-        );
-
-        for (int i = 0;
-             i < rounds;
-             i++) {
-
-            String roundName =
-                    i < 5
-                            ? "ROUND " + (i + 1)
-                            : "SUDDEN DEATH " + (i - 4);
-
-            Label roundLabel =
-                    new Label(
-                            roundName
-                    );
-
-            roundLabel.getStyleClass()
-                    .add(
-                            "small-label"
-                    );
-
-            VBox roundBox =
-                    new VBox(
-                            5
-                    );
-
-            roundBox.getStyleClass()
-                    .add(
-                            "event-row"
-                    );
-
-            roundBox
-                    .getChildren()
-                    .add(
-                            roundLabel
-                    );
-
-            if (i < homePenalties.size()) {
-
-                roundBox
-                        .getChildren()
-                        .add(
-                                createPenaltyDetailLabel(
-                                        homePenalties.get(i)
-                                )
-                        );
-            }
-
-            if (i < awayPenalties.size()) {
-
-                roundBox
-                        .getChildren()
-                        .add(
-                                createPenaltyDetailLabel(
-                                        awayPenalties.get(i)
-                                )
-                        );
-            }
-
-            penaltyKickDetailsBox
-                    .getChildren()
-                    .add(
-                            roundBox
-                    );
-        }
-    }
-
-    /*
-     * Genera una línea como:
-     * LONABARCE · Juan Perez     ✓ SCORED
-     */
-    private Label createPenaltyDetailLabel(
-            PenaltyTaken penalty) {
-
-        String result =
-                penalty.isScored()
-                        ? "✓ SCORED"
-                        : "✕ MISSED";
-
-        String text =
-                penalty.getTeam()
-                        .getName()
-                        + " · "
-                        + penalty
-                        .getPlayer()
-                        .getName()
-                        + "     "
-                        + result;
-
-        Label label =
-                new Label(
-                        text
-                );
-
-        label.setWrapText(
-                true
-        );
-
-        if (penalty.isScored()) {
-
-            label.getStyleClass()
-                    .add(
-                            "ready-chip"
-                    );
-
-        } else {
-
-            label.getStyleClass()
-                    .add(
-                            "blocked-chip"
-                    );
-        }
-
-        return label;
-    }
-
-    private Label createPenaltyHeader(
-            String text) {
-
-        Label label =
-                new Label(
-                        text
-                );
-
-        label.setAlignment(
-                Pos.CENTER
-        );
-
-        label.setMinSize(
-                42,
-                24
-        );
-
-        label.setPrefSize(
-                42,
-                24
-        );
-
-        label.setMaxSize(
-                42,
-                24
-        );
-
-        label.getStyleClass()
-                .add(
-                        "small-label"
-                );
-
-        return label;
-    }
-
-    /*
-     * Genera el indicador visual verde, rojo o pendiente.
-     */
-    private Label createPenaltyCell(
-            PenaltyTaken penalty,
-            boolean shootoutFinished) {
-
-        Label cell =
-                new Label();
-
-        cell.setAlignment(
-                Pos.CENTER
-        );
-
-        cell.setMinSize(
-                42,
-                38
-        );
-
-        cell.setPrefSize(
-                42,
-                38
-        );
-
-        cell.setMaxSize(
-                42,
-                38
-        );
-
-        if (penalty == null) {
-
-            cell.setText(
-                    shootoutFinished
-                            ? "—"
-                            : "•"
-            );
-
-            cell.getStyleClass()
-                    .add(
-                            "purple-chip"
-                    );
-
-            return cell;
-        }
-
-        if (penalty.isScored()) {
-
-            cell.setText(
-                    "✓"
-            );
-
-            cell.getStyleClass()
-                    .add(
-                            "ready-chip"
-                    );
-
-            cell.setTooltip(
-                    new Tooltip(
-                            penalty
-                                    .getPlayer()
-                                    .getName()
-                                    + " - SCORED"
-                    )
-            );
-
-        } else {
-
-            cell.setText(
-                    "✕"
-            );
-
-            cell.getStyleClass()
-                    .add(
-                            "blocked-chip"
-                    );
-
-            cell.setTooltip(
-                    new Tooltip(
-                            penalty
-                                    .getPlayer()
-                                    .getName()
-                                    + " - MISSED"
-                    )
-            );
-        }
-
-        return cell;
-    }
-
-    /*
-     * Obtiene los penales ejecutados por un equipo.
-     */
-    private List<PenaltyTaken> getPenaltyEvents(
-            Match match,
-            Team team) {
-
-        List<PenaltyTaken> penalties =
-                new ArrayList<>();
-
-        for (Event event :
-                match.getEvents()) {
-
-            if (event
-                    instanceof PenaltyTaken) {
-
-                PenaltyTaken penalty =
-                        (PenaltyTaken) event;
-
-                if (penalty.getTeam()
-                        == team) {
-
-                    penalties.add(
-                            penalty
-                    );
-                }
-            }
-        }
-
-        return penalties;
-    }
-
-    /*
-     * Obtiene los jugadores que terminaron el encuentro en cancha.
-     */
-    private List<Player> getPlayersOnPitch(
-            Match match,
-            Team team) {
-
-        List<Player> players =
-                new ArrayList<>();
-
-        for (PlayerParticipation participation :
-                match.getPlayerParticipations()) {
-
-            if (participation.getTeam()
-                    == team
-                    && participation.getExitMinute()
-                    >= 90) {
-
-                players.add(
-                        participation.getPlayer()
-                );
-            }
-        }
-
-        /*
-         * Respaldo para partidos antiguos o partidas guardadas
-         * que no tengan participaciones registradas.
-         */
-        if (players.isEmpty()) {
-
-            if (team
-                    == match.getHomeTeam()) {
-
-                players.addAll(
-                        match.getHomeStarters()
-                );
-
-            } else {
-
-                players.addAll(
-                        match.getAwayStarters()
-                );
-            }
-        }
-
-        return players;
-    }
-
-    /*
-     * Busca el arquero que terminó el partido.
-     * Si no queda un arquero natural, devuelve el jugador de mayor
-     * overall que actúa como arquero de emergencia.
-     *
-     * Esto utiliza la misma idea que la simulación de la tanda.
-     */
-    private Player findShootoutGoalkeeper(
-            Match match,
-            Team team) {
-
-        List<Player> players =
-                getPlayersOnPitch(
-                        match,
-                        team
-                );
-
-        if (players.isEmpty()) {
-            return null;
-        }
-
-        for (Player player :
-                players) {
-
-            if (player.getPosition()
-                    == Position.GOALKEEPER) {
-
-                return player;
-            }
-        }
-
-        Player emergencyGoalkeeper =
-                players.get(0);
-
-        for (Player player :
-                players) {
-
-            if (player.getOverall()
-                    > emergencyGoalkeeper.getOverall()) {
-
-                emergencyGoalkeeper =
-                        player;
-            }
-        }
-
-        return emergencyGoalkeeper;
-    }
-
-    /*
-     * Texto breve que explica por qué se llegó a los penales.
-     */
-    private String buildPenaltyContext(
-            Match match) {
-
-        if (match
-                instanceof SecondLegMatch) {
-
-            SecondLegMatch secondLeg =
-                    (SecondLegMatch) match;
-
-            FirstLegMatch firstLeg =
-                    secondLeg.getFirstLeg();
-
-            return "First leg: "
-                    + firstLeg
-                    .getHomeTeam()
-                    .getName()
-                    + " "
-                    + firstLeg.getHomeGoals()
-                    + " - "
-                    + firstLeg.getAwayGoals()
-                    + " "
-                    + firstLeg
-                    .getAwayTeam()
-                    .getName()
-                    + "   ·   Second leg: "
-                    + secondLeg
-                    .getHomeTeam()
-                    .getName()
-                    + " "
-                    + secondLeg.getHomeGoals()
-                    + " - "
-                    + secondLeg.getAwayGoals()
-                    + " "
-                    + secondLeg
-                    .getAwayTeam()
-                    .getName()
-                    + "   ·   Series remains tied after tournament criteria.";
-        }
-
-        return match.getHomeTeam()
-                .getName()
-                + " "
-                + match.getHomeGoals()
-                + " - "
-                + match.getAwayGoals()
-                + " "
-                + match.getAwayTeam()
-                .getName()
-                + "   ·   The final is level after 90 minutes.";
-    }
-
-    /*
-     * Obtiene el nombre de la ronda del partido.
-     */
-    private String getMatchRoundName(
-            Match match) {
-
-        if (match
-                == tournament.getFinalMatch()) {
-
-            return "FINAL";
-        }
-
-        if (tournament
-                .getSemiFinalFirstLegs()
-                .contains(
-                        match
-                )
-                || tournament
-                .getSemiFinalSecondLegs()
-                .contains(
-                        match
-                )) {
-
-            return "SEMI-FINALS";
-        }
-
-        if (tournament
-                .getQuarterFinalFirstLegs()
-                .contains(
-                        match
-                )
-                || tournament
-                .getQuarterFinalSecondLegs()
-                .contains(
-                        match
-                )) {
-
-            return "QUARTER-FINALS";
-        }
-
-        return "GROUP STAGE";
     }
 
     private boolean hasPenaltyResult(
@@ -1763,9 +1107,7 @@ public class MatchDayController {
             );
 
             currentRoundLabel.setText(
-                    getMatchRoundName(
-                            penaltyMatch
-                    )
+                    tournament.getStageOf(penaltyMatch).getLabel()
                             + " - SHOOTOUT COMPLETE"
             );
 

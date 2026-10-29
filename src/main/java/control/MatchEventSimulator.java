@@ -6,7 +6,6 @@ import model.match.Match;
 import model.match.RedCard;
 import model.match.Substitution;
 import model.match.YellowCard;
-import model.participant.Goalkeeper;
 import model.participant.Player;
 import model.participant.PlayerParticipation;
 import model.participant.Position;
@@ -537,11 +536,7 @@ public class MatchEventSimulator {
 
             scorer.addGoal();
 
-            if (penalty) {
-
-                scorer.addPenaltyGoal();
-
-            } else {
+            if (!penalty) {
 
                 assist =
                         pickAssister(
@@ -555,11 +550,9 @@ public class MatchEventSimulator {
             }
         }
 
-        if (goalkeeperConceded
-                instanceof Goalkeeper) {
+        if (goalkeeperConceded != null) {
 
-            ((Goalkeeper) goalkeeperConceded)
-                    .addGoalConceded();
+            goalkeeperConceded.addGoalConceded();
         }
 
         if (homeGoal) {
@@ -862,8 +855,7 @@ public class MatchEventSimulator {
 
                 if (goalkeeperInjured) {
 
-                    if (incoming
-                            instanceof Goalkeeper) {
+                    if (incoming.isGoalkeeper()) {
 
                         activeGoalkeeper[0] =
                                 incoming;
@@ -1065,8 +1057,7 @@ public class MatchEventSimulator {
         for (Player player :
                 subs) {
 
-            if (player
-                    instanceof Goalkeeper) {
+            if (player.isGoalkeeper()) {
 
                 return player;
             }
@@ -1082,8 +1073,7 @@ public class MatchEventSimulator {
         for (Player player :
                 pitch) {
 
-            if (player
-                    instanceof Goalkeeper) {
+            if (player.isGoalkeeper()) {
 
                 return player;
             }
@@ -1274,7 +1264,6 @@ public class MatchEventSimulator {
                 new PlayerParticipation(
                         player,
                         team,
-                        false,
                         minute
                 );
 

@@ -35,7 +35,7 @@ final class IdentificationPdfSection {
             }
             for (Player player : team.getSquad()) {
                 cards.addCell(card(document.getPdfDocument(), player,
-                        "Player / " + PdfReportStyle.position(player.getPosition()), team, photosDirectory));
+                        "Player / " + player.getPosition().getLabel(), team, photosDirectory));
                 count++;
             }
         }

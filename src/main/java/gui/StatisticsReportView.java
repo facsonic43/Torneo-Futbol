@@ -19,7 +19,7 @@ import reports.ChampionshipStatistics;
 import reports.ChampionshipStatistics.PlayerStats;
 import reports.ChampionshipStatistics.TeamStats;
 import reports.ReportData;
-import reports.pdf.StatisticsPreviewGenerator.Section;
+import reports.ReportSection;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public final class StatisticsReportView extends VBox {
         });
     }
 
-    public void showReport(Tournament tournament, Section section) throws IOException {
+    public void showReport(Tournament tournament, ReportSection section) throws IOException {
         Objects.requireNonNull(tournament, "Tournament is required");
         Objects.requireNonNull(section, "Report section is required");
         cancelPendingReport();
@@ -60,7 +60,7 @@ public final class StatisticsReportView extends VBox {
             @Override
             protected Content call() throws Exception {
                 ReportData data = readSnapshot(snapshot);
-                return section == Section.BRACKET
+                return section == ReportSection.BRACKET
                         ? new Content(null, new BracketReport(data))
                         : new Content(new ChampionshipStatistics(data), null);
             }
@@ -93,11 +93,19 @@ public final class StatisticsReportView extends VBox {
         getChildren().add(note("Goals scored during matches, including match penalties. Own goals and penalty shootouts are excluded."));
         TableView<Ranked<PlayerStats>> table = rankedTable(statistics.getTopScorers(), PlayerStats::goals,
                 "No goals have been scored in this championship.");
-        table.getColumns().add(column("PLAYER", 260, row -> row.value().player().getName(), "player-name-cell"));
-        table.getColumns().add(column("TEAM", 240, row -> row.value().team().getName(), null));
-        table.getColumns().add(column("GOALS", 100, row -> row.value().goals(), "report-highlight-cell"));
-        table.getColumns().add(column("OF WHICH PENALTIES", 150,
+        table.getColumns().add(column("PLAYER", 220, row -> row.value().player().getName(), "player-name-cell"));
+        table.getColumns().add(column("TEAM", 180, row -> row.value().team().getName(), null));
+        table.getColumns().add(column("GOALS", 80, row -> row.value().goals(), "report-highlight-cell"));
+        table.getColumns().add(column("OF WHICH PENALTIES", 130,
                 row -> statistics.hasCompleteGoalInformation() ? row.value().penaltyGoals() : "Not available", "table-stat-cell"));
+        table.getColumns().add(column("G/MATCH", 90, row -> {
+            int matches = row.value().matches();
+            double avg = matches > 0 ? (double) row.value().goals() / matches : 0.0;
+            return String.format("%.2f", avg);
+        }, "table-stat-cell"));
+        table.getColumns().add(column("AST", 60, row -> row.value().assists(), "table-stat-cell"));
+
+
         addTable(table);
     }
 
@@ -108,8 +116,8 @@ public final class StatisticsReportView extends VBox {
                 "No teams registered.");
         table.getColumns().add(column("TEAM", 280, row -> row.value().team().getName(), "player-name-cell"));
         table.getColumns().add(column("PLAYED", 95, row -> row.value().played(), "table-stat-cell"));
-        table.getColumns().add(chipColumn("YELLOWS", row -> row.value().yellowCards(), "card-yellow-chip"));
-        table.getColumns().add(chipColumn("REDS", row -> row.value().redCards(), "card-red-chip"));
+        table.getColumns().add(chipColumn("YELLOW CARDS", row -> row.value().yellowCards(), "card-yellow-chip"));
+        table.getColumns().add(chipColumn("RED CARDS", row -> row.value().redCards(), "card-red-chip"));
         table.getColumns().add(column("PENALTY POINTS", 140, row -> row.value().fairPlayScore(), "report-highlight-cell"));
         addTable(table);
     }
@@ -374,8 +382,8 @@ public final class StatisticsReportView extends VBox {
         snapshot.getGroups().forEach(data::addGroup);
         snapshot.getAllMatches().forEach(match -> {
             data.addMatch(match);
-            for (var event : match.getEvents()) {
-                if (event instanceof Goal goal) data.getMatchDetails(match).setGoalDetails(goal,
+            for (Goal goal : match.getGoals()) {
+                data.getMatchDetails(match).setGoalDetails(goal,
                         goal.isPenalty(), goal.isOwnGoal(), goal.getGoalkeeperConceded());
             }
         });

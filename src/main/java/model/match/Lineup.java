@@ -13,10 +13,22 @@ public class Lineup {
 
     public Lineup(Team team, Team opponent){
         List<Player> availablePlayers = new ArrayList<>();
+        List<Player> injuredPlayers = new ArrayList<>();
 
         for(Player p : team.getSquad()){
-            if(p.isAvailable()){ availablePlayers.add(p); }
+            if(p.isAvailable()){
+                availablePlayers.add(p);
+            }else if(p.isInjured() && !p.isSuspended()){
+                injuredPlayers.add(p);
+            }
         }
+
+        // Injured players are only called up when the squad could not field any formation
+        // without them. Suspended players never play (a sent-off player misses the next match).
+        if(!canCompleteAnyFormation(availablePlayers)){
+            availablePlayers.addAll(injuredPlayers);
+        }
+
         availablePlayers.sort(Comparator.comparing(Player::getOverall).reversed());
 
         Formation preferredFormation = team.getCoach().chooseFormation(team, opponent);
@@ -41,6 +53,11 @@ public class Lineup {
             }
         }
 
+        if (g == 0 && !subs.isEmpty()) {
+            // No goalkeeper available: the best remaining field player goes in goal.
+            starters.add(subs.remove(0));
+        }
+
         if (starters.size() < 11) {
             throw new IllegalStateException(
                     "No hay jugadores disponibles para completar la formación "
@@ -62,6 +79,16 @@ public class Lineup {
         throw new IllegalStateException("El plantel no puede completar ninguna formación disponible.");
     }
 
+    private boolean canCompleteAnyFormation(List<Player> availablePlayers) {
+        for (Formation formation : Formation.values()) {
+            if (canComplete(formation, availablePlayers)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private boolean canComplete(Formation formation, List<Player> availablePlayers) {
         int goalkeepers = 0;
         int defenders = 0;
@@ -77,10 +104,19 @@ public class Lineup {
             }
         }
 
-        return goalkeepers >= 1
-                && defenders >= formation.getDefenders()
+        int outfieldNeeded = formation.getDefenders()
+                + formation.getMidfielders()
+                + formation.getForwards();
+
+        boolean outfieldCovered = defenders >= formation.getDefenders()
                 && midfielders >= formation.getMidfielders()
                 && forwards >= formation.getForwards();
+
+        // Without any goalkeeper, one extra field player has to play in goal.
+        boolean goalCovered = goalkeepers >= 1
+                || defenders + midfielders + forwards > outfieldNeeded;
+
+        return outfieldCovered && goalCovered;
     }
 
     public List<Player> getStarters() {

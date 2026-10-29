@@ -10,14 +10,12 @@ import java.io.Serializable;
 public class PlayerParticipation implements Serializable{
     private Player player;
     private Team team;
-    private boolean starting;
     private int enterMinute;
     private int exitMinute;
 
-    public PlayerParticipation(Player player, Team team, boolean starting, int enterMinute) {
+    public PlayerParticipation(Player player, Team team, int enterMinute) {
         this.player = player;
         this.team = team;
-        this.starting = starting;
         this.enterMinute = enterMinute;
         this.exitMinute = 90;
     }
@@ -28,14 +26,6 @@ public class PlayerParticipation implements Serializable{
 
     public Team getTeam() {
         return team;
-    }
-
-    public boolean isStarting() {
-        return starting;
-    }
-
-    public int getEnterMinute() {
-        return enterMinute;
     }
 
     public int getExitMinute() {

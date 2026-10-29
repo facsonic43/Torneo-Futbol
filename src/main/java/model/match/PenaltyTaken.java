@@ -19,4 +19,14 @@ public class PenaltyTaken extends Event {
     public String getDescription() {
         return minute + "' Penalty [" + team.getName() + "]: " + player.getName() + " -> " + (scored ? "SCORED" : "MISSED");
     }
+
+    @Override
+    public void accept(EventVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    @Override
+    public boolean belongsToShootout() {
+        return true;
+    }
 }

@@ -1,6 +1,5 @@
 package gui;
 
-import gui.controller.MainController;
 import gui.controller.MainMenuController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

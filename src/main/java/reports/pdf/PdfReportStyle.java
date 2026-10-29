@@ -6,7 +6,6 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.properties.UnitValue;
 import model.participant.Person;
-import model.participant.Position;
 
 import java.util.Locale;
 
@@ -38,12 +37,4 @@ final class PdfReportStyle {
     }
     static String number(double value) { return String.format(Locale.ENGLISH, "%.2f", value); }
     static String country(Person person) { return person.getNationality() == null ? "Not specified" : person.getNationality().getName(); }
-    static String position(Position position) {
-        return switch (position) {
-            case GOALKEEPER -> "Goalkeeper";
-            case DEFENDER -> "Defender";
-            case MIDFIELDER -> "Midfielder";
-            case FORWARD -> "Forward";
-        };
-    }
 }
