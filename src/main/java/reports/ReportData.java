@@ -2,9 +2,7 @@ package reports;
 
 import com.google.gson.*;
 import main.loader.TournamentData;
-import model.match.Goal;
 import model.match.Match;
-import model.match.SecondLegMatch;
 import model.participant.*;
 import model.tournament.Group;
 
@@ -22,7 +20,6 @@ public final class ReportData {
     private final List<Match> matches = new ArrayList<>();
     private final Map<Match, ReportMatchDetails> matchDetails = new IdentityHashMap<>();
     private final Map<String, Integer> refereeExperience = new HashMap<>();
-    private final Map<String, Map<String, Integer>> playerSkills = new HashMap<>();
 
     public ReportData(TournamentData participants) {
         this.participants = Objects.requireNonNull(participants, "Tournament participants are required");
@@ -62,7 +59,7 @@ public final class ReportData {
 
     private static void addOnce(List<Match> result, Set<Match> seen, Match match) {
         if (match == null || !seen.add(match)) return;
-        if (match instanceof SecondLegMatch second) addOnce(result, seen, second.getFirstLeg());
+        match.asSecondLeg().ifPresent(second -> addOnce(result, seen, second.getFirstLeg()));
         result.add(match);
     }
 
@@ -80,19 +77,6 @@ public final class ReportData {
     }
 
     public Integer getRefereeExperience(Referee referee) { return refereeExperience.get(key(referee)); }
-
-    public void setPlayerSkills(Player player, Map<String, Integer> skills) {
-        for (Map.Entry<String, Integer> skill : skills.entrySet()) {
-            if (skill.getValue() == null || skill.getValue() < 0 || skill.getValue() > 100) {
-                throw new IllegalArgumentException("Skills must be between 0 and 100");
-            }
-        }
-        playerSkills.put(key(player), Collections.unmodifiableMap(new LinkedHashMap<>(skills)));
-    }
-
-    public Map<String, Integer> getPlayerSkills(Player player) {
-        return playerSkills.getOrDefault(key(player), Map.of());
-    }
 
     /**
      * Reads only the optional report profile data; it never loads or simulates results.
@@ -113,20 +97,6 @@ public final class ReportData {
                         if (years < 0) throw new IllegalArgumentException("Experience cannot be negative");
                         refereeExperience.put(key(referee.getAsJsonObject("persona")), years);
                     }
-                }
-            }
-            JsonObject teams = tournament.getAsJsonObject("equipos");
-            if (teams == null || !teams.has("equipo")) return;
-            for (JsonElement entry : teams.getAsJsonArray("equipo")) {
-                JsonObject squad = entry.getAsJsonObject().getAsJsonObject("plantel");
-                if (squad == null || !squad.has("jugadores")) continue;
-                for (JsonElement element : squad.getAsJsonObject("jugadores").getAsJsonArray("jugador")) {
-                    JsonObject player = element.getAsJsonObject();
-                    JsonObject skills = player.getAsJsonObject("caracteristicas");
-                    if (skills == null) continue;
-                    Map<String, Integer> values = new LinkedHashMap<>();
-                    skills.entrySet().forEach(skill -> values.put(skill.getKey(), skill.getValue().getAsInt()));
-                    playerSkills.put(key(player.getAsJsonObject("persona")), Collections.unmodifiableMap(values));
                 }
             }
         } catch (IOException e) {

@@ -77,7 +77,7 @@ public class ChampionshipStatistics {
             ReportMatchDetails details = data.getMatchDetails(match);
             addPlayerParticipations(match, details, playerTotals);
             boolean missingGoalInformation = addEvents(match, details, teamTotals, playerTotals);
-            long recordedGoals = match.getEvents().stream().filter(event -> event instanceof Goal).count();
+            long recordedGoals = match.getGoals().size();
             boolean missingLineup = !details.hasStartingPlayers();
             boolean scoreMismatch = recordedGoals != match.getHomeGoals() + match.getAwayGoals();
             if (missingLineup) lineupsComplete = false;
@@ -175,14 +175,21 @@ public class ChampionshipStatistics {
         // En ese caso no permiten reconstruir los minutos de un titular desconocido.
         for (Event event : match.getEvents()) {
             participants.add(event.getPlayer());
-            if (event instanceof Substitution substitution) participants.add(substitution.getPlayerIn());
-            if (event instanceof Goal goal) {
-                if (goal.getAssistPlayer() != null) participants.add(goal.getAssistPlayer());
-                ReportMatchDetails.GoalDetails goalDetails = details.getGoalDetails(goal);
-                if (goalDetails != null && goalDetails.receivingGoalkeeper() != null) {
-                    participants.add(goalDetails.receivingGoalkeeper());
+            event.accept(new EventVisitor() {
+                @Override
+                public void visit(Substitution substitution) {
+                    participants.add(substitution.getPlayerIn());
                 }
-            }
+
+                @Override
+                public void visit(Goal goal) {
+                    if (goal.getAssistPlayer() != null) participants.add(goal.getAssistPlayer());
+                    ReportMatchDetails.GoalDetails goalDetails = details.getGoalDetails(goal);
+                    if (goalDetails != null && goalDetails.receivingGoalkeeper() != null) {
+                        participants.add(goalDetails.receivingGoalkeeper());
+                    }
+                }
+            });
         }
         for (Player player : participants) {
             PlayerAccumulator total = totals.get(player);
@@ -195,65 +202,102 @@ public class ChampionshipStatistics {
 
     private static boolean addEvents(Match match, ReportMatchDetails details, Map<Team, TeamAccumulator> teams,
                                      Map<Player, PlayerAccumulator> players) {
-        boolean incomplete = false;
-        Map<Team, Set<Player>> onPitch = new HashMap<>();
-        onPitch.put(match.getHomeTeam(), new LinkedHashSet<>(details.getHomeStarters()));
-        onPitch.put(match.getAwayTeam(), new LinkedHashSet<>(details.getAwayStarters()));
-        List<Event> events = match.getEvents().stream()
-                .sorted(Comparator.comparingInt(Event::getMinute)).toList();
-        for (Event event : events) {
-            PlayerAccumulator player = players.get(event.getPlayer());
-            TeamAccumulator team = teams.get(event.getTeam());
-            if (event instanceof Goal goal) {
-                ReportMatchDetails.GoalDetails goalDetails = details.getGoalDetails(goal);
-                boolean matchHasRecordedStarters = match.hasRecordedStartingPlayers() || details.hasStartingPlayers();
-                boolean canInferGoalContext = matchHasRecordedStarters && !events.isEmpty();
-                if (goalDetails == null && !canInferGoalContext) incomplete = true;
-                boolean ownGoal = goalDetails != null ? goalDetails.ownGoal()
-                        : player != null && player.team != goal.getTeam();
-                boolean penalty = goalDetails != null && goalDetails.penalty();
-                if (!ownGoal && player != null) {
-                    player.goals++;
-                    if (penalty) player.penaltyGoals++;
-                    PlayerAccumulator assist = players.get(goal.getAssistPlayer());
-                    if (!penalty && assist != null) assist.assists++;
-                }
-                Player receivingKeeper = goalDetails == null ? null : goalDetails.receivingGoalkeeper();
-                if (receivingKeeper == null) {
-                    Team concedingTeam = event.getTeam() == match.getHomeTeam()
-                            ? match.getAwayTeam() : match.getHomeTeam();
-                    receivingKeeper = onPitch.get(concedingTeam).stream()
-                            .filter(candidate -> candidate.getPosition() == Position.GOALKEEPER)
-                            .findFirst().orElse(null);
-                }
-                PlayerAccumulator keeper = players.get(receivingKeeper);
-                if (keeper != null) keeper.goalsConceded++;
-                else if (!canInferGoalContext) incomplete = true;
-            } else if (event instanceof YellowCard) {
+        return new EventProcessor(match, details, teams, players).process();
+    }
+
+    /** Adds every incident of a match to the accumulators, one visit method per kind of incident. */
+    private static final class EventProcessor implements EventVisitor {
+        private final Match match;
+        private final ReportMatchDetails details;
+        private final Map<Team, TeamAccumulator> teams;
+        private final Map<Player, PlayerAccumulator> players;
+        private final List<Event> events;
+        private final List<YellowCard> yellowCards;
+        private final Map<Team, Set<Player>> onPitch = new HashMap<>();
+        private boolean incomplete;
+        // Accumulators of the incident that is being visited.
+        private PlayerAccumulator player;
+        private TeamAccumulator team;
+
+        EventProcessor(Match match, ReportMatchDetails details, Map<Team, TeamAccumulator> teams,
+                       Map<Player, PlayerAccumulator> players) {
+            this.match = match;
+            this.details = details;
+            this.teams = teams;
+            this.players = players;
+            onPitch.put(match.getHomeTeam(), new LinkedHashSet<>(details.getHomeStarters()));
+            onPitch.put(match.getAwayTeam(), new LinkedHashSet<>(details.getAwayStarters()));
+            events = match.getEvents().stream().sorted(Comparator.comparingInt(Event::getMinute)).toList();
+            yellowCards = match.getYellowCards();
+        }
+
+        boolean process() {
+            for (Event event : events) {
+                player = players.get(event.getPlayer());
+                team = teams.get(event.getTeam());
+                event.accept(this);
+            }
+            return incomplete;
+        }
+
+        @Override
+        public void visit(Goal goal) {
+            ReportMatchDetails.GoalDetails goalDetails = details.getGoalDetails(goal);
+            boolean matchHasRecordedStarters = match.hasRecordedStartingPlayers() || details.hasStartingPlayers();
+            boolean canInferGoalContext = matchHasRecordedStarters && !events.isEmpty();
+            if (goalDetails == null && !canInferGoalContext) incomplete = true;
+            boolean ownGoal = goalDetails != null ? goalDetails.ownGoal()
+                    : player != null && player.team != goal.getTeam();
+            boolean penalty = goalDetails != null && goalDetails.penalty();
+            if (!ownGoal && player != null) {
+                player.goals++;
+                if (penalty) player.penaltyGoals++;
+                PlayerAccumulator assist = players.get(goal.getAssistPlayer());
+                if (!penalty && assist != null) assist.assists++;
+            }
+            Player receivingKeeper = goalDetails == null ? null : goalDetails.receivingGoalkeeper();
+            if (receivingKeeper == null) {
+                Team concedingTeam = goal.getTeam() == match.getHomeTeam()
+                        ? match.getAwayTeam() : match.getHomeTeam();
+                receivingKeeper = onPitch.get(concedingTeam).stream()
+                        .filter(Player::isGoalkeeper)
+                        .findFirst().orElse(null);
+            }
+            PlayerAccumulator keeper = players.get(receivingKeeper);
+            if (keeper != null) keeper.goalsConceded++;
+            else if (!canInferGoalContext) incomplete = true;
+        }
+
+        @Override
+        public void visit(YellowCard yellowCard) {
+            if (player != null) player.yellowCards++;
+            if (team != null) team.yellowCards++;
+        }
+
+        @Override
+        public void visit(RedCard redCard) {
+            if (player != null) player.redCards++;
+            if (team != null) team.redCards++;
+            // Compatibilidad con partidos previos: la segunda amarilla podía
+            // representarse únicamente por una RedCard(false).
+            boolean secondYellowRecorded = yellowCards.stream().anyMatch(candidate ->
+                    candidate.getPlayer() == redCard.getPlayer()
+                            && candidate.getMinute() == redCard.getMinute());
+            if (!redCard.isDirectRed() && !secondYellowRecorded) {
                 if (player != null) player.yellowCards++;
                 if (team != null) team.yellowCards++;
-            } else if (event instanceof RedCard redCard) {
-                if (player != null) player.redCards++;
-                if (team != null) team.redCards++;
-                // Compatibilidad con partidos previos: la segunda amarilla podía
-                // representarse únicamente por una RedCard(false).
-                boolean secondYellowRecorded = events.stream().anyMatch(candidate ->
-                        candidate instanceof YellowCard && candidate.getPlayer() == event.getPlayer()
-                                && candidate.getMinute() == event.getMinute());
-                if (!redCard.isDirectRed() && !secondYellowRecorded) {
-                    if (player != null) player.yellowCards++;
-                    if (team != null) team.yellowCards++;
-                }
-                if (onPitch.containsKey(event.getTeam())) onPitch.get(event.getTeam()).remove(event.getPlayer());
-            } else if (event instanceof Substitution substitution) {
-                if (onPitch.containsKey(event.getTeam())) {
-                    onPitch.get(event.getTeam()).remove(substitution.getPlayerOut());
-                    onPitch.get(event.getTeam()).add(substitution.getPlayerIn());
-                }
             }
-            // PenaltyTaken pertenece a la tanda: no aporta goles, asistencias ni goles recibidos.
+            if (onPitch.containsKey(redCard.getTeam())) onPitch.get(redCard.getTeam()).remove(redCard.getPlayer());
         }
-        return incomplete;
+
+        @Override
+        public void visit(Substitution substitution) {
+            if (onPitch.containsKey(substitution.getTeam())) {
+                onPitch.get(substitution.getTeam()).remove(substitution.getPlayerOut());
+                onPitch.get(substitution.getTeam()).add(substitution.getPlayerIn());
+            }
+        }
+        // Injuries and the kicks of a shootout do not add goals, assists, cards or goals conceded.
     }
 
     private static class PlayerAccumulator {

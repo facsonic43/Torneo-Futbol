@@ -1,6 +1,5 @@
 package gui;
 
-import model.participant.Goalkeeper;
 import model.participant.Player;
 import model.participant.Position;
 import model.participant.Team;
@@ -24,9 +23,7 @@ public class PlayerDirectoryEntry {
     public int getGoals() { return player.getGoals(); }
 
     public Integer getGoalsConceded() {
-        if (player instanceof Goalkeeper) {
-            return ((Goalkeeper) player).getGoalsConceded();
-        }
-        return null; // Null indica que no es arquero para formatear con '-'
+        // Null indica que no es arquero para formatear con '-'
+        return player.isGoalkeeper() ? player.getGoalsConceded() : null;
     }
 }

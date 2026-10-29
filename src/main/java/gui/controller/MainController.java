@@ -1,12 +1,14 @@
 package gui.controller;
 
 import java.io.File;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -30,7 +32,7 @@ public class MainController {
     private Button matchDayButton;
 
     @FXML
-    private Button reportsButton;
+    private MenuButton reportsButton;
 
     @FXML
     private Button databaseButton;
@@ -99,7 +101,7 @@ public class MainController {
             updateGlobalStatus();
 
             statusLabel.setText(
-                    session.saveExists()
+                    session.isLoadedFromSave()
                             ? "Saved tournament loaded."
                             : "New tournament created."
             );
@@ -152,6 +154,21 @@ public class MainController {
         tournamentController.refreshAll();
         setActiveButton(reportsButton);
         updateHeader("Analytics, Reports & Bracket", "Comprehensive tournament statistics, bracket tracker and disciplinary logs");
+    }
+
+    @FXML
+    private void handleShowReportsPane(ActionEvent event) {
+        handleReports();
+        if (tournamentController != null) {
+            tournamentController.handleShowReportsPane(event);
+        }
+    }
+
+    @FXML
+    private void handleGeneratePdf(ActionEvent event) {
+        if (tournamentController != null) {
+            tournamentController.handleGeneratePdf();
+        }
     }
 
     @FXML
@@ -232,10 +249,10 @@ public class MainController {
         }
     }
 
-    private void setActiveButton(Button selectedButton) {
+    private void setActiveButton(javafx.scene.control.Control selectedButton) {
         tournamentButton.getStyleClass().remove("nav-button-active");
         matchDayButton.getStyleClass().remove("nav-button-active");
-        reportsButton.getStyleClass().remove("nav-button-active");
+        if (reportsButton != null) reportsButton.getStyleClass().remove("nav-button-active");
         databaseButton.getStyleClass().remove("nav-button-active");
 
         if (selectedButton != null) {
@@ -253,14 +270,7 @@ public class MainController {
 
         Tournament tournament = session.getTournament();
 
-        switch (session.getStage()) {
-            case GROUP_STAGE -> mainStageLabel.setText("GROUP STAGE");
-            case QUARTER_FINALS -> mainStageLabel.setText("QUARTER-FINALS");
-            case SEMI_FINALS -> mainStageLabel.setText("SEMI-FINALS");
-            case FINAL -> mainStageLabel.setText("FINAL");
-            case FINISHED -> mainStageLabel.setText("FINISHED");
-            default -> mainStageLabel.setText("NOT STARTED");
-        }
+        mainStageLabel.setText(session.getStage().getLabel());
 
         int played = 0;
         for (model.match.Match m : tournament.getAllMatches()) {

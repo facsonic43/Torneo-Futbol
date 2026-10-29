@@ -13,11 +13,9 @@ import model.match.FirstLegMatch;
 import model.match.GroupMatch;
 import model.match.SecondLegMatch;
 import model.match.Stadium;
-import model.participant.Position;
 import model.tournament.Group;
 import model.tournament.Standing;
 import model.tournament.Tournament;
-import reports.ReportService;
 import reports.ReportData;
 import reports.ReportOptions;
 
@@ -25,9 +23,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 /*
- * Punto de inicio por consola: carga los datos, ejecuta el campeonato completo,
- * imprime los reportes en texto con ReportService y exporta el PDF con todas
- * las secciones del reporte.
+ * Console entry point: loads the data, plays the whole championship printing
+ * standings and match details, and exports the participant identification PDF.
  */
 
 public class RunChampionship {
@@ -173,61 +170,7 @@ public class RunChampionship {
                             .getName()
             );
 
-            ReportService reportService =
-                    new ReportService();
-
-            System.out.println(
-                    reportService.generateScorersRanking(
-                            tournament.getTeams()
-                    )
-            );
-
-            System.out.println(
-                    reportService.generateFairPlayRanking(
-                            tournament.getTeams(),
-                            tournament.getAllMatches()
-                    )
-            );
-
-            System.out.println(
-                    reportService.generateMinutesRanking(
-                            tournament.getTeams()
-                    )
-            );
-
-            System.out.println(
-                    reportService.generateChampionshipBracket(
-                            tournament
-                    )
-            );
-
-            System.out.println(
-                    reportService.generateTeamsReport(
-                            tournament
-                    )
-            );
-
-            System.out.println(
-                    reportService.generateRefereesRanking(
-                            tournament.getReferees(),
-                            tournament.getAllMatches()
-                    )
-            );
-
-            /*
-             * Por ahora mostramos arqueros como ejemplo del Reporte VIII.
-             * Más adelante la interfaz gráfica permitirá seleccionar
-             * GOALKEEPER, DEFENDER, MIDFIELDER, FORWARD o ALL.
-             */
-            System.out.println(
-                    reportService.generatePlayersReport(
-                            tournament.getTeams(),
-                            Position.GOALKEEPER
-                    )
-            );
-
-
-            // Exporta el PDF con las ocho secciones a partir del campeonato ya jugado.
+            // Exports the participant identification PDF from the finished championship.
             ReportData reportData =
                     ReportData.fromInitialData(
                             data

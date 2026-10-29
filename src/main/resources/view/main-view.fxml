@@ -2,6 +2,8 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -18,7 +20,6 @@
         <VBox>
 
             <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
-
             <HBox alignment="CENTER_LEFT"
                   spacing="10"
                   styleClass="top-navigation">
@@ -30,7 +31,6 @@
                            styleClass="brand-logo"/>
 
                 <!-- SOLAPAS -->
-
                 <Button fx:id="tournamentButton"
                         text="TOURNAMENT"
                         styleClass="nav-button"
@@ -41,10 +41,17 @@
                         styleClass="nav-button"
                         onAction="#handleMatchDay"/>
 
-                <Button fx:id="reportsButton"
-                        text="REPORTS &amp; STATS"
-                        styleClass="nav-button"
-                        onAction="#handleReports"/>
+                <!-- MENÚ DESPLEGABLE DE REPORTES -->
+                <MenuButton fx:id="reportsButton"
+                            text="REPORTS &amp; STATS"
+                            styleClass="nav-button">
+                    <items>
+                        <MenuItem text="SEE COMPLETE REPORTS &amp; STATS"
+                                  onAction="#handleShowReportsPane"/>
+                        <MenuItem text="GENERATE PARTICIPANTS IDS PDF"
+                                  onAction="#handleGeneratePdf"/>
+                    </items>
+                </MenuButton>
 
                 <Button fx:id="databaseButton"
                         text="DATABASE"
@@ -54,7 +61,6 @@
                 <Region HBox.hgrow="ALWAYS"/>
 
                 <!-- ESTADO GLOBAL DEL TORNEO -->
-
                 <HBox fx:id="globalTournamentStatusBox"
                       alignment="CENTER"
                       spacing="28"
@@ -93,7 +99,6 @@
                 <Region HBox.hgrow="ALWAYS"/>
 
                 <!-- ACCIONES -->
-
                 <Button text="SAVE"
                         styleClass="utility-button"
                         onAction="#handleSave"/>
@@ -114,7 +119,6 @@
             </HBox>
 
             <!-- ENCABEZADO DE LA PÁGINA -->
-
             <HBox alignment="CENTER"
                   styleClass="page-header">
 
@@ -142,31 +146,17 @@
         </VBox>
     </top>
 
-
-    <!--
-        IMPORTANTE:
-        No usamos ScrollPane general.
-        Cada vista administra sus propios scrolls.
-    -->
-
     <center>
-
         <StackPane fx:id="contentHost"
                    minHeight="0"
                    styleClass="content-host"/>
-
     </center>
 
-
-    <!-- BARRA INFERIOR -->
-
     <bottom>
-
         <Label fx:id="statusLabel"
                maxWidth="Infinity"
                text="Application ready."
                styleClass="status-bar"/>
-
     </bottom>
 
 </BorderPane>

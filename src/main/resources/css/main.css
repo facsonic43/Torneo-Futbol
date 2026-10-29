@@ -1132,3 +1132,83 @@
 .statistics-report .statistics-table .table-row-cell:empty .table-cell {
     -fx-border-color: transparent;
 }
+/* =========================================================
+   ESTILOS PARA MENU BUTTON Y MENU ITEMS (REPORTS & STATS)
+   ========================================================= */
+
+/* 1. Botón principal del MenuButton */
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-secondary;
+    -fx-font-weight: 700;
+    -fx-padding: 10px 14px;
+    -fx-cursor: hand;
+}
+
+.menu-button:hover {
+    -fx-background-color: -bg-hover;
+    -fx-background-radius: 6 6 0 0;
+}
+
+/* Color del texto e icono dentro del MenuButton */
+.menu-button .label {
+    -fx-text-fill: -text-secondary;
+    -fx-font-weight: 700;
+}
+
+.menu-button:hover .label {
+    -fx-text-fill: -text-main;
+}
+
+/* Ocultar o estilizar la flechita desplegable por defecto */
+.menu-button .arrow {
+    -fx-background-color: -text-muted;
+}
+
+.menu-button:hover .arrow {
+    -fx-background-color: -accent-text;
+}
+
+/* 2. Contenedor emergente (Popup Menu) */
+.menu-button .context-menu {
+    -fx-background-color: -bg-panel;
+    -fx-border-color: -border-card;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 12, 0, 0, 4);
+}
+
+/* 3. Estilo de los items del menú (MenuItem) */
+.menu-item {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6;
+    -fx-padding: 8px 14px;
+    -fx-cursor: hand;
+}
+
+.menu-item .label {
+    -fx-text-fill: -text-main;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+}
+
+/* Estado Hover al pasar el mouse por las opciones */
+.menu-item:focused,
+.menu-item:hover {
+    -fx-background-color: -bg-hover;
+}
+
+.menu-item:focused .label,
+.menu-item:hover .label {
+    -fx-text-fill: -accent-text;
+}
+/* Estado activo del MenuButton (REPORTS & STATS) */
+.menu-button.nav-button-active {
+    -fx-border-color: transparent transparent -accent-primary transparent;
+}
+
+.menu-button.nav-button-active .label {
+    -fx-text-fill: -accent-text;
+}

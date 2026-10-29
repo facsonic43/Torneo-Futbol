@@ -20,11 +20,11 @@ import java.util.Set;
  * mientras que simulateMatch() conserva la simulación completa para consola y tests.
  */
 public class MatchSimulator {
-    private static int MATCH_LAST_MINUTE = 90;
-    private static int MAX_SUBSTITUTIONS = 5;
+    private static final int MATCH_LAST_MINUTE = 90;
+    private static final int MAX_SUBSTITUTIONS = 5;
 
-    private MatchEventSimulator eventSimulator;
-    private PenaltyShootoutSimulator penaltySimulator;
+    private final MatchEventSimulator eventSimulator;
+    private final PenaltyShootoutSimulator penaltySimulator;
 
     public MatchSimulator() {
         this(new Random());
@@ -258,7 +258,6 @@ public class MatchSimulator {
                     new PlayerParticipation(
                             player,
                             team,
-                            true,
                             0
                     );
 

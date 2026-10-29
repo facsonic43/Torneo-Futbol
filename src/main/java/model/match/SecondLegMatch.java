@@ -1,5 +1,6 @@
 package model.match;
 
+import java.util.Optional;
 import model.participant.Referee;
 import model.participant.Team;
 
@@ -211,38 +212,6 @@ public class SecondLegMatch extends Match {
                 - getWeightedGoals(opponent);
     }
 
-    public int getGlobalGoals(
-            Team team) {
-
-        int goals = 0;
-
-        if (firstLeg.getHomeTeam()
-                == team) {
-
-            goals +=
-                    firstLeg.getHomeGoals();
-
-        } else if (firstLeg.getAwayTeam()
-                == team) {
-
-            goals +=
-                    firstLeg.getAwayGoals();
-        }
-
-        if (homeTeam == team) {
-
-            goals +=
-                    homeGoals;
-
-        } else if (awayTeam == team) {
-
-            goals +=
-                    awayGoals;
-        }
-
-        return goals;
-    }
-
     private int getMatchPoints(
             Match match,
             Team team) {
@@ -282,5 +251,10 @@ public class SecondLegMatch extends Match {
         }
 
         return 0;
+    }
+
+    @Override
+    public Optional<SecondLegMatch> asSecondLeg() {
+        return Optional.of(this);
     }
 }

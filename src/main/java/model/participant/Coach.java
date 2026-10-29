@@ -96,8 +96,4 @@ public class Coach extends Person{
         return balanced[formationIndex % balanced.length];
     }
 
-    @Override
-    protected String getAditionalInfo() {
-        return "Tittles obtained: " + titlesObtained;
-    }
 }

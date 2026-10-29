@@ -23,4 +23,9 @@ public class Substitution extends Event {
     public String getDescription() {
         return minute + "' Substitution [" + team.getName() + "]: " + playerIn.getName() + " replaces " + player.getName();
     }
+
+    @Override
+    public void accept(EventVisitor visitor) {
+        visitor.visit(this);
+    }
 }

@@ -1,5 +1,6 @@
 package model.match;
 
+import java.util.Optional;
 import model.participant.Referee;
 import model.participant.Team;
 
@@ -29,20 +30,16 @@ public class FinalMatch extends Match {
 
     @Override
     public Team getWinner() {
-        Team winner = null;
-        if (played) {
-            if (homeGoals > awayGoals) {
+        Team winner = super.getWinner();
+
+        if (winner == null && played && homePenalties != null && awayPenalties != null) {
+            if (homePenalties > awayPenalties) {
                 winner = homeTeam;
-            } else if (awayGoals > homeGoals) {
+            } else if (awayPenalties > homePenalties) {
                 winner = awayTeam;
-            } else if (homePenalties != null && awayPenalties != null) {
-                if (homePenalties > awayPenalties) {
-                    winner = homeTeam;
-                } else if (awayPenalties > homePenalties) {
-                    winner = awayTeam;
-                }
             }
         }
+
         return winner;
     }
 
@@ -59,5 +56,10 @@ public class FinalMatch extends Match {
             }
         }
         return criteria;
+    }
+
+    @Override
+    public Optional<FinalMatch> asFinal() {
+        return Optional.of(this);
     }
 }

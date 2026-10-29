@@ -23,6 +23,8 @@ identificar etapa
  */
 public class TournamentPersistenceService {
 
+    private static final String INVALID_SAVE = "The save file does not contain a valid tournament.";
+
     // Guarda el campeonato completo en un archivo binario.
     public void saveTournament(
             Tournament tournament,
@@ -82,13 +84,18 @@ public class TournamentPersistenceService {
             Object object =
                     input.readObject();
 
-            if (!(object instanceof Tournament)) {
-                throw new IOException(
-                        "The save file does not contain a valid tournament."
-                );
-            }
+            try {
+                Tournament tournament = (Tournament) object;
 
-            return (Tournament) object;
+                if (tournament == null) {
+                    throw new IOException(INVALID_SAVE);
+                }
+
+                return tournament;
+
+            } catch (ClassCastException exception) {
+                throw new IOException(INVALID_SAVE, exception);
+            }
         }
     }
 

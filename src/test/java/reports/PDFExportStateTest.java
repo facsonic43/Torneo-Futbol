@@ -200,7 +200,6 @@ class PDFExportStateTest {
         bench.injure(2);
         bench.addYellowCard();
         bench.addRedCard();
-        scorer.addPenaltyGoal();
         homeKeeper.addGoalConceded();
         List.of(scorer, assister, homeKeeper, bench).forEach(home::addPlayer);
         List.of(opponent, awayKeeper, replacement).forEach(away::addPlayer);
@@ -229,7 +228,7 @@ class PDFExportStateTest {
         match.setHomeGoals(3);
         match.setAwayGoals(1);
         match.setPlayed(true);
-        PlayerParticipation participation = new PlayerParticipation(replacement, away, false, 60);
+        PlayerParticipation participation = new PlayerParticipation(replacement, away, 60);
         participation.setExitMinute(90);
         match.addPlayerParticipation(participation);
         Group group = new Group("A", new ArrayList<>(List.of(home, away)));

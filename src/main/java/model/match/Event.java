@@ -28,4 +28,12 @@ public abstract class Event implements Serializable{
     }
 
     public abstract String getDescription();
+
+    /** Double dispatch: the incident tells the visitor which concrete type it is. */
+    public abstract void accept(EventVisitor visitor);
+
+    /** True only for the kicks of a penalty shootout, which are not incidents of the 90 minutes. */
+    public boolean belongsToShootout() {
+        return false;
+    }
 }

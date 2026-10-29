@@ -62,116 +62,40 @@ public class Tournament implements Serializable {
                 Comparator.comparingInt(Team::getRanking)
         );
 
-        List<Team> pot1 = new ArrayList<>();
-        List<Team> pot2 = new ArrayList<>();
-        List<Team> pot3 = new ArrayList<>();
-        List<Team> pot4 = new ArrayList<>();
+        // Pots of 4 by ranking; each group gets one team from every pot.
+        List<List<Team>> pots = new ArrayList<>();
 
-        for (int i = 0; i < 4; i++) {
-            pot1.add(orderedTeams.get(i));
-            pot2.add(orderedTeams.get(i + 4));
-            pot3.add(orderedTeams.get(i + 8));
-            pot4.add(orderedTeams.get(i + 12));
+        for (int pot = 0; pot < 4; pot++) {
+            List<Team> potTeams =
+                    new ArrayList<>(
+                            orderedTeams.subList(pot * 4, pot * 4 + 4)
+                    );
+
+            Collections.shuffle(potTeams);
+            pots.add(potTeams);
         }
-
-        Collections.shuffle(pot1);
-        Collections.shuffle(pot2);
-        Collections.shuffle(pot3);
-        Collections.shuffle(pot4);
 
         groups = new ArrayList<>();
 
-        groups.add(
-                new Group(
-                        "Group A",
-                        new ArrayList<>(
-                                List.of(
-                                        pot1.get(0),
-                                        pot2.get(0),
-                                        pot3.get(0),
-                                        pot4.get(0)
-                                )
-                        )
-                )
-        );
+        for (int g = 0; g < 4; g++) {
+            List<Team> groupTeams = new ArrayList<>();
 
-        groups.add(
-                new Group(
-                        "Group B",
-                        new ArrayList<>(
-                                List.of(
-                                        pot1.get(1),
-                                        pot2.get(1),
-                                        pot3.get(1),
-                                        pot4.get(1)
-                                )
-                        )
-                )
-        );
+            for (List<Team> potTeams : pots) {
+                groupTeams.add(potTeams.get(g));
+            }
 
-        groups.add(
-                new Group(
-                        "Group C",
-                        new ArrayList<>(
-                                List.of(
-                                        pot1.get(2),
-                                        pot2.get(2),
-                                        pot3.get(2),
-                                        pot4.get(2)
-                                )
-                        )
-                )
-        );
-
-        groups.add(
-                new Group(
-                        "Group D",
-                        new ArrayList<>(
-                                List.of(
-                                        pot1.get(3),
-                                        pot2.get(3),
-                                        pot3.get(3),
-                                        pot4.get(3)
-                                )
-                        )
-                )
-        );
+            groups.add(
+                    new Group(
+                            "Group " + (char) ('A' + g),
+                            groupTeams
+                    )
+            );
+        }
 
         return groups;
     }
 
-    // Sortea con una lista de equipos indicada explícitamente.
-    public List<Group> drawGroups(List<Team> teams) {
-        this.teams = new ArrayList<>(teams);
-        return drawGroups();
-    }
-
     public void generateGroupMatches(List<Stadium> stadiums) {
-        generateGroupMatches(
-                groups,
-                referees,
-                stadiums
-        );
-    }
-
-    public void generateGroupMatches(
-            List<Group> groups,
-            List<Referee> referees) {
-
-        generateGroupMatches(
-                groups,
-                referees,
-                Collections.emptyList()
-        );
-    }
-
-    public void generateGroupMatches(
-            List<Group> groups,
-            List<Referee> referees,
-            List<Stadium> stadiums) {
-
-        this.groups = groups;
-        this.referees = new ArrayList<>(referees);
 
         int stadiumIndex = 0;
 
@@ -247,16 +171,6 @@ public class Tournament implements Serializable {
     }
 
     public void simulateGroupStage(
-            MatchSimulator simulator) {
-
-        simulateGroupStage(
-                groups,
-                simulator
-        );
-    }
-
-    public void simulateGroupStage(
-            List<Group> groups,
             MatchSimulator simulator) {
 
         for (Group group : groups) {
@@ -762,5 +676,26 @@ public class Tournament implements Serializable {
 
     public Team getChampion() {
         return champion;
+    }
+
+    /** Stage in which the match is played: group stage unless it belongs to a knockout round. */
+    public TournamentStage getStageOf(Match match) {
+        if (match == getFinalMatch()) {
+            return TournamentStage.FINAL;
+        }
+
+        if (contains(getSemiFinalFirstLegs(), match) || contains(getSemiFinalSecondLegs(), match)) {
+            return TournamentStage.SEMI_FINALS;
+        }
+
+        if (contains(getQuarterFinalFirstLegs(), match) || contains(getQuarterFinalSecondLegs(), match)) {
+            return TournamentStage.QUARTER_FINALS;
+        }
+
+        return TournamentStage.GROUP_STAGE;
+    }
+
+    private static boolean contains(List<? extends Match> matches, Match match) {
+        return matches != null && matches.contains(match);
     }
 }

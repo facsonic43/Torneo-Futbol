@@ -5,7 +5,6 @@ import model.match.Event;
 import model.match.FinalMatch;
 import model.match.Goal;
 import model.match.Match;
-import model.match.PenaltyTaken;
 import model.match.SecondLegMatch;
 import model.match.Stadium;
 import model.participant.Player;
@@ -265,15 +264,10 @@ public class TournamentSimulationTest {
         boolean penaltyEventFound =
                 false;
 
-        for (Event event :
-                match.getEvents()) {
+        if (!match.getPenaltyKicks().isEmpty()) {
 
-            if (event
-                    instanceof PenaltyTaken) {
-
-                penaltyEventFound =
-                        true;
-            }
+            penaltyEventFound =
+                    true;
         }
 
         assertTrue(
@@ -544,18 +538,12 @@ public class TournamentSimulationTest {
         for (Match match :
                 matches) {
 
-            for (Event event :
-                    match.getEvents()) {
+            for (Goal goal :
+                    match.getGoals()) {
 
-                if (event instanceof Goal) {
-
-                    Goal goal =
-                            (Goal) event;
-
-                    assertNotNull(
-                            goal.getGoalkeeperConceded()
-                    );
-                }
+                assertNotNull(
+                        goal.getGoalkeeperConceded()
+                );
             }
         }
     }
@@ -633,17 +621,11 @@ public class TournamentSimulationTest {
         for (Match match :
                 matches) {
 
-            for (Event event :
-                    match.getEvents()) {
+            for (Goal goal :
+                    match.getGoals()) {
 
-                if (event instanceof Goal) {
-
-                    Goal goal =
-                            (Goal) event;
-
-                    if (!goal.isOwnGoal()) {
-                        goals++;
-                    }
+                if (!goal.isOwnGoal()) {
+                    goals++;
                 }
             }
         }

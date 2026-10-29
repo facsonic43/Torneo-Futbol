@@ -1,32 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.image.ImageView?>
 
-<?import javafx.scene.control.ScrollPane?>
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="gui.controller.TournamentController"
            styleClass="module-root">
+
     <!-- ===================================================
-             OVERVIEW PANE
-             =================================================== -->
+         OVERVIEW PANE
+         =================================================== -->
     <VBox fx:id="overviewPane"
           spacing="18"
           styleClass="page-content">
 
-        <!-- GRUPOS EN PARALELO (ARRIBA) - Usamos la clase 'panel' para igualar grosores y estilos -->
         <VBox spacing="10" styleClass="panel">
             <Label text="GROUP STAGE STANDINGS"
                    styleClass="section-caption"/>
@@ -39,14 +37,12 @@
             </ScrollPane>
         </VBox>
 
-        <!-- 4 CAJAS DE FASES ELIMINATORIAS (ABAJO) -->
         <VBox VBox.vgrow="ALWAYS" spacing="10">
             <Label text="KNOCKOUT ROUNDS &amp; CHAMPION"
                    styleClass="section-caption"/>
 
             <HBox spacing="16" VBox.vgrow="ALWAYS">
 
-                <!-- 1. Cuartos de Final -->
                 <VBox HBox.hgrow="ALWAYS"
                       spacing="8"
                       styleClass="panel">
@@ -57,7 +53,6 @@
                           spacing="6"/>
                 </VBox>
 
-                <!-- 2. Semifinales -->
                 <VBox HBox.hgrow="ALWAYS"
                       spacing="8"
                       styleClass="panel">
@@ -68,7 +63,6 @@
                           spacing="6"/>
                 </VBox>
 
-                <!-- 3. Final -->
                 <VBox HBox.hgrow="ALWAYS"
                       spacing="8"
                       styleClass="panel">
@@ -79,7 +73,6 @@
                           spacing="6"/>
                 </VBox>
 
-                <!-- 4. Campeón (con foto del trofeo) -->
                 <VBox HBox.hgrow="ALWAYS"
                       spacing="10"
                       alignment="CENTER"
@@ -104,11 +97,9 @@
 
     </VBox>
 
-
     <!-- ===================================================
          TEAMS
          =================================================== -->
-
     <HBox fx:id="teamsPane"
           visible="false"
           managed="false"
@@ -128,11 +119,9 @@
 
         </VBox>
 
-
         <VBox spacing="14"
               HBox.hgrow="ALWAYS">
 
-            <!-- ENCABEZADO DESTACADO DEL EQUIPO -->
             <HBox alignment="CENTER_LEFT"
                   spacing="24"
                   styleClass="team-header-panel">
@@ -157,7 +146,6 @@
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <!-- Tarjeta Squad Rating -->
                 <VBox spacing="2"
                       styleClass="metric-card-highlight">
 
@@ -170,7 +158,6 @@
 
                 </VBox>
 
-                <!-- Tarjeta Head Coach -->
                 <VBox spacing="4"
                       styleClass="coach-card">
 
@@ -188,7 +175,6 @@
                 </VBox>
 
             </HBox>
-
 
             <HBox spacing="16"
                   VBox.vgrow="ALWAYS">
@@ -236,7 +222,6 @@
                         </columnResizePolicy>
                     </TableView>
                 </VBox>
-
 
                 <VBox prefWidth="340"
                       spacing="12"
@@ -312,11 +297,9 @@
 
     </HBox>
 
-
     <!-- ===================================================
          BRACKET
          =================================================== -->
-
     <VBox fx:id="bracketPane"
           visible="false"
           managed="false"
@@ -351,10 +334,6 @@
 
         </HBox>
 
-
-        <!-- El árbol del bracket (grilla + líneas conectoras) lo arma
-             TournamentController.BracketView dentro de bracketHost.
-             El ScrollPane evita que se corte si la ventana es chica. -->
         <ScrollPane fitToWidth="true"
                     fitToHeight="true"
                     VBox.vgrow="ALWAYS">
@@ -366,10 +345,9 @@
 
     </VBox>
 
-
     <!-- ===================================================
-             REPORTS PANE
-             =================================================== -->
+         REPORTS PANE
+         =================================================== -->
     <HBox fx:id="reportsPane"
           visible="false"
           managed="false"
@@ -387,11 +365,6 @@
             <ListView fx:id="reportList"
                       VBox.vgrow="ALWAYS"
                       styleClass="dark-list"/>
-
-            <Button text="Generate PDF"
-                    maxWidth="Infinity"
-                    styleClass="primary-button"
-                    onAction="#handleGeneratePdf"/>
 
             <Button text="REFRESH CURRENT"
                     maxWidth="Infinity"
@@ -422,7 +395,6 @@
                        styleClass="purple-chip"/>
             </HBox>
 
-            <!-- Contenedor dinámico (Reemplaza al viejo TextArea) -->
             <StackPane fx:id="reportContentHost"
                        VBox.vgrow="ALWAYS"
                        styleClass="report-content-host"/>

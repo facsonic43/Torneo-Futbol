@@ -22,7 +22,8 @@ public class TournamentSessionService {
 
     private TournamentPersistenceService persistenceService;
 
-    private String saveFile;
+    private final String saveFile;
+    private boolean loadedFromSave;
 
     public TournamentSessionService() {
 
@@ -31,31 +32,6 @@ public class TournamentSessionService {
 
         saveFile =
                 "saves/tournament.dat";
-    }
-
-    public Tournament startSession()
-            throws Exception {
-
-        refreshStadiums();
-
-        if (persistenceService
-                .saveExists(
-                        saveFile
-                )) {
-
-            tournament =
-                    persistenceService
-                            .loadTournament(
-                                    saveFile
-                            );
-
-        } else {
-
-            tournament =
-                    createNewTournament();
-        }
-
-        return tournament;
     }
 
     public Tournament createNewTournament()
@@ -85,6 +61,8 @@ public class TournamentSessionService {
 
         // 2. Guardamos la referencia en el atributo de sesión
         this.tournament = newTournament;
+
+        this.loadedFromSave = false;
 
         return newTournament;
     }
@@ -140,7 +118,14 @@ public class TournamentSessionService {
                                 saveFile
                         );
 
+        loadedFromSave = true;
+
         return tournament;
+    }
+
+    /** True when the current tournament was restored from the save file, false when it is new. */
+    public boolean isLoadedFromSave() {
+        return loadedFromSave;
     }
 
     public Tournament getTournament() {
@@ -169,8 +154,4 @@ public class TournamentSessionService {
                 );
     }
 
-    public String getSaveFile() {
-
-        return saveFile;
-    }
 }

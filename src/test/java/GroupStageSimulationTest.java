@@ -3,15 +3,12 @@ import main.loader.TournamentData;
 import main.loader.TournamentDataLoader;
 import model.match.GroupMatch;
 import model.match.Stadium;
-import model.participant.Referee;
-import model.participant.Team;
 import model.tournament.Group;
 import model.tournament.Tournament;
 import org.junit.jupiter.api.Test;
 import reports.ChampionshipStatistics;
 import reports.ReportData;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 

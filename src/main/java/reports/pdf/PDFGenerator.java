@@ -14,21 +14,11 @@ import main.loader.TournamentData;
 import reports.ReportOptions;
 import reports.ReportData;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.*;
 import java.util.Objects;
 
 /** Exports participant identification cards required by section E, item I. */
 public class PDFGenerator {
-    public PDFGenerator(TournamentData data) {
-        try {
-            generate(data, Path.of("Report.pdf"), ReportOptions.defaults());
-            System.out.println("PDF generated successfully: Report.pdf");
-        } catch (IOException e) {
-            throw new UncheckedIOException("Could not generate Report.pdf", e);
-        }
-    }
-
     public static void generate(TournamentData data, Path output, ReportOptions options) throws IOException {
         generate(new ReportData(data), output, options);
     }

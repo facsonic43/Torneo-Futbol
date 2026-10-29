@@ -1,6 +1,7 @@
 package model.participant;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 /*
  * Representa los datos y estadísticas comunes de todos los jugadores del torneo.
@@ -14,7 +15,6 @@ public abstract class Player extends Person {
     protected int redCards;
     protected int goals;
     protected int assists;
-    protected int penaltyGoals;
 
     protected int suspensionMatchesLeft = 0;
     protected int injuryMatchesLeft = 0;
@@ -29,12 +29,26 @@ public abstract class Player extends Person {
         this.redCards = redCards;
         this.goals = goals;
         this.assists = assists;
-        this.penaltyGoals = 0;
     }
 
     public abstract double getOverall();
 
     public abstract Position getPosition();
+
+    /** Only goalkeepers are goalkeepers: used instead of checking the concrete class. */
+    public boolean isGoalkeeper() {
+        return false;
+    }
+
+    /** Goals conceded while playing in goal; always 0 for field players. */
+    public int getGoalsConceded() {
+        return 0;
+    }
+
+    /** Registers a goal against this player's side; only goalkeepers keep that record. */
+    public void addGoalConceded() {
+        // Field players do not track goals conceded.
+    }
 
     public boolean isAvailable() {
         return suspensionMatchesLeft == 0 && injuryMatchesLeft == 0;
@@ -81,10 +95,6 @@ public abstract class Player extends Person {
         goals++;
     }
 
-    public void addPenaltyGoal() {
-        penaltyGoals++;
-    }
-
     public void addAssist() {
         assists++;
     }
@@ -121,10 +131,6 @@ public abstract class Player extends Person {
         return assists;
     }
 
-    public int getPenaltyGoals() {
-        return penaltyGoals;
-    }
-
     public int getSuspensionMatchesLeft() {
         return suspensionMatchesLeft;
     }
@@ -133,10 +139,7 @@ public abstract class Player extends Person {
         return injuryMatchesLeft;
     }
 
-    @Override
-    protected String getAditionalInfo() {
-        StringBuilder sb=new StringBuilder();
-        sb.append("Matches played: "+matchesPlayed+"\tMinutes played: "+minutesPlayed+"\tYellow Cards: "+yellowCards+"\tRed Cards: "+redCards+"\tGoals: "+goals+"\tAssits: "+assists);
-        return sb.toString();
-    }
+    public int getFinishing(){ return 0; }
+
+    public abstract Map<String, Integer> getTechnicalAttributes();
 }

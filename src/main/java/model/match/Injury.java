@@ -11,12 +11,13 @@ public class Injury extends Event {
         this.matchesOut = matchesOut;
     }
 
-    public int getMatchesOut() {
-        return matchesOut;
-    }
-
     @Override
     public String getDescription() {
         return minute + "' Injury - " + player.getName() + " [" + team.getName() + "] (Out for " + matchesOut + " match/es)";
+    }
+
+    @Override
+    public void accept(EventVisitor visitor) {
+        visitor.visit(this);
     }
 }
