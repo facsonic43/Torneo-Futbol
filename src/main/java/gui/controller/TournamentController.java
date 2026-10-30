@@ -12,6 +12,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import model.match.Match;
 import model.participant.Player;
 import model.participant.Team;
@@ -797,15 +798,14 @@ public class TournamentController {
         generateReport();
     }
 
-    @FXML
-    public void handleGeneratePdf() {
+    public void handleGeneratePdf(Window owner) {
         if (tournament == null) return;
 
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Save participant report");
         chooser.setInitialFileName("Tournament-Participants.pdf");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF files (*.pdf)", "*.pdf"));
-        File destination = chooser.showSaveDialog(reportsPane.getScene().getWindow());
+        File destination = chooser.showSaveDialog(owner);
         if (destination == null) return;
 
         if (!destination.getName().toLowerCase(Locale.ROOT).endsWith(".pdf")) {
@@ -819,14 +819,14 @@ public class TournamentController {
             success.setTitle("PDF generated");
             success.setHeaderText("Participant report saved");
             success.setContentText(destination.getAbsolutePath());
-            success.initOwner(reportsPane.getScene().getWindow());
+            success.initOwner(owner);
             success.showAndWait();
         } catch (IOException | RuntimeException ex) {
             Alert error = new Alert(Alert.AlertType.ERROR);
             error.setTitle("PDF export failed");
             error.setHeaderText("Could not generate the participant report");
             error.setContentText(ex.getMessage());
-            error.initOwner(reportsPane.getScene().getWindow());
+            error.initOwner(owner);
             error.showAndWait();
         }
     }

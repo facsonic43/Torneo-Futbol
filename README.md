@@ -20,10 +20,31 @@ a management and simulation system for the *Copa Internacional de Clubes*.
    db.user=postgres
    db.password=your-password
    ```
-3. **Photos (optional).** Put participant photos in `photos/` named
-   `<idType>-<idNumber>.jpg` or `.png` (for example `DU-10000001.jpg`), relative to the
-   directory the application runs from. Cards without a photo show *Photo unavailable*;
-   an unreadable image aborts the PDF export.
+3. **Photos.** Put participant photos (`.jpg`, `.jpeg`, `.png`) in `Images/Person/Coaches`,
+   `Images/Person/Players`, or `Images/Person/Referees`, according to their role,
+   relative to the directory the application runs from. Name each photo
+   `<idType>-<idNumber>.<extension>` using the participant's document, for example
+   `Images/Person/Players/DU-10000001.jpg`. Every PDF export looks up that exact document
+   in the participant's role folder; photo assignment stays the same across exports.
+   File extensions are case-insensitive. Keep one photo per document, and replace that
+   file to change a participant's photo. Participants without a matching file show
+   *Photo unavailable*; an unreadable matching image aborts the export.
+
+   The 323 photos currently show distinct footballers selected from historical and
+   current football icons. The tournament's participant names are fictional and do
+   not identify the footballers pictured. The document-based filenames stay unchanged.
+   `Images/Person/photo-assignments.csv` records the footballer shown in each file,
+   its source, author, declared license, and image hash. The PDF finds photos by their
+   filenames and does not depend on that CSV.
+
+   Each photograph has its own declared license (CC BY, CC BY-SA, CC0, or public
+   domain). Author credits, source links, license links, and the PDF display-cropping
+   notice are recorded in `Images/Person/PHOTO-CREDITS.md`. Keep those credits with
+   the images. When that file exists, the exporter also embeds it as an attachment
+   in the PDF without adding visible pages.
+
+   The current images come from Wikimedia Commons. Source details are documented in
+   `Images/Person/PHOTO-SOURCES.md`.
 
 ## Run
 

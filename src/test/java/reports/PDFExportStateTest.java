@@ -65,7 +65,8 @@ class PDFExportStateTest {
         ReportOptions options = new ReportOptions(null, null, directory);
         PDFGenerator.generate(fixture.reports(), output, options);
         byte[] previousPdf = Files.readAllBytes(output);
-        Files.writeString(directory.resolve("DU-300.jpg"), "invalid photograph");
+        Files.createDirectory(directory.resolve("Referees"));
+        Files.writeString(directory.resolve("Referees/DU-300.jpg"), "invalid photograph");
 
         assertThrows(IOException.class, () -> PDFGenerator.generate(fixture.reports(), output, options));
 

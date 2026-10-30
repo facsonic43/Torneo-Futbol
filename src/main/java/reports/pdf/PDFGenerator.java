@@ -9,6 +9,7 @@ import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.kernel.pdf.event.AbstractPdfDocumentEvent;
 import com.itextpdf.kernel.pdf.event.AbstractPdfDocumentEventHandler;
 import com.itextpdf.kernel.pdf.event.PdfDocumentEvent;
+import com.itextpdf.kernel.pdf.filespec.PdfFileSpec;
 import com.itextpdf.layout.Document;
 import main.loader.TournamentData;
 import reports.ReportOptions;
@@ -49,6 +50,13 @@ public class PDFGenerator {
             pdf.getDocumentInfo().setTitle("Continental Cup - Participant identification cards").setAuthor("Championship");
             pdf.addEventHandler(PdfDocumentEvent.END_PAGE, new PageFooter(font));
             new IdentificationPdfSection().addTo(document, data, options.photosDirectory());
+            Path photoCredits = options.photosDirectory().resolve("PHOTO-CREDITS.md");
+            if (Files.isRegularFile(photoCredits)) {
+                PdfFileSpec attachment = PdfFileSpec.createEmbeddedFileSpec(pdf,
+                        Files.readAllBytes(photoCredits), "Photograph sources, authors and licenses",
+                        "PHOTO-CREDITS.md", new PdfName("text/markdown"), null, PdfName.Source);
+                pdf.addFileAttachment("Photograph credits and licenses", attachment);
+            }
         }
     }
 
