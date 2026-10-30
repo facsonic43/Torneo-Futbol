@@ -14,12 +14,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ReportOptionsTest {
     @Test
-    void defaultsIncludeEveryPlayerAndUseThePhotosDirectory() {
+    void defaultsIncludeEveryPlayerAndUseThePersonImagesDirectory() {
         ReportOptions options = ReportOptions.defaults();
 
         assertNull(options.position());
         assertNull(options.player());
-        assertEquals(Path.of("photos"), options.photosDirectory());
+        assertEquals(Path.of("Images", "Person"), options.photosDirectory());
     }
 
     @Test
@@ -62,6 +62,9 @@ class ReportOptionsTest {
 
             @Override
             public Position getPosition() { return position; }
+
+            @Override
+            public java.util.Map<String, Integer> getTechnicalAttributes() { return java.util.Map.of(); }
         };
     }
 }

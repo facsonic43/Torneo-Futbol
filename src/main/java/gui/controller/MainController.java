@@ -167,7 +167,7 @@ public class MainController {
     @FXML
     private void handleGeneratePdf(ActionEvent event) {
         if (tournamentController != null) {
-            tournamentController.handleGeneratePdf();
+            tournamentController.handleGeneratePdf(contentHost.getScene().getWindow());
         }
     }
 

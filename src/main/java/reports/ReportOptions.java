@@ -19,6 +19,6 @@ public record ReportOptions(Position position, Player player, Path photosDirecto
     }
 
     public static ReportOptions defaults() {
-        return new ReportOptions(null, null, Path.of("photos"));
+        return new ReportOptions(null, null, Path.of("Images", "Person"));
     }
 }

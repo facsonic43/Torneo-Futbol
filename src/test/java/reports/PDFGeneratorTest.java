@@ -28,6 +28,8 @@ class PDFGeneratorTest {
         ReportData data = ReportData.fromInitialData(participants);
         Player selected = data.getTeams().getFirst().getSquad().getFirst();
         Path output = directory.resolve("complete.pdf");
+        Path coaches = Files.createDirectory(directory.resolve("Coaches"));
+        Files.copy(Path.of("Images", "Person", "Coaches", "DU-10000019.jpg"), coaches.resolve("DU-10000019.jpg"));
         PDFGenerator.generate(data, output, new ReportOptions(Position.GOALKEEPER, selected, directory));
 
         try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
@@ -46,6 +48,8 @@ class PDFGeneratorTest {
                 assertTrue(text.contains(person.getIdType() + "-" + person.getIdNumber()), "Missing barcode identifier");
             }
             assertTrue(countXObjects(pdf, PdfName.Form) >= people.size(), "Each card must have a vector barcode");
+            assertEquals(1, countXObjects(pdf, PdfName.Image), "The single coach photograph must be used only once");
+            assertTrue(text.contains("unavailable"));
             assertFalse(text.contains("Player information filter"));
             assertFalse(text.contains("Completed matches:"));
             assertFalse(text.contains("Goals conceded per match"));
@@ -59,7 +63,7 @@ class PDFGeneratorTest {
     @Test
     void embedsSuppliedPhotographAndReportsMissingOnes() throws Exception {
         ReportData data = fixture();
-        Path photo = directory.resolve("DU-300.jpg");
+        Path photo = Files.createDirectory(directory.resolve("Referees")).resolve("DU-300.jpg");
         assertTrue(ImageIO.write(new BufferedImage(20, 30, BufferedImage.TYPE_INT_RGB), "jpg", photo.toFile()));
         Path output = directory.resolve("photos.pdf");
         PDFGenerator.generate(data, output, new ReportOptions(null, null, directory));
@@ -71,12 +75,28 @@ class PDFGeneratorTest {
     }
 
     @Test
+    void embedsPhotosForEachRoleAndMarksUnassignedParticipants() throws Exception {
+        for (var entry : Map.of("Coaches", "DU-101.jpg", "Players", "DU-201.jpg", "Referees", "DU-300.jpg").entrySet()) {
+            Path photo = Files.createDirectory(directory.resolve(entry.getKey())).resolve(entry.getValue());
+            assertTrue(ImageIO.write(new BufferedImage(20, 30, BufferedImage.TYPE_INT_RGB), "jpg", photo.toFile()));
+        }
+        Path output = directory.resolve("roles.pdf");
+        PDFGenerator.generate(fixture(), output, new ReportOptions(null, null, directory));
+        try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
+            assertEquals(3, countXObjects(pdf, PdfName.Image));
+            // Two coaches and two players have one available photo per role; two cards must have no photo.
+            assertEquals(2, text(pdf).split("unavailable", -1).length - 1);
+        }
+    }
+
+    @Test
     void preservesExistingReportAndRemovesTemporaryOutputWhenPhotographIsInvalid() throws Exception {
         ReportData data = fixture();
         Path output = directory.resolve("report.pdf");
         PDFGenerator.generate(data, output, new ReportOptions(null, null, directory));
         byte[] original = Files.readAllBytes(output);
-        Files.writeString(directory.resolve("DU-300.jpg"), "invalid image");
+        Files.createDirectory(directory.resolve("Referees"));
+        Files.writeString(directory.resolve("Referees/DU-300.jpg"), "invalid image");
         assertThrows(IOException.class, () -> PDFGenerator.generate(data, output, new ReportOptions(null, null, directory)));
         assertArrayEquals(original, Files.readAllBytes(output));
         try (var files = Files.list(directory)) {
