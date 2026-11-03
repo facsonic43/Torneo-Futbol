@@ -36,25 +36,25 @@ public class MatchesReportView extends ReportView {
 
     @Override
     protected void render() {
-        selectedReportTitle.setText("Matches Log & Incidences");
-        selectedReportSubtitle.setText("Comprehensive log of played matches, starting lineups, formations and match events");
+        getSelectedReportTitle().setText("Matches Log & Incidences");
+        getSelectedReportSubtitle().setText("Comprehensive log of played matches, starting lineups, formations and match events");
         List<Match> playedMatches = new ArrayList<>();
-        if (tournament.getAllMatches() != null) {
-            for (Match m : tournament.getAllMatches()) {
+        if (getTournament().getAllMatches() != null) {
+            for (Match m : getTournament().getAllMatches()) {
                 if (m.isPlayed()) {
                     playedMatches.add(m);
                 }
             }
         }
         playedMatches.sort(Comparator.comparing(Match::getMatchDate, Comparator.nullsLast(Comparator.naturalOrder())));
-        reportMetricChip.setText(playedMatches.size() + " MATCHES PLAYED");
+        getReportMetricChip().setText(playedMatches.size() + " MATCHES PLAYED");
         if (playedMatches.isEmpty()) {
             VBox emptyBox = new VBox(10);
             emptyBox.setAlignment(Pos.CENTER);
             Label emptyLabel = new Label("No played matches available yet.");
             emptyLabel.getStyleClass().add("muted-text");
             emptyBox.getChildren().add(emptyLabel);
-            reportContentHost.getChildren().add(emptyBox);
+            getReportContentHost().getChildren().add(emptyBox);
             return;
         }
         VBox mainLayout = new VBox(12);
@@ -65,7 +65,7 @@ public class MatchesReportView extends ReportView {
         filterBar.getStyleClass().add("info-card");
         ComboBox<String> teamFilter = new ComboBox<>();
         teamFilter.getItems().add("ALL TEAMS");
-        for (Team t : tournament.getTeams()) {
+        for (Team t : getTournament().getTeams()) {
             teamFilter.getItems().add(t.getName());
         }
         teamFilter.setValue("ALL TEAMS");
@@ -167,7 +167,7 @@ public class MatchesReportView extends ReportView {
         updateFilters.run();
         contentLayout.getChildren().addAll(leftSide, rightSide);
         mainLayout.getChildren().addAll(filterBar, contentLayout);
-        reportContentHost.getChildren().add(mainLayout);
+        getReportContentHost().getChildren().add(mainLayout);
     }
 
     private void renderMatchDetails(VBox container, Match match) {
@@ -227,10 +227,10 @@ public class MatchesReportView extends ReportView {
         DialogPane pane = dialog.getDialogPane();
         pane.getButtonTypes().add(ButtonType.CLOSE);
         pane.setMinWidth(420);
-        if (reportsPane.getScene() != null) {
-            dialog.initOwner(reportsPane.getScene().getWindow());
-            pane.getStylesheets().addAll(reportsPane.getScene().getStylesheets());
-            if (reportsPane.getScene().getRoot().getStyleClass().contains("light-theme")) {
+        if (getReportsPane().getScene() != null) {
+            dialog.initOwner(getReportsPane().getScene().getWindow());
+            pane.getStylesheets().addAll(getReportsPane().getScene().getStylesheets());
+            if (getReportsPane().getScene().getRoot().getStyleClass().contains("light-theme")) {
                 pane.getStyleClass().add("light-theme");
             }
         }
@@ -271,7 +271,7 @@ public class MatchesReportView extends ReportView {
 
     private String getMatchStageName(Match match) {
         if (match == null) return "Unknown Stage";
-        return switch (tournament.getStageOf(match)) {
+        return switch (getTournament().getStageOf(match)) {
             case FINAL -> "Final";
             case SEMI_FINALS -> "Semi-Finals";
             case QUARTER_FINALS -> "Quarter-Finals";

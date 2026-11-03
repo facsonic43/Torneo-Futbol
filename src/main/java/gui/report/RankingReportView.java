@@ -27,13 +27,13 @@ public abstract class RankingReportView extends ReportView {
 
     @Override
     protected void render() throws Exception {
-        selectedReportTitle.setText(title());
-        selectedReportSubtitle.setText(subtitle());
-        long played = tournament.getAllMatches().stream().filter(Match::isPlayed).count();
-        reportMetricChip.setText(played + " MATCHES PLAYED");
-        if (!reportContentHost.getChildren().contains(statisticsReportView)) {
-            reportContentHost.getChildren().setAll(statisticsReportView);
+        getSelectedReportTitle().setText(title());
+        getSelectedReportSubtitle().setText(subtitle());
+        long played = getTournament().getAllMatches().stream().filter(Match::isPlayed).count();
+        getReportMetricChip().setText(played + " MATCHES PLAYED");
+        if (!getReportContentHost().getChildren().contains(statisticsReportView)) {
+            getReportContentHost().getChildren().setAll(statisticsReportView);
         }
-        statisticsReportView.showReport(tournament, section());
+        statisticsReportView.showReport(getTournament(), section());
     }
 }

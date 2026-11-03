@@ -1,6 +1,7 @@
 package model.tournament;
 
 import control.MatchSimulator;
+import exceptions.InsufficientStadiumsException;
 import model.match.FinalMatch;
 import model.match.FirstLegMatch;
 import model.match.GroupMatch;
@@ -123,7 +124,7 @@ public class Tournament implements Serializable {
 
     void prepareKnockoutStadiums(List<Stadium> stadiums) {
         if (stadiums == null || stadiums.size() < 13) {
-            throw new IllegalStateException( "At least 13 stadiums are required for the knockout stage without repetitions." );
+            throw new InsufficientStadiumsException(13, stadiums == null ? 0 : stadiums.size());
         }
         knockoutStadiums = new ArrayList<>(stadiums);
         Collections.shuffle( knockoutStadiums );

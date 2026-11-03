@@ -38,8 +38,8 @@ public class PlayersReportView extends ReportView {
 
     @Override
     protected void render() {
-        selectedReportTitle.setText("Tournament Players Directory");
-        selectedReportSubtitle.setText("Master database of registered athletes with disciplinary records, ratings and performance metrics");
+        getSelectedReportTitle().setText("Tournament Players Directory");
+        getSelectedReportSubtitle().setText("Master database of registered athletes with disciplinary records, ratings and performance metrics");
         VBox layout = new VBox(12);
         layout.setFillWidth(true);
         VBox.setVgrow(layout, Priority.ALWAYS);
@@ -55,7 +55,7 @@ public class PlayersReportView extends ReportView {
         posFilter.setPrefWidth(160);
         ComboBox<String> teamFilter = new ComboBox<>();
         teamFilter.getItems().add("ALL TEAMS");
-        for (Team t : tournament.getTeams()) {
+        for (Team t : getTournament().getTeams()) {
             teamFilter.getItems().add(t.getName());
         }
         teamFilter.setValue("ALL TEAMS");
@@ -210,7 +210,7 @@ public class PlayersReportView extends ReportView {
         gkAvgCol.setCellFactory(col -> createCenterStringCell());
         table.getColumns().addAll(playerCol, posCol, teamCol, ovrCol, matchesCol, minCol, goalsCol, yellowCol, redCol, availCol, concededCol, gkAvgCol);
         ObservableList<PlayerDirectoryEntry> masterList = FXCollections.observableArrayList();
-        for (Team t : tournament.getTeams()) {
+        for (Team t : getTournament().getTeams()) {
             for (Player p : t.getSquad()) {
                 masterList.add(new PlayerDirectoryEntry(p, t));
             }
@@ -227,7 +227,7 @@ public class PlayersReportView extends ReportView {
                 boolean matchTeam = "ALL TEAMS".equalsIgnoreCase(tSel) || tSel == null || (entry.getTeam() != null && entry.getTeam().getName().equalsIgnoreCase(tSel));
                 return matchPos && matchTeam;
             });
-            reportMetricChip.setText(filteredList.size() + " PLAYERS");
+            getReportMetricChip().setText(filteredList.size() + " PLAYERS");
         };
         posFilter.valueProperty().addListener((obs, o, n) -> updateFilter.run());
         teamFilter.valueProperty().addListener((obs, o, n) -> updateFilter.run());
@@ -238,15 +238,15 @@ public class PlayersReportView extends ReportView {
         });
         updateFilter.run();
         layout.getChildren().addAll(filterBar, table);
-        reportContentHost.getChildren().add(layout);
+        getReportContentHost().getChildren().add(layout);
     }
 
     private void showPlayerAttributesDialog(Player player) {
         Dialog<Void> dialog = new Dialog<>();
         DialogPane dialogPane = dialog.getDialogPane();
-        if (reportsPane != null && reportsPane.getScene() != null) {
-            dialogPane.getStylesheets().addAll(reportsPane.getScene().getStylesheets());
-            Node rootNode = reportsPane.getScene().getRoot();
+        if (getReportsPane() != null && getReportsPane().getScene() != null) {
+            dialogPane.getStylesheets().addAll(getReportsPane().getScene().getStylesheets());
+            Node rootNode = getReportsPane().getScene().getRoot();
             dialogPane.getStyleClass().addAll(rootNode.getStyleClass());
         }
         dialogPane.getStyleClass().add("panel");

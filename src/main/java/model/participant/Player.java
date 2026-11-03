@@ -8,16 +8,16 @@ import java.util.Map;
 // los goles recibidos se registran únicamente en los arqueros.
 
 public abstract class Player extends Person {
-    protected int matchesPlayed;
-    protected int minutesPlayed;
-    protected int yellowCards;
-    protected int redCards;
-    protected int goals;
-    protected int assists;
+    private int matchesPlayed;
+    private int minutesPlayed;
+    private int yellowCards;
+    private int redCards;
+    private int goals;
+    private int assists;
 
-    protected int suspensionMatchesLeft = 0;
-    protected int injuryMatchesLeft = 0;
-    protected int tournamentYellowCards = 0;
+    private int suspensionMatchesLeft = 0;
+    private int injuryMatchesLeft = 0;
+    private int tournamentYellowCards = 0;
 
     public Player(String name, int idNumber, String idType, LocalDate birthDate, Country nationality, int matchesPlayed,
             int minutesPlayed, int yellowCards, int redCards, int goals, int assists) {

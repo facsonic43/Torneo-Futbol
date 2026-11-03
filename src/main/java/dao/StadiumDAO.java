@@ -16,7 +16,7 @@ public class StadiumDAO {
         if (exists(stadium.getName(), 0)) {
             throw new DuplicateLocationException("A stadium with this name already exists.");
         }
-        String sql = "INSERT INTO estadio (nombre, id_ciudad) VALUES (?, ?)";
+        String sql = "INSERT INTO stadium (name, id_city) VALUES (?, ?)";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql,
                 Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, stadium.getName());

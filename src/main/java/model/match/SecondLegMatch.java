@@ -40,9 +40,9 @@ public class SecondLegMatch extends Match {
     @Override
     public Team getWinner() {
         return switch (getResolutionCriterion()) {
-            case SERIES_POINTS -> getSeriesPoints(homeTeam) > getSeriesPoints(awayTeam) ? homeTeam : awayTeam;
+            case SERIES_POINTS -> getSeriesPoints(getHomeTeam()) > getSeriesPoints(getAwayTeam()) ? getHomeTeam() : getAwayTeam();
             case AGGREGATE_GOALS, AWAY_GOALS, WEIGHTED_GOAL_DIFFERENCE ->
-                    getWeightedGoalDifference(homeTeam) > 0 ? homeTeam : awayTeam;
+                    getWeightedGoalDifference(getHomeTeam()) > 0 ? getHomeTeam() : getAwayTeam();
             case PENALTIES -> getPenaltyWinner();
             default -> null;
         };
@@ -50,15 +50,15 @@ public class SecondLegMatch extends Match {
 
     @Override
     public ResolutionCriterion getResolutionCriterion() {
-        if (!played || !firstLeg.isPlayed()) {
+        if (!isPlayed() || !firstLeg.isPlayed()) {
             return ResolutionCriterion.NOT_PLAYED;
         }
-        if (getSeriesPoints(homeTeam) != getSeriesPoints(awayTeam)) {
+        if (getSeriesPoints(getHomeTeam()) != getSeriesPoints(getAwayTeam())) {
             return ResolutionCriterion.SERIES_POINTS;
         }
-        int weightedDifference = getWeightedGoalDifference(homeTeam);
+        int weightedDifference = getWeightedGoalDifference(getHomeTeam());
         if (weightedDifference != 0) {
-            int aggregateDifference = getAggregateGoals(homeTeam) - getAggregateGoals(awayTeam);
+            int aggregateDifference = getAggregateGoals(getHomeTeam()) - getAggregateGoals(getAwayTeam());
             if (aggregateDifference == 0) {
                 return ResolutionCriterion.AWAY_GOALS;
             }
@@ -97,22 +97,22 @@ public class SecondLegMatch extends Match {
                 weightedGoals += firstLeg.getAwayGoals() * 2;
             }
         }
-        if (played) {
-            if (homeTeam == team) {
-                weightedGoals += homeGoals;
-            } else if (awayTeam == team) {
-                weightedGoals += awayGoals * 2;
+        if (isPlayed()) {
+            if (getHomeTeam() == team) {
+                weightedGoals += getHomeGoals();
+            } else if (getAwayTeam() == team) {
+                weightedGoals += getAwayGoals() * 2;
             }
         }
         return weightedGoals;
     }
 
     public int getWeightedGoalDifference(Team team) {
-        if (team == homeTeam) {
-            return getWeightedGoals(homeTeam) - getWeightedGoals(awayTeam);
+        if (team == getHomeTeam()) {
+            return getWeightedGoals(getHomeTeam()) - getWeightedGoals(getAwayTeam());
         }
-        if (team == awayTeam) {
-            return getWeightedGoals(awayTeam) - getWeightedGoals(homeTeam);
+        if (team == getAwayTeam()) {
+            return getWeightedGoals(getAwayTeam()) - getWeightedGoals(getHomeTeam());
         }
         return 0;
     }

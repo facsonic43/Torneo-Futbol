@@ -9,12 +9,12 @@ import model.tournament.Tournament;
 // Gestiona el torneo actual, los títulos y el contenido que dibuja cada subclase.
 
 public abstract class ReportView {
-    protected final StackPane reportContentHost;
-    protected final Label reportMetricChip;
-    protected final Label selectedReportSubtitle;
-    protected final Label selectedReportTitle;
-    protected final Node reportsPane;
-    protected Tournament tournament;
+    private final StackPane reportContentHost;
+    private final Label reportMetricChip;
+    private final Label selectedReportSubtitle;
+    private final Label selectedReportTitle;
+    private final Node reportsPane;
+    private Tournament tournament;
 
     protected ReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
             Label selectedReportTitle, Node reportsPane) {
@@ -28,6 +28,30 @@ public abstract class ReportView {
     public final void show(Tournament tournament) throws Exception {
         this.tournament = tournament;
         render();
+    }
+
+    protected StackPane getReportContentHost() {
+        return reportContentHost;
+    }
+
+    protected Label getReportMetricChip() {
+        return reportMetricChip;
+    }
+
+    protected Label getSelectedReportSubtitle() {
+        return selectedReportSubtitle;
+    }
+
+    protected Label getSelectedReportTitle() {
+        return selectedReportTitle;
+    }
+
+    protected Node getReportsPane() {
+        return reportsPane;
+    }
+
+    protected Tournament getTournament() {
+        return tournament;
     }
 
     protected abstract void render() throws Exception;

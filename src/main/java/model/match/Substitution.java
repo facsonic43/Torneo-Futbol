@@ -15,7 +15,7 @@ public class Substitution extends Event {
     }
 
     public Player getPlayerOut() {
-        return player;
+        return getPlayer();
     }
 
     public Player getPlayerIn() {
@@ -24,7 +24,7 @@ public class Substitution extends Event {
 
     @Override
     public String getDescription() {
-        return minute + "' Substitution [" + team.getName() + "]: " + playerIn.getName() + " replaces " + player.getName();
+        return getMinute() + "' Substitution [" + getTeam().getName() + "]: " + playerIn.getName() + " replaces " + getPlayer().getName();
     }
 
     @Override

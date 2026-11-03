@@ -9,9 +9,9 @@ import java.io.Serializable;
 // de una tanda se distinguen de las incidencias del tiempo de juego.
 
 public abstract class Event implements Serializable{
-    protected int minute;
-    protected Team team;
-    protected Player player;
+    private int minute;
+    private Team team;
+    private Player player;
 
     public Event(int minute, Team team, Player player) {
         this.minute = minute;

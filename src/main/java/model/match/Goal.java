@@ -39,7 +39,7 @@ public class Goal extends Event {
 
     @Override
     public String getDescription() {
-        String description = minute + "' GOAL - " + player.getName();
+        String description = getMinute() + "' GOAL - " + getPlayer().getName();
         if (ownGoal) {
             description += " (Own goal)";
         } else if (penalty) {
@@ -47,7 +47,7 @@ public class Goal extends Event {
         } else if (assistPlayer != null) {
             description += " (Assist from: " + assistPlayer.getName() + ")";
         }
-        description += " [" + team.getName() + "]";
+        description += " [" + getTeam().getName() + "]";
         return description;
     }
 

@@ -31,8 +31,8 @@ public class RefereesReportView extends ReportView {
 
     @Override
     protected void render() {
-        selectedReportTitle.setText("Match Officials Registry");
-        selectedReportSubtitle.setText("Registered referees, experience and average officiating career duration");
+        getSelectedReportTitle().setText("Match Officials Registry");
+        getSelectedReportSubtitle().setText("Registered referees, experience and average officiating career duration");
         VBox layout = new VBox(12);
         layout.setFillWidth(true);
         VBox.setVgrow(layout, Priority.ALWAYS);
@@ -62,8 +62,8 @@ public class RefereesReportView extends ReportView {
         table.getColumns().addAll(rankCol, nameCol, natCol, expCol, matchesCol);
         List<RefereeReportEntry> list = new ArrayList<>();
         int totalYears = 0;
-        if (tournament.getReferees() != null) {
-            for (Referee ref : tournament.getReferees()) {
+        if (getTournament().getReferees() != null) {
+            for (Referee ref : getTournament().getReferees()) {
                 String nat = ref.getNationality() != null ? ref.getNationality().getName() : "-";
                 totalYears += ref.getYearsOfficiated();
                 list.add(new RefereeReportEntry(ref.getName(), nat, ref.getBirthDate(), ref.getIdType() != null
@@ -81,7 +81,7 @@ public class RefereesReportView extends ReportView {
         avgLabel.getStyleClass().add("accent-text");
         summaryBar.getChildren().add(avgLabel);
         layout.getChildren().addAll(table, summaryBar);
-        reportMetricChip.setText(list.size() + " REFEREES");
-        reportContentHost.getChildren().add(layout);
+        getReportMetricChip().setText(list.size() + " REFEREES");
+        getReportContentHost().getChildren().add(layout);
     }
 }

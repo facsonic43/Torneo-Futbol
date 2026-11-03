@@ -45,7 +45,7 @@ public class CityDAO {
         if (exists(city.getName(), city.getId())) {
             throw new DuplicateLocationException("A city with this name already exists.");
         }
-        String sql = "UPDATE ciudad SET name = ?, country = ? WHERE id_city = ?";
+        String sql = "UPDATE city SET name = ?, country = ? WHERE id_city = ?";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql)) {
             ps.setString(1, city.getName());
             ps.setString(2, city.getCountry());
@@ -78,7 +78,7 @@ public class CityDAO {
     }
 
     private boolean exists(String name, int excludedId) throws SQLException {
-        String sql = "SELECT 1 FROM ciudad " + "WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) "
+        String sql = "SELECT 1 FROM city " + "WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) "
                 + "AND id_city <> ? LIMIT 1";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql)) {
             ps.setString(1, name);

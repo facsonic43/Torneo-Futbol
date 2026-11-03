@@ -12,7 +12,7 @@ public class YellowCard extends Event {
 
     @Override
     public String getDescription() {
-        return minute + "' Yellow Card - " + player.getName() + " [" + team.getName() + "]";
+        return getMinute() + "' Yellow Card - " + getPlayer().getName() + " [" + getTeam().getName() + "]";
     }
 
     @Override

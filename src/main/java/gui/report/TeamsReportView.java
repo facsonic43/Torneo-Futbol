@@ -29,8 +29,8 @@ public class TeamsReportView extends ReportView {
 
     @Override
     protected void render() {
-        selectedReportTitle.setText("Participating Teams Analysis");
-        selectedReportSubtitle.setText("Comprehensive technical, staff and performance metrics for all clubs");
+        getSelectedReportTitle().setText("Participating Teams Analysis");
+        getSelectedReportSubtitle().setText("Comprehensive technical, staff and performance metrics for all clubs");
         VBox layout = new VBox(12);
         layout.setFillWidth(true);
         VBox.setVgrow(layout, Priority.ALWAYS);
@@ -95,7 +95,7 @@ public class TeamsReportView extends ReportView {
         });
         table.getColumns().addAll(teamCol, countryCol, rankCol, avgAgeCol, coachCol, coachAgeCol, coachNatCol, gfCol, gaCol, effCol, ovrCol);
         List<TeamSummaryEntry> list = new ArrayList<>();
-        for (Team t : tournament.getTeams()) {
+        for (Team t : getTournament().getTeams()) {
             int squadSize = t.getSquad().size();
             double totalAge = 0;
             int gf = 0;
@@ -106,12 +106,12 @@ public class TeamsReportView extends ReportView {
                 ga += p.getGoalsConceded();
             }
             double avgAge = squadSize > 0 ? (totalAge / squadSize) : 0;
-            list.add(new TeamSummaryEntry(t, avgAge, gf, ga, tournament.getGroups()));
+            list.add(new TeamSummaryEntry(t, avgAge, gf, ga, getTournament().getGroups()));
         }
         list.sort(Comparator.comparing(TeamSummaryEntry::getTeamName, String.CASE_INSENSITIVE_ORDER));
         table.getItems().setAll(list);
         layout.getChildren().add(table);
-        reportMetricChip.setText(list.size() + " TEAMS");
-        reportContentHost.getChildren().add(layout);
+        getReportMetricChip().setText(list.size() + " TEAMS");
+        getReportContentHost().getChildren().add(layout);
     }
 }

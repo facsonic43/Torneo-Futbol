@@ -1,14 +1,13 @@
--- Reconstructed from the queries in CityDAO and StadiumDAO.
--- Compare it with your actual database and adjust types/lengths if they differ.
+-- Tables used by CityDAO and StadiumDAO. IDs are generated automatically.
 
-CREATE TABLE IF NOT EXISTS ciudad (
-    id_ciudad SERIAL PRIMARY KEY,
-    nombre    VARCHAR(100) NOT NULL,
-    pais      VARCHAR(100) NOT NULL
+CREATE TABLE IF NOT EXISTS city (
+    id_city SERIAL PRIMARY KEY,
+    name    VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS estadio (
-    id_estadio SERIAL PRIMARY KEY,
-    nombre     VARCHAR(100) NOT NULL,
-    id_ciudad  INTEGER NOT NULL REFERENCES ciudad (id_ciudad)
+CREATE TABLE IF NOT EXISTS stadium (
+    id_stadium SERIAL PRIMARY KEY,
+    name       VARCHAR(100) NOT NULL,
+    id_city    INTEGER NOT NULL REFERENCES city (id_city)
 );
