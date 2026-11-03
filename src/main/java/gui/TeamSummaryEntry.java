@@ -6,9 +6,8 @@ import model.tournament.Group;
 import model.tournament.Standing;
 import java.util.List;
 
-/**
- * Prepara el resumen de un equipo: plantel, entrenador, goles y rendimiento en los grupos.
- */
+// Prepara el resumen de un equipo: plantel, entrenador, goles y rendimiento en los grupos.
+
 public class TeamSummaryEntry {
     private final Team team;
     private final double squadAverageAge;
@@ -42,7 +41,6 @@ public class TeamSummaryEntry {
     public double getEffectiveness() {
         int points = 0;
         int matchesPlayed = 0;
-
         if (tournamentGroups != null) {
             for (Group group : tournamentGroups) {
                 for (Standing s : group.getStandings()) {
@@ -54,7 +52,6 @@ public class TeamSummaryEntry {
                 }
             }
         }
-
         if (matchesPlayed == 0) return 0.0;
         return ((double) points / (matchesPlayed * 3)) * 100.0;
     }

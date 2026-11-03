@@ -8,9 +8,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import service.TournamentSessionService;
 
-/**
- * Inicia la interfaz JavaFX, carga el menú principal y aplica los estilos de la aplicación.
- */
+// Inicia la interfaz JavaFX, carga el menú principal y aplica los estilos de la aplicación.
+
 public class MainApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {

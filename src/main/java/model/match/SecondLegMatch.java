@@ -6,20 +6,19 @@ import model.participant.Team;
 import java.time.LocalDate;
 import java.util.Optional;
 
-/**
- * Resuelve una serie una vez jugadas la ida y la vuelta, incluidos los resultados administrativos.
- * Compara primero los puntos y luego los goles ponderados, contando doble los de visitante.
- * Distingue si el ganador ya tenía ventaja global, si desempató por goles visitantes
- * o si la ponderación revirtió la ventaja global, sin cambiar la regla de clasificación.
- * Sólo una igualdad en ambos criterios requiere penales; una tanda incompleta no define ganador.
- * Si la vuelta se pierde sin jugar y la serie sigue empatada, queda pendiente de resolución.
- */
+// Resuelve una serie una vez jugadas la ida y la vuelta, incluidos los resultados administrativos.
+// Compara primero los puntos y luego los goles ponderados, contando doble los de visitante.
+// Distingue si el ganador ya tenía ventaja global, si desempató por goles visitantes
+// o si la ponderación revirtió la ventaja global, sin cambiar la regla de clasificación.
+// Sólo una igualdad en ambos criterios requiere penales; una tanda incompleta no define ganador.
+// Si la vuelta se pierde sin jugar y la serie sigue empatada, queda pendiente de resolución.
+
 public class SecondLegMatch extends Match {
     private static final long serialVersionUID = 3746140207111491617L;
     private FirstLegMatch firstLeg;
 
-    public SecondLegMatch(Team homeTeam, Team awayTeam, Referee referee, Stadium stadium,
-                          LocalDate matchDate, FirstLegMatch firstLeg) {
+    public SecondLegMatch(Team homeTeam, Team awayTeam, Referee referee, Stadium stadium, LocalDate matchDate,
+            FirstLegMatch firstLeg) {
         super(homeTeam, awayTeam, referee, stadium, matchDate);
         this.firstLeg = firstLeg;
     }

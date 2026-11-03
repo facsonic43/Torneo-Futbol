@@ -7,9 +7,8 @@ import model.participant.Team;
 
 import java.time.LocalDate;
 
-/**
- * Partido de ida de una eliminatoria; aporta puntos y goles a la serie sin exigir un ganador.
- */
+// Partido de ida de una eliminatoria; aporta puntos y goles a la serie sin exigir un ganador.
+
 public class FirstLegMatch extends Match {
     private static final long serialVersionUID = 1690642534697006805L;
 

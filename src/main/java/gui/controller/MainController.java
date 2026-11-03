@@ -19,10 +19,9 @@ import javafx.stage.Stage;
 import model.tournament.Tournament;
 import service.TournamentSessionService;
 
-/**
- * Coordina la navegación de la ventana principal y comparte la sesión entre sus pantallas.
- * Actualiza el estado del campeonato y mantiene el tema visual seleccionado.
- */
+// Coordina la navegación de la ventana principal y comparte la sesión entre sus pantallas.
+// Actualiza el estado del campeonato y mantiene el tema visual seleccionado.
+
 public class MainController {
     @FXML
     private Button tournamentButton;
@@ -88,13 +87,11 @@ public class MainController {
 
     public void setSession(TournamentSessionService session) {
         this.session = session;
-
         try {
             File logoFile = new File("Images/logo.png");
             if (logoFile.exists()) {
                 brandLogo.setImage(new Image(logoFile.toURI().toString()));
             }
-
             loadModules();
             handleTournament();
             updateGlobalStatus();
@@ -218,11 +215,9 @@ public class MainController {
             if (cssUrl != null) {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
             }
-
             if (contentHost.getScene().getRoot().getStyleClass().contains("light-theme")) {
                 root.getStyleClass().add("light-theme");
             }
-
             stage.setScene(scene);
         } catch (Exception exception) {
             showError("Error returning to Main Menu", exception);
@@ -234,7 +229,6 @@ public class MainController {
         matchDayButton.getStyleClass().remove("nav-button-active");
         if (reportsButton != null) reportsButton.getStyleClass().remove("nav-button-active");
         databaseButton.getStyleClass().remove("nav-button-active");
-
         if (selectedButton != null) {
             selectedButton.getStyleClass().add("nav-button-active");
         }

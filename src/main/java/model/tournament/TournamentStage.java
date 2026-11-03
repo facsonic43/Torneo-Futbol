@@ -1,8 +1,7 @@
 package model.tournament;
 
-/**
- * Define las etapas del campeonato y el nombre que se muestra para cada una en la interfaz.
- */
+// Define las etapas del campeonato y el nombre que se muestra para cada una en la interfaz.
+
 public enum TournamentStage {
     NOT_STARTED("NOT STARTED"),
     GROUP_STAGE("GROUP STAGE"),

@@ -4,9 +4,8 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import model.participant.Player;
 
-/**
- * Proporciona celdas reutilizables para alinear y presentar los valores de las tablas.
- */
+// Proporciona celdas reutilizables para alinear y presentar los valores de las tablas.
+
 public final class TableCells {
     private TableCells() {
     }

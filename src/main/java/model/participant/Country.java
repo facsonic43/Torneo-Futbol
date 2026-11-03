@@ -3,9 +3,8 @@ package model.participant;
 import java.util.Objects;
 import java.io.Serializable;
 
-/**
- * Representa un país y permite comparar y reutilizar países que tienen el mismo nombre.
- */
+// Representa un país y permite comparar y reutilizar países que tienen el mismo nombre.
+
 public class Country implements Serializable{
     private String name;
 
@@ -30,7 +29,6 @@ public class Country implements Serializable{
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-
         Country country = (Country) obj;
         return Objects.equals(name, country.name);
     }

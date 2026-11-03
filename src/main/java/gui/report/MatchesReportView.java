@@ -25,10 +25,9 @@ import java.util.Comparator;
 import java.util.List;
 import static gui.MatchFormat.scoreText;
 
-/**
- * Lista los partidos jugados y permite filtrarlos por equipo y fase del campeonato.
- * Muestra el resultado, las formaciones, las incidencias y la definición del encuentro elegido.
- */
+// Lista los partidos jugados y permite filtrarlos por equipo y fase del campeonato.
+// Muestra el resultado, las formaciones, las incidencias y la definición del encuentro elegido.
+
 public class MatchesReportView extends ReportView {
     public MatchesReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
             Label selectedReportTitle, Node reportsPane) {
@@ -49,7 +48,6 @@ public class MatchesReportView extends ReportView {
         }
         playedMatches.sort(Comparator.comparing(Match::getMatchDate, Comparator.nullsLast(Comparator.naturalOrder())));
         reportMetricChip.setText(playedMatches.size() + " MATCHES PLAYED");
-
         if (playedMatches.isEmpty()) {
             VBox emptyBox = new VBox(10);
             emptyBox.setAlignment(Pos.CENTER);
@@ -59,7 +57,6 @@ public class MatchesReportView extends ReportView {
             reportContentHost.getChildren().add(emptyBox);
             return;
         }
-
         VBox mainLayout = new VBox(12);
         mainLayout.setFillWidth(true);
         VBox.setVgrow(mainLayout, Priority.ALWAYS);
@@ -81,7 +78,6 @@ public class MatchesReportView extends ReportView {
         btnReset.getStyleClass().add("secondary-button");
         Region filterSpacer = new Region();
         HBox.setHgrow(filterSpacer, Priority.ALWAYS);
-
         filterBar.getChildren().addAll(new Label("TEAM:"), teamFilter, new Label("STAGE:"), stageFilter, btnReset,
                 filterSpacer);
         HBox contentLayout = new HBox(16);
@@ -95,7 +91,6 @@ public class MatchesReportView extends ReportView {
         ObservableList<Match> masterList = FXCollections.observableArrayList(playedMatches);
         FilteredList<Match> filteredList = new FilteredList<>(masterList, m -> true);
         playedList.setItems(filteredList);
-
         playedList.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(Match m, boolean empty) {
@@ -111,7 +106,6 @@ public class MatchesReportView extends ReportView {
                     if (m.getHomePenalties() != null) {
                         scoreStr += " (" + m.getHomePenalties() + "-" + m.getAwayPenalties() + " pen)";
                     }
-
                     Label score = new Label(scoreStr + " · " + (m.getMatchDate() != null ? m.getMatchDate().toString() : "TBD"));
                     score.getStyleClass().add("small-text");
                     card.getChildren().addAll(teams, score);
@@ -124,7 +118,6 @@ public class MatchesReportView extends ReportView {
         VBox rightSide = new VBox(12);
         rightSide.getStyleClass().add("info-card");
         HBox.setHgrow(rightSide, Priority.ALWAYS);
-
         playedList.getSelectionModel().selectedItemProperty().addListener((obs, oldM, selectedMatch) -> {
             if (selectedMatch != null) {
                 renderMatchDetails(rightSide, selectedMatch);
@@ -133,14 +126,11 @@ public class MatchesReportView extends ReportView {
         Runnable updateFilters = () -> {
             String tSel = teamFilter.getValue();
             String sSel = stageFilter.getValue();
-
             filteredList.setPredicate(match -> {
                 boolean matchTeam = "ALL TEAMS".equalsIgnoreCase(tSel) || tSel == null
                         || match.getHomeTeam().getName().equalsIgnoreCase(tSel)
                         || match.getAwayTeam().getName().equalsIgnoreCase(tSel);
-
                 boolean matchStage = "ALL STAGES".equalsIgnoreCase(sSel) || sSel == null;
-
                 if (!matchStage) {
                     String stageName = getMatchStageName(match).toUpperCase();
                     switch (sSel.toUpperCase()) {
@@ -156,10 +146,8 @@ public class MatchesReportView extends ReportView {
                             break;
                     }
                 }
-
                 return matchTeam && matchStage;
             });
-
             if (!filteredList.isEmpty()) {
                 playedList.getSelectionModel().selectFirst();
             } else {
@@ -171,7 +159,6 @@ public class MatchesReportView extends ReportView {
         };
         teamFilter.valueProperty().addListener((obs, o, n) -> updateFilters.run());
         stageFilter.valueProperty().addListener((obs, o, n) -> updateFilters.run());
-
         btnReset.setOnAction(e -> {
             teamFilter.setValue("ALL TEAMS");
             stageFilter.setValue("ALL STAGES");
@@ -201,7 +188,6 @@ public class MatchesReportView extends ReportView {
                 + "  |  Date: " + (match.getMatchDate() != null ? match.getMatchDate().toString() : "TBD")
                 + "  |  Stadium: " + (match.getStadium() != null ? match.getStadium().getName() : "TBD")
                 + "  |  Referee: " + (match.getReferee() != null ? match.getReferee().getName() : "TBD");
-
         Label matchInfo = new Label(infoStr);
         matchInfo.getStyleClass().add("small-text");
         scoreHeader.getChildren().addAll(teamsTitle, scoreLabel, matchInfo);
@@ -223,7 +209,6 @@ public class MatchesReportView extends ReportView {
         VBox.setVgrow(eventsList, Priority.ALWAYS);
         List<Event> sortedEvents = new ArrayList<>(match.getEvents());
         sortedEvents.sort(Comparator.comparingInt(Event::getMinute));
-
         if (sortedEvents.isEmpty()) {
             eventsList.getItems().add("No match incidences recorded.");
         } else {
@@ -231,7 +216,6 @@ public class MatchesReportView extends ReportView {
                 eventsList.getItems().add(ev.getDescription());
             }
         }
-
         eventsBox.getChildren().addAll(eventsTitle, eventsList);
         container.getChildren().addAll(scoreHeader, startersButtonsBox, eventsBox);
     }
@@ -243,11 +227,9 @@ public class MatchesReportView extends ReportView {
         DialogPane pane = dialog.getDialogPane();
         pane.getButtonTypes().add(ButtonType.CLOSE);
         pane.setMinWidth(420);
-
         if (reportsPane.getScene() != null) {
             dialog.initOwner(reportsPane.getScene().getWindow());
             pane.getStylesheets().addAll(reportsPane.getScene().getStylesheets());
-
             if (reportsPane.getScene().getRoot().getStyleClass().contains("light-theme")) {
                 pane.getStyleClass().add("light-theme");
             }
@@ -263,18 +245,15 @@ public class MatchesReportView extends ReportView {
         ListView<String> startersList = new ListView<>();
         startersList.getStyleClass().add("dark-list");
         startersList.setPrefHeight(320);
-
         if (starters == null || starters.isEmpty()) {
             startersList.getItems().add("No starting players recorded.");
         } else {
             List<Player> sortedStarters = new ArrayList<>(starters);
             sortedStarters.sort(Comparator.comparingInt(p -> getPositionOrder(p.getPosition())));
-
             for (Player p : sortedStarters) {
                 startersList.getItems().add("[" + p.getPosition() + "]  " + p.getName());
             }
         }
-
         content.getChildren().addAll(heading, formationLabel, startersList);
         pane.setContent(content);
         dialog.showAndWait();
@@ -292,7 +271,6 @@ public class MatchesReportView extends ReportView {
 
     private String getMatchStageName(Match match) {
         if (match == null) return "Unknown Stage";
-
         return switch (tournament.getStageOf(match)) {
             case FINAL -> "Final";
             case SEMI_FINALS -> "Semi-Finals";

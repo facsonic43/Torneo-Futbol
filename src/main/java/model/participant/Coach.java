@@ -4,10 +4,9 @@ import model.match.Formation;
 
 import java.time.LocalDate;
 
-/**
- * Representa al entrenador y sus títulos; elige la formación según la diferencia
- * de potencia entre los equipos y su experiencia.
- */
+// Representa al entrenador y sus títulos; elige la formación según la diferencia
+// de potencia entre los equipos y su experiencia.
+
 public class Coach extends Person{
     private int titlesObtained;
 
@@ -23,7 +22,6 @@ public class Coach extends Person{
     public Formation chooseFormation(Team team, Team opponent) {
         double powerDifference = opponent.getTeamPower() - team.getTeamPower();
         int formationIndex = titlesObtained;
-
         if (powerDifference >= 20) {
             Formation[] defensive = {
                     Formation.FIVE_FOUR_ONE,

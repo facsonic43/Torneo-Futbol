@@ -12,10 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/**
- * Verifica los filtros y valores predeterminados de los reportes,
- * la coherencia entre jugador y posición y el directorio de fotografías obligatorio.
- */
+// Verifica los filtros y valores predeterminados de los reportes,
+// la coherencia entre jugador y posición y el directorio de fotografías obligatorio.
+
 class ReportOptionsTest {
     @Test
     void defaultsIncludeEveryPlayerAndUseThePersonImagesDirectory() {
@@ -45,8 +44,8 @@ class ReportOptionsTest {
         Player goalkeeper = player(Position.GOALKEEPER);
         ReportOptions options = new ReportOptions(Position.GOALKEEPER, goalkeeper, Path.of("photos"));
         assertSame(goalkeeper, options.player());
-        assertThrows(IllegalArgumentException.class,
-                () -> new ReportOptions(Position.FORWARD, goalkeeper, Path.of("photos")));
+        assertThrows(IllegalArgumentException.class, () -> new ReportOptions(Position.FORWARD, goalkeeper,
+                Path.of("photos")));
     }
 
     @Test
@@ -58,10 +57,8 @@ class ReportOptionsTest {
         return new Player("Test player", 10000001, "DU", LocalDate.of(2000, 1, 1), null, 0, 0, 0, 0, 0, 0) {
             @Override
             public double getOverall() { return 0; }
-
             @Override
             public Position getPosition() { return position; }
-
             @Override
             public java.util.Map<String, Integer> getTechnicalAttributes() { return java.util.Map.of(); }
         };

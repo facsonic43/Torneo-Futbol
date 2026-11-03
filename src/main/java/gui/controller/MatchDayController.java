@@ -21,11 +21,10 @@ import java.util.List;
 
 import static gui.MatchFormat.penaltyContext;
 
-/**
- * Controla la ejecución de partidos y fases desde la pantalla Match Day.
- * Muestra el partido seleccionado, sus incidencias y el avance de la ronda.
- * Cuando queda una tanda pendiente, presenta los pateadores, arqueros y resultados de los penales.
- */
+// Controla la ejecución de partidos y fases desde la pantalla Match Day.
+// Muestra el partido seleccionado, sus incidencias y el avance de la ronda.
+// Cuando queda una tanda pendiente, presenta los pateadores, arqueros y resultados de los penales.
+
 public class MatchDayController {
     @FXML
     private Label currentRoundLabel;
@@ -143,16 +142,13 @@ public class MatchDayController {
 
     public void setSession(TournamentSessionService session) {
         this.session = session;
-
         if (matchEventsView == null) {
             matchEventsView = new MatchEventsView(eventsBox);
         }
-
         if (penaltyKicksView == null) {
-            penaltyKicksView = new PenaltyKicksView(penaltyColumnHeaderBox, penaltyHomeKicksBox,
-                    penaltyAwayKicksBox, penaltyKickDetailsBox);
+            penaltyKicksView = new PenaltyKicksView(penaltyColumnHeaderBox, penaltyHomeKicksBox, penaltyAwayKicksBox,
+                    penaltyKickDetailsBox);
         }
-
         tournament = session.getTournament();
         selectedMatch = null;
         waitingPenaltyResultAcknowledgement = false;
@@ -163,7 +159,6 @@ public class MatchDayController {
         if (session == null) {
             return;
         }
-
         tournament = session.getTournament();
         selectedMatch = null;
         waitingPenaltyResultAcknowledgement = false;
@@ -174,18 +169,15 @@ public class MatchDayController {
         if (tournament == null) {
             return;
         }
-
         currentRoundLabel.setText(executionService.getCurrentRoundName(tournament));
         int played = executionService.getPlayedMatchesInCurrentPhase(tournament);
         int total = executionService.getTotalMatchesInCurrentPhase(tournament);
         int pendingPenalties = executionService.getPendingPenaltyMatches(tournament).size();
-
         if (pendingPenalties > 0) {
             phaseProgressLabel.setText(played + " / " + total + " MATCHES · " + pendingPenalties + " PENALTIES PENDING");
         } else {
             phaseProgressLabel.setText(played + " / " + total + " MATCHES");
         }
-
         refreshMatchList();
         updateActionButtons();
     }
@@ -193,7 +185,6 @@ public class MatchDayController {
     private void refreshMatchList() {
         matchesBox.getChildren().clear();
         List<Match> matches = executionService.getCurrentPhaseMatches(tournament);
-
         if (matches.isEmpty()) {
             Label empty = new Label("No matches available.");
             empty.getStyleClass().add("muted-text");
@@ -202,42 +193,33 @@ public class MatchDayController {
             refreshSelectedMatch();
             return;
         }
-
         if (selectedMatch == null || !matches.contains(selectedMatch)) {
             selectedMatch = findDefaultMatch(matches);
         }
-
         for (Match match : matches) {
             matchesBox.getChildren().add(createMatchButton(match));
         }
-
         refreshSelectedMatch();
     }
 
     private Match findDefaultMatch(List<Match> matches) {
         List<Match> pendingPenalties = executionService.getPendingPenaltyMatches(tournament);
-
         if (!pendingPenalties.isEmpty()) {
             return pendingPenalties.get(0);
         }
-
         List<Match> playableMatches = executionService.getCurrentPlayableMatches(tournament);
-
         if (!playableMatches.isEmpty()) {
             return playableMatches.get(0);
         }
-
         return matches.get(0);
     }
 
     private Button createMatchButton(Match match) {
         String text = match.getMatchDate() + "   " + match.getHomeTeam().getName() + "  vs  " + match.getAwayTeam()
                 .getName() + "     " + getMatchStatus(match);
-
         Button button = new Button(text);
         button.setMaxWidth(Double.MAX_VALUE);
         button.getStyleClass().add("match-list-item");
-
         if (executionService.requiresPenalties(match)) {
             button.getStyleClass().add("match-list-playable");
         } else if (match.isPlayed()) {
@@ -247,17 +229,14 @@ public class MatchDayController {
         } else {
             button.getStyleClass().add("match-list-locked");
         }
-
         if (match == selectedMatch) {
             button.getStyleClass().add("match-list-selected");
         }
-
         button.setOnAction(event -> {
             waitingPenaltyResultAcknowledgement = false;
             selectedMatch = match;
             refreshMatchList();
         });
-
         return button;
     }
 
@@ -265,19 +244,15 @@ public class MatchDayController {
         if (executionService.requiresPenalties(match)) {
             return "PENALTIES";
         }
-
         if (match.isPlayed()) {
             if (hasPenaltyResult(match)) {
                 return "PENALTIES FINISHED";
             }
-
             return "FINISHED";
         }
-
         if (executionService.isMatchPlayable(tournament, match)) {
             return "PLAY";
         }
-
         return "LOCKED";
     }
 
@@ -294,7 +269,6 @@ public class MatchDayController {
             updateActionButtons();
             return;
         }
-
         if (executionService.requiresPenalties(selectedMatch) || hasPenaltyResult(selectedMatch)) {
             showPenaltyShootoutPane();
             renderPenaltyShootout(selectedMatch);
@@ -302,7 +276,6 @@ public class MatchDayController {
             showNormalMatchPane();
             renderNormalMatch(selectedMatch);
         }
-
         updateActionButtons();
     }
 
@@ -312,7 +285,6 @@ public class MatchDayController {
         selectedDate.setText("DATE  " + match.getMatchDate());
         selectedStadium.setText("STADIUM  " + (match.getStadium() == null ? "-" : match.getStadium().getName()));
         selectedReferee.setText("REFEREE  " + (match.getReferee() == null ? "-" : match.getReferee().getName()));
-
         if (match.isPlayed() && (match.isKnockout() || match.isForfeited())) {
             setResolution("RESOLUTION  " + match.getResolutionCriterion().getDescription(), "ready-chip");
         } else if (match.isPlayed()) {
@@ -322,7 +294,6 @@ public class MatchDayController {
         } else {
             setResolution("STATUS  BLOCKED", "blocked-chip");
         }
-
         matchEventsView.render(match);
     }
 
@@ -330,7 +301,6 @@ public class MatchDayController {
         if (!match.isPlayed()) {
             return "VS";
         }
-
         return match.getHomeGoals() + "  -  " + match.getAwayGoals();
     }
 
@@ -361,13 +331,10 @@ public class MatchDayController {
         penaltyContextLabel.setText(penaltyContext(match));
         List<PenaltyTaken> homePenalties = match.getPenaltyKicks(match.getHomeTeam());
         List<PenaltyTaken> awayPenalties = match.getPenaltyKicks(match.getAwayTeam());
-
         int homeScore = match.getHomePenalties()
                 == null ? 0 : match.getHomePenalties();
-
         int awayScore = match.getAwayPenalties()
                 == null ? 0 : match.getAwayPenalties();
-
         penaltyHomeScoreLabel.setText(String.valueOf(homeScore));
         penaltyAwayScoreLabel.setText(String.valueOf(awayScore));
         penaltyKicksView.renderColumns(homePenalties, awayPenalties, finished);
@@ -378,15 +345,11 @@ public class MatchDayController {
         penaltyWinnerBox.setManaged(finished);
         continueAfterPenaltiesButton.setVisible(finished);
         continueAfterPenaltiesButton.setManaged(finished);
-
         if (finished) {
             Team winner = match.getWinner();
-
             if (winner != null) {
                 penaltyWinnerLabel.setText(winner.getName());
-
-                if (match
-                        == tournament.getFinalMatch()) {
+                if (match == tournament.getFinalMatch()) {
                     penaltyWinnerDetailLabel.setText("CHAMPION · WINS " + homeScore + " - " + awayScore
                             + " ON PENALTIES");
                 } else {
@@ -394,7 +357,6 @@ public class MatchDayController {
                             + " ON PENALTIES");
                 }
             }
-
             configureContinueButton();
         }
     }
@@ -412,24 +374,18 @@ public class MatchDayController {
     private void updateActionButtons() {
         boolean playable = selectedMatch != null && executionService.isMatchPlayable(tournament, selectedMatch);
         playSelectedButton.setDisable(!playable);
-
         if (waitingPenaltyResultAcknowledgement) {
             simulateRoundButton.setDisable(true);
             simulatePhaseButton.setDisable(true);
             return;
         }
-
         TournamentStage stage = executionService.getCurrentStage(tournament);
         List<Match> playableMatches = executionService.getCurrentPlayableMatches(tournament);
-
         boolean finished = stage
                 == TournamentStage.FINISHED;
-
         simulateRoundButton.setDisable(finished || playableMatches.isEmpty());
         simulatePhaseButton.setDisable(finished || !executionService.hasUnplayedMatchesInCurrentPhase(tournament));
-
-        if (stage
-                == TournamentStage.GROUP_STAGE) {
+        if (stage == TournamentStage.GROUP_STAGE) {
             simulateRoundButton.setText("SIMULATE MATCHDAY");
         } else if (stage
                 == TournamentStage.QUARTER_FINALS || stage
@@ -445,20 +401,17 @@ public class MatchDayController {
         if (selectedMatch == null) {
             return;
         }
-
         try {
             Match playedMatch = selectedMatch;
             executionService.playMatch(tournament, playedMatch, session.getStadiums());
             selectedMatch = playedMatch;
-
             if (executionService.requiresPenalties(playedMatch)) {
                 localStatus.setText("90 minutes finished. " + "The match must now be decided by penalties.");
             } else {
                 localStatus.setText("Match finished: " + playedMatch.getHomeTeam().getName() + " "
-                        + playedMatch.getHomeGoals() + " - " + playedMatch.getAwayGoals() + " " + playedMatch
-                        .getAwayTeam().getName());
+                        + playedMatch.getHomeGoals() + " - " + playedMatch.getAwayGoals() + " "
+                        + playedMatch.getAwayTeam().getName());
             }
-
             refresh();
         } catch (Exception exception) {
             showError(exception);
@@ -470,7 +423,6 @@ public class MatchDayController {
         if (selectedMatch == null || !executionService.requiresPenalties(selectedMatch)) {
             return;
         }
-
         try {
             Match penaltyMatch = selectedMatch;
             TournamentStage previousStage = executionService.getCurrentStage(tournament);
@@ -481,24 +433,19 @@ public class MatchDayController {
             renderPenaltyShootout(penaltyMatch);
             currentRoundLabel.setText(tournament.getStageOf(penaltyMatch).getLabel() + " - SHOOTOUT COMPLETE");
             Team winner = penaltyMatch.getWinner();
-
             if (winner != null) {
                 localStatus.setText(winner.getName() + " won the penalty shootout.");
             }
-
-            if (previousStage
-                    != newStage) {
+            if (previousStage != newStage) {
                 phaseProgressLabel.setText("ROUND COMPLETED");
             } else {
                 int remainingPenalties = executionService.getPendingPenaltyMatches(tournament).size();
-
                 if (remainingPenalties > 0) {
                     phaseProgressLabel.setText(remainingPenalties + " PENALTY SHOOTOUT(S) PENDING");
                 } else {
                     phaseProgressLabel.setText("SHOOTOUT COMPLETED");
                 }
             }
-
             updateActionButtons();
         } catch (Exception exception) {
             showError(exception);
@@ -514,18 +461,14 @@ public class MatchDayController {
 
     private void configureContinueButton() {
         List<Match> pending = executionService.getPendingPenaltyMatches(tournament);
-
         if (!pending.isEmpty()) {
             continueAfterPenaltiesButton.setText("NEXT PENALTY SHOOTOUT");
             return;
         }
-
-        if (executionService.getCurrentStage(tournament)
-                == TournamentStage.FINISHED) {
+        if (executionService.getCurrentStage(tournament) == TournamentStage.FINISHED) {
             continueAfterPenaltiesButton.setText("TOURNAMENT FINISHED");
             return;
         }
-
         continueAfterPenaltiesButton.setText("CONTINUE TO NEXT ROUND");
     }
 
@@ -534,14 +477,12 @@ public class MatchDayController {
         try {
             int simulated = executionService.simulateCurrentMatchday(tournament, session.getStadiums());
             int pending = executionService.getPendingPenaltyMatches(tournament).size();
-
             if (pending > 0) {
                 localStatus.setText(simulated + " match(es) simulated. " + pending
                         + " penalty shootout(s) waiting for the user.");
             } else {
                 localStatus.setText(simulated + " match(es) simulated.");
             }
-
             selectedMatch = null;
             refresh();
         } catch (Exception exception) {
@@ -556,14 +497,12 @@ public class MatchDayController {
             int simulated = executionService.simulateRemainingPhase(tournament, session.getStadiums());
             TournamentStage newStage = executionService.getCurrentStage(tournament);
             int pending = executionService.getPendingPenaltyMatches(tournament).size();
-
             if (pending > 0) {
                 localStatus.setText(simulated + " match(es) simulated. " + pending
                         + " penalty shootout(s) must be resolved manually.");
             } else {
                 localStatus.setText(simulated + " match(es) simulated. " + previousStage + " -> " + newStage);
             }
-
             selectedMatch = null;
             refresh();
         } catch (Exception exception) {

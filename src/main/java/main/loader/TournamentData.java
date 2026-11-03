@@ -5,9 +5,8 @@ import model.participant.Team;
 
 import java.util.List;
 
-/**
- * Agrupa los equipos y árbitros cargados para crear el torneo sin volver a leer el archivo inicial.
- */
+// Agrupa los equipos y árbitros cargados para crear el torneo sin volver a leer el archivo inicial.
+
 public class TournamentData {
     private List<Team> teams;
     private List<Referee> referees;

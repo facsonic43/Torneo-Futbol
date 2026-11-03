@@ -6,10 +6,9 @@ import model.match.ResolutionCriterion;
 import model.match.FirstLegMatch;
 import model.match.SecondLegMatch;
 
-/**
- * Centraliza los textos de resultados, fechas, sedes, árbitros y contexto de penales.
- * Comparte el mismo formato entre las pantallas de partidos y los reportes.
- */
+// Centraliza los textos de resultados, fechas, sedes, árbitros y contexto de penales.
+// Comparte el mismo formato entre las pantallas de partidos y los reportes.
+
 public final class MatchFormat {
     private MatchFormat() {
     }
@@ -18,13 +17,10 @@ public final class MatchFormat {
         if (!match.isPlayed()) {
             return "Pending";
         }
-
         String result = match.getHomeGoals() + " - " + match.getAwayGoals();
-
         if (match.getResolutionCriterion() == ResolutionCriterion.PENALTIES) {
             result += " (" + match.getHomePenalties() + " - " + match.getAwayPenalties() + " pens)";
         }
-
         return result;
     }
 
@@ -42,17 +38,14 @@ public final class MatchFormat {
 
     public static String penaltyContext(Match match) {
         SecondLegMatch secondLeg = match.asSecondLeg().orElse(null);
-
         if (secondLeg != null) {
             FirstLegMatch firstLeg = secondLeg.getFirstLeg();
-
             return "First leg: " + firstLeg.getHomeTeam().getName() + " " + firstLeg.getHomeGoals() + " - "
                     + firstLeg.getAwayGoals() + " " + firstLeg.getAwayTeam().getName() + "   ·   Second leg: "
                     + secondLeg.getHomeTeam().getName() + " " + secondLeg.getHomeGoals() + " - "
                     + secondLeg.getAwayGoals() + " " + secondLeg.getAwayTeam().getName()
                     + "   ·   Series remains tied after tournament criteria.";
         }
-
         return match.getHomeTeam().getName() + " " + match.getHomeGoals() + " - " + match.getAwayGoals() + " "
                 + match.getAwayTeam().getName() + "   ·   The final is level after 90 minutes.";
     }

@@ -10,10 +10,9 @@ import persistence.TournamentPersistenceService;
 
 import java.util.List;
 
-/**
- * Mantiene el torneo activo, consulta los estadios disponibles y coordina la creación,
- * la carga y el guardado de la sesión. También informa si la sesión proviene de una partida guardada.
- */
+// Mantiene el torneo activo, consulta los estadios disponibles y coordina la creación,
+// la carga y el guardado de la sesión. También informa si la sesión proviene de una partida guardada.
+
 public class TournamentSessionService {
     private Tournament tournament;
     private List<Stadium> stadiums;
@@ -37,14 +36,12 @@ public class TournamentSessionService {
         newTournament.generateGroupMatches(stadiums);
         this.tournament = newTournament;
         this.loadedFromSave = false;
-
         return newTournament;
     }
 
     public void refreshStadiums() throws Exception {
         StadiumDAO stadiumDAO = new StadiumDAO();
         stadiums = stadiumDAO.findAll();
-
         if (stadiums.size() < 13) {
             throw new IllegalStateException("At least 13 stadiums are required for the knockout stage.");
         }
@@ -58,10 +55,8 @@ public class TournamentSessionService {
         if (!persistenceService.saveExists(saveFile)) {
             throw new IllegalStateException("There is no saved tournament.");
         }
-
         tournament = persistenceService.loadTournament(saveFile);
         loadedFromSave = true;
-
         return tournament;
     }
 

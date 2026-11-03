@@ -11,10 +11,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Verifica que los reportes calculen estadísticas únicamente con los partidos de la edición.
- * Comprueba goles, tarjetas, participaciones y minutos, distinguiendo datos completos y faltantes.
- */
+// Verifica que los reportes calculen estadísticas únicamente con los partidos de la edición.
+// Comprueba goles, tarjetas, participaciones y minutos, distinguiendo datos completos y faltantes.
+
 class ChampionshipStatisticsTest {
     private static final Country COUNTRY = new Country("Argentina");
     private static final LocalDate BIRTH = LocalDate.of(2000, 1, 1);
@@ -278,8 +277,8 @@ class ChampionshipStatisticsTest {
         assertEquals(90, details.getPlayerMinutes(match).get(injured));
         assertThrows(UnsupportedOperationException.class, () -> details.getHomeStarters().clear());
         assertNull(details.getGoalDetails(new Goal(10, home, injured, null, false, false, null)));
-        assertThrows(IllegalArgumentException.class, () ->
-                details.setGoalDetails(new Goal(10, home, injured, null, false, false, null), true, true, null));
+        assertThrows(IllegalArgumentException.class, () -> details.setGoalDetails(new Goal(10, home, injured, null,
+                false, false, null), true, true, null));
     }
 
     @Test
@@ -304,8 +303,8 @@ class ChampionshipStatisticsTest {
     }
 
     private static Player player(String name, Position position) {
-        return new FieldPlayer(name, 1, "DNI", BIRTH, COUNTRY, 100, 9000, 20, 5, 50, 25,
-                position, 70, 70, 70, 70, 70, 70, 70, 70);
+        return new FieldPlayer(name, 1, "DNI", BIRTH, COUNTRY, 100, 9000, 20, 5, 50, 25, position, 70, 70, 70, 70, 70,
+                70, 70, 70);
     }
 
     private static Player keeper(String name) {

@@ -1,9 +1,8 @@
 package model.match;
 
-/**
- * Procesa las incidencias mediante una operación específica para cada tipo.
- * Las operaciones predeterminadas no realizan acciones y cada visitante implementa las que necesita.
- */
+// Procesa las incidencias mediante una operación específica para cada tipo.
+// Las operaciones predeterminadas no realizan acciones y cada visitante implementa las que necesita.
+
 public interface EventVisitor {
     default void visit(Goal goal) {
     }

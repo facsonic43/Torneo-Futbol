@@ -12,10 +12,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Comprueba la clasificación de grupos y la construcción del cuadro hasta la final.
- * Verifica los cruces, los criterios de desempate y los casos con información pendiente o inválida.
- */
+// Comprueba la clasificación de grupos y la construcción del cuadro hasta la final.
+// Verifica los cruces, los criterios de desempate y los casos con información pendiente o inválida.
+
 class BracketReportTest {
     @Test
     void undrawnTournamentHasNoInventedQualifiersOrChampion() {
@@ -185,7 +184,7 @@ class BracketReportTest {
         return match;
     }
     private static SecondLegMatch addTie(ReportData data, Team home, Team away, int firstHome, int firstAway,
-                                         int secondHome, int secondAway) {
+            int secondHome, int secondAway) {
         FirstLegMatch first = firstLeg(home, away, firstHome, firstAway);
         SecondLegMatch second = new SecondLegMatch(away, home, null, null, LocalDate.of(2026, 9, 20), first);
         score(second, secondHome, secondAway);

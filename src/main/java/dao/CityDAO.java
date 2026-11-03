@@ -9,19 +9,17 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Administra el alta, la consulta, la modificación y la baja de ciudades en PostgreSQL.
- * Valida nombres duplicados e impide eliminar ciudades que tienen estadios asociados.
- */
+// Administra el alta, la consulta, la modificación y la baja de ciudades en PostgreSQL.
+// Valida nombres duplicados e impide eliminar ciudades que tienen estadios asociados.
+
 public class CityDAO {
     public void add(City city) throws SQLException {
         if (exists(city.getName(), 0)) {
             throw new DuplicateLocationException("A city with this name already exists.");
         }
-
         String sql = "INSERT INTO city (name, country) VALUES (?, ?)";
-        try (PreparedStatement ps = DatabaseConnection.getConnection()
-                .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql,
+                Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, city.getName());
             ps.setString(2, city.getCountry());
             ps.executeUpdate();
@@ -34,16 +32,12 @@ public class CityDAO {
     public List<City> findAll() throws SQLException {
         List<City> cities = new ArrayList<>();
         String sql = "SELECT id_city, name, country " + "FROM city " + "ORDER BY name";
-
-        try (Statement statement = DatabaseConnection.getConnection().createStatement();
-
-             ResultSet result = statement.executeQuery(sql)) {
+        try (Statement statement = DatabaseConnection.getConnection().createStatement(); ResultSet result = statement.executeQuery(sql)) {
             while (result.next()) {
                 City city = new City(result.getInt("id_city"), result.getString("name"), result.getString("country"));
                 cities.add(city);
             }
         }
-
         return cities;
     }
 
@@ -51,7 +45,6 @@ public class CityDAO {
         if (exists(city.getName(), city.getId())) {
             throw new DuplicateLocationException("A city with this name already exists.");
         }
-
         String sql = "UPDATE ciudad SET name = ?, country = ? WHERE id_city = ?";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql)) {
             ps.setString(1, city.getName());

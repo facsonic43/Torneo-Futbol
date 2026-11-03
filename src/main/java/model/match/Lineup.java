@@ -6,11 +6,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Selecciona once titulares por posición y ordena los suplentes según su valoración.
- * Busca una formación alternativa y, si hace falta, utiliza lesionados o un arquero de emergencia.
- * Los suspendidos quedan excluidos y una formación incompleta permite resolver la derrota administrativa.
- */
+// Selecciona once titulares por posición y ordena los suplentes según su valoración.
+// Busca una formación alternativa y, si hace falta, utiliza lesionados o un arquero de emergencia.
+// Los suspendidos quedan excluidos y una formación incompleta permite resolver la derrota administrativa.
+
 public class Lineup {
     private List<Player> starters = new ArrayList<>();
     private List<Player> subs = new ArrayList<>();
@@ -19,7 +18,6 @@ public class Lineup {
     public Lineup(Team team, Team opponent) {
         List<Player> availablePlayers = new ArrayList<>();
         List<Player> injuredPlayers = new ArrayList<>();
-
         for (Player p : team.getSquad()) {
             if (p.isAvailable()) {
                 availablePlayers.add(p);
@@ -27,16 +25,12 @@ public class Lineup {
                 injuredPlayers.add(p);
             }
         }
-
         if (!canCompleteAnyFormation(availablePlayers)) {
             availablePlayers.addAll(injuredPlayers);
         }
-
         availablePlayers.sort(Comparator.comparing(Player::getOverall).reversed());
-
         Formation preferredFormation = team.getCoach().chooseFormation(team, opponent);
         this.formation = findCompatibleFormation(preferredFormation, availablePlayers);
-
         int g = 0, d = 0, m = 0, f = 0;
         for (Player p : availablePlayers) {
             if (p.getPosition() == Position.GOALKEEPER && g < 1) {
@@ -55,7 +49,6 @@ public class Lineup {
                 subs.add(p);
             }
         }
-
         if (g == 0 && !subs.isEmpty()) {
             starters.add(subs.remove(0));
         }
@@ -65,13 +58,11 @@ public class Lineup {
         if (canComplete(preferredFormation, availablePlayers)) {
             return preferredFormation;
         }
-
         for (Formation alternative : Formation.values()) {
             if (canComplete(alternative, availablePlayers)) {
                 return alternative;
             }
         }
-
         return preferredFormation;
     }
 
@@ -81,7 +72,6 @@ public class Lineup {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -90,7 +80,6 @@ public class Lineup {
         int defenders = 0;
         int midfielders = 0;
         int forwards = 0;
-
         for (Player player : availablePlayers) {
             switch (player.getPosition()) {
                 case GOALKEEPER -> goalkeepers++;
@@ -99,18 +88,14 @@ public class Lineup {
                 case FORWARD -> forwards++;
             }
         }
-
         int outfieldNeeded = formation.getDefenders()
                 + formation.getMidfielders()
                 + formation.getForwards();
-
         boolean outfieldCovered = defenders >= formation.getDefenders()
                 && midfielders >= formation.getMidfielders()
                 && forwards >= formation.getForwards();
-
         boolean goalCovered = goalkeepers >= 1
                 || defenders + midfielders + forwards > outfieldNeeded;
-
         return outfieldCovered && goalCovered;
     }
 

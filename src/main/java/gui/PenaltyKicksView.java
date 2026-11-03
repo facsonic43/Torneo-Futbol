@@ -9,18 +9,17 @@ import model.match.PenaltyTaken;
 
 import java.util.List;
 
-/**
- * Presenta la definición por penales, sus pateadores, arqueros y resultados de cada ejecución.
- * Actualiza el tablero y el detalle de la tanda a medida que se muestran los disparos.
- */
+// Presenta la definición por penales, sus pateadores, arqueros y resultados de cada ejecución.
+// Actualiza el tablero y el detalle de la tanda a medida que se muestran los disparos.
+
 public class PenaltyKicksView {
     private final HBox penaltyColumnHeaderBox;
     private final HBox penaltyHomeKicksBox;
     private final HBox penaltyAwayKicksBox;
     private final VBox penaltyKickDetailsBox;
 
-    public PenaltyKicksView(HBox penaltyColumnHeaderBox, HBox penaltyHomeKicksBox,
-                            HBox penaltyAwayKicksBox, VBox penaltyKickDetailsBox) {
+    public PenaltyKicksView(HBox penaltyColumnHeaderBox, HBox penaltyHomeKicksBox, HBox penaltyAwayKicksBox,
+            VBox penaltyKickDetailsBox) {
         this.penaltyColumnHeaderBox = penaltyColumnHeaderBox;
         this.penaltyHomeKicksBox = penaltyHomeKicksBox;
         this.penaltyAwayKicksBox = penaltyAwayKicksBox;
@@ -32,24 +31,18 @@ public class PenaltyKicksView {
         penaltyHomeKicksBox.getChildren().clear();
         penaltyAwayKicksBox.getChildren().clear();
         int columns = Math.max(5, Math.max(homePenalties.size(), awayPenalties.size()));
-        for (int i = 0;
-             i < columns;
-             i++) {
+        for (int i = 0; i < columns; i++) {
             String header;
-
             if (i < 5) {
                 header = String.valueOf(i + 1);
             } else {
                 header = "SD" + (i - 4);
             }
-
             penaltyColumnHeaderBox.getChildren().add(createPenaltyHeader(header));
-
-            penaltyHomeKicksBox.getChildren().add(createPenaltyCell(i < homePenalties.size() ? homePenalties.get(i)
-                    : null, finished));
-
-            penaltyAwayKicksBox.getChildren().add(createPenaltyCell(i < awayPenalties.size() ? awayPenalties.get(i)
-                    : null, finished));
+            penaltyHomeKicksBox.getChildren().add(createPenaltyCell(i < homePenalties.size()
+                    ? homePenalties.get(i) : null, finished));
+            penaltyAwayKicksBox.getChildren().add(createPenaltyCell(i < awayPenalties.size()
+                    ? awayPenalties.get(i) : null, finished));
         }
     }
 
@@ -61,27 +54,21 @@ public class PenaltyKicksView {
             penaltyKickDetailsBox.setManaged(false);
             return;
         }
-
         penaltyKickDetailsBox.setVisible(true);
         penaltyKickDetailsBox.setManaged(true);
-        for (int i = 0;
-             i < rounds;
-             i++) {
+        for (int i = 0; i < rounds; i++) {
             String roundName = i < 5 ? "ROUND " + (i + 1) : "SUDDEN DEATH " + (i - 4);
             Label roundLabel = new Label(roundName);
             roundLabel.getStyleClass().add("small-label");
             VBox roundBox = new VBox(5);
             roundBox.getStyleClass().add("event-row");
             roundBox.getChildren().add(roundLabel);
-
             if (i < homePenalties.size()) {
                 roundBox.getChildren().add(createPenaltyDetailLabel(homePenalties.get(i)));
             }
-
             if (i < awayPenalties.size()) {
                 roundBox.getChildren().add(createPenaltyDetailLabel(awayPenalties.get(i)));
             }
-
             penaltyKickDetailsBox.getChildren().add(roundBox);
         }
     }
@@ -93,7 +80,6 @@ public class PenaltyKicksView {
         label.setPrefSize(42, 24);
         label.setMaxSize(42, 24);
         label.getStyleClass().add("small-label");
-
         return label;
     }
 
@@ -103,14 +89,11 @@ public class PenaltyKicksView {
         cell.setMinSize(42, 38);
         cell.setPrefSize(42, 38);
         cell.setMaxSize(42, 38);
-
         if (penalty == null) {
             cell.setText(shootoutFinished ? "—" : "•");
             cell.getStyleClass().add("purple-chip");
-
             return cell;
         }
-
         if (penalty.isScored()) {
             cell.setText("✓");
             cell.getStyleClass().add("ready-chip");
@@ -120,7 +103,6 @@ public class PenaltyKicksView {
             cell.getStyleClass().add("blocked-chip");
             cell.setTooltip(new Tooltip(penalty.getPlayer().getName() + " - MISSED"));
         }
-
         return cell;
     }
 
@@ -129,13 +111,11 @@ public class PenaltyKicksView {
         String text = penalty.getTeam().getName() + " · " + penalty.getPlayer().getName() + "     " + result;
         Label label = new Label(text);
         label.setWrapText(true);
-
         if (penalty.isScored()) {
             label.getStyleClass().add("ready-chip");
         } else {
             label.getStyleClass().add("blocked-chip");
         }
-
         return label;
     }
 }

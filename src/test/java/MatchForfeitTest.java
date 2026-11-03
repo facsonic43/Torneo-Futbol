@@ -29,10 +29,9 @@ import java.io.ObjectOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Verifica las derrotas administrativas por formación incompleta y su efecto en la tabla.
- * Los goles del resultado no crean incidencias ni modifican las estadísticas de los jugadores.
- */
+// Verifica las derrotas administrativas por formación incompleta y su efecto en la tabla.
+// Los goles del resultado no crean incidencias ni modifican las estadísticas de los jugadores.
+
 class MatchForfeitTest {
     private static final LocalDate MATCH_DATE = LocalDate.of(2026, 10, 1);
 
@@ -41,9 +40,7 @@ class MatchForfeitTest {
         Team home = team("Home", 1, 4, 4, 1);
         Team away = team("Away", 1, 4, 4, 2);
         GroupMatch match = new GroupMatch(home, away, null, null, MATCH_DATE);
-
         new MatchSimulator(1L).simulateMatch(match);
-
         assertAdministrativeScore(match, 0, 3, away);
         Group group = new Group("A", List.of(home, away));
         group.addMatch(match);
@@ -60,9 +57,7 @@ class MatchForfeitTest {
         Team home = team("Home", 1, 4, 4, 2);
         Team away = team("Away", 1, 4, 4, 1);
         FinalMatch match = new FinalMatch(home, away, null, null, MATCH_DATE);
-
         new MatchSimulator(2L).simulateMatch(match);
-
         assertAdministrativeScore(match, 3, 0, home);
         assertFalse(match.requiresTieBreak());
         assertNull(match.getHomePenalties());
@@ -74,9 +69,7 @@ class MatchForfeitTest {
         Team home = team("Home", 1, 10, 0, 0);
         Team away = team("Away", 1, 4, 4, 2);
         GroupMatch match = new GroupMatch(home, away, null, null, MATCH_DATE);
-
         new MatchSimulator(3L).simulateRegularTime(match);
-
         assertAdministrativeScore(match, 0, 3, away);
     }
 
@@ -87,9 +80,7 @@ class MatchForfeitTest {
         Player suspended = home.getSquad().getLast();
         suspended.addRedCard();
         GroupMatch match = new GroupMatch(home, away, null, null, MATCH_DATE);
-
         new MatchSimulator(4L).simulateMatch(match);
-
         assertAdministrativeScore(match, 0, 3, away);
         assertFalse(suspended.isSuspended());
     }
@@ -99,9 +90,7 @@ class MatchForfeitTest {
         Team home = team("Home", 1, 4, 4, 2);
         Team away = team("Away", 1, 4, 4, 2);
         GroupMatch match = new GroupMatch(home, away, null, null, MATCH_DATE);
-
         new MatchSimulator(5L).simulateRegularTime(match);
-
         assertTrue(match.isPlayed());
         assertEquals(11, match.getHomeStarters().size());
         assertEquals(11, match.getAwayStarters().size());
@@ -114,9 +103,7 @@ class MatchForfeitTest {
         Team home = team("Home", 0, 5, 4, 2);
         Team away = team("Away", 1, 4, 4, 2);
         GroupMatch match = new GroupMatch(home, away, null, null, MATCH_DATE);
-
         new MatchSimulator(6L).simulateRegularTime(match);
-
         assertTrue(match.isPlayed());
         assertEquals(11, match.getHomeStarters().size());
         assertFalse(match.getPlayerParticipations().isEmpty());
@@ -128,10 +115,8 @@ class MatchForfeitTest {
         Team away = team("Away", 1, 4, 4, 2);
         GroupMatch match = new GroupMatch(home, away, null, null, MATCH_DATE);
         MatchSimulator simulator = new MatchSimulator(7L);
-
         simulator.simulateMatch(match);
         simulator.simulateMatch(match);
-
         assertAdministrativeScore(match, 0, 3, away);
     }
 
@@ -139,15 +124,12 @@ class MatchForfeitTest {
     void administrativeResultIsCompleteReportDataWithoutPlayerOrRefereeActivity() {
         Team home = team("Home", 1, 4, 4, 1);
         Team away = team("Away", 1, 4, 4, 2);
-        Referee referee = new Referee("Referee", 100, "DNI", MATCH_DATE.minusYears(40),
-                new Country("Neutral"), 12, 10);
+        Referee referee = new Referee("Referee", 100, "DNI", MATCH_DATE.minusYears(40), new Country("Neutral"), 12, 10);
         GroupMatch match = new GroupMatch(home, away, referee, null, MATCH_DATE);
         ReportData data = new ReportData(new TournamentData(List.of(home, away), List.of(referee)));
-
         new MatchSimulator(8L).simulateMatch(match);
         data.addMatch(match);
         ChampionshipStatistics statistics = new ChampionshipStatistics(data);
-
         assertEquals(1, statistics.getPlayedMatchCount());
         assertEquals(0, statistics.getIncompleteMatchCount());
         assertTrue(statistics.hasCompleteStartingLineups());
@@ -181,9 +163,7 @@ class MatchForfeitTest {
         GroupMatch match = new GroupMatch(home, away, null, null, MATCH_DATE);
         match.setHomeGoals(1);
         match.setAwayGoals(2);
-
         assertThrows(IllegalStateException.class, () -> new MatchSimulator(9L).simulateMatch(match));
-
         assertFalse(match.isPlayed());
         assertFalse(match.isForfeited());
         assertEquals(1, match.getHomeGoals());
@@ -204,9 +184,7 @@ class MatchForfeitTest {
         Team b = team("B", 1, 4, 4, 2);
         FirstLegMatch first = playedFirstLeg(a, b, 0, 1);
         SecondLegMatch second = new SecondLegMatch(b, a, null, null, MATCH_DATE.plusDays(7), first);
-
         new MatchSimulator(10L).simulateMatch(second);
-
         assertTrue(second.isForfeited());
         assertEquals(3, second.getHomeGoals());
         assertEquals(0, second.getAwayGoals());
@@ -223,9 +201,7 @@ class MatchForfeitTest {
         Team b = team("B", 1, 4, 4, 2);
         FirstLegMatch first = playedFirstLeg(a, b, 10, 0);
         SecondLegMatch second = new SecondLegMatch(b, a, null, null, MATCH_DATE.plusDays(7), first);
-
         new MatchSimulator(11L).simulateMatch(second);
-
         assertTrue(second.isForfeited());
         assertEquals(3, second.getHomeGoals());
         assertEquals(0, second.getAwayGoals());
@@ -245,9 +221,7 @@ class MatchForfeitTest {
         FirstLegMatch first = playedFirstLeg(a, b, 3, 0);
         SecondLegMatch second = new SecondLegMatch(b, a, null, null, MATCH_DATE.plusDays(7), first);
         MatchSimulator simulator = new MatchSimulator(12L);
-
         simulator.simulateMatch(second);
-
         assertTrue(second.isPlayed());
         assertTrue(second.isForfeited());
         assertNull(second.getWinner());
@@ -290,8 +264,7 @@ class MatchForfeitTest {
 
     @Test
     void savedAdministrativeResultKeepsItsCriterionWithoutInventingPlayerStatistics() throws Exception {
-        GroupMatch match = new GroupMatch(team("Home", 1, 4, 4, 1), team("Away", 1, 4, 4, 2),
-                null, null, MATCH_DATE);
+        GroupMatch match = new GroupMatch(team("Home", 1, 4, 4, 1), team("Away", 1, 4, 4, 2), null, null, MATCH_DATE);
         new MatchSimulator(13L).simulateMatch(match);
         ByteArrayOutputStream saved = new ByteArrayOutputStream();
         try (ObjectOutputStream output = new ObjectOutputStream(saved)) {
@@ -308,8 +281,8 @@ class MatchForfeitTest {
         Coach coach = new Coach(name + " Coach", 1, "DNI", MATCH_DATE.minusYears(40), country, 0);
         Team team = new Team(name, country, 1, coach, 0, 0, 0, null);
         for (int i = 0; i < goalkeepers; i++) {
-            team.addPlayer(new Goalkeeper(name + " GK " + i, i, "DNI", MATCH_DATE.minusYears(25),
-                    country, 0, 0, 0, 0, 0, 0, 70, 70, 70, 70, 70, 70));
+            team.addPlayer(new Goalkeeper(name + " GK " + i, i, "DNI", MATCH_DATE.minusYears(25), country, 0, 0, 0, 0,
+                    0, 0, 70, 70, 70, 70, 70, 70));
         }
         addFieldPlayers(team, Position.DEFENDER, defenders);
         addFieldPlayers(team, Position.MIDFIELDER, midfielders);
@@ -321,8 +294,8 @@ class MatchForfeitTest {
         for (int i = 0; i < count; i++) {
             int id = team.getSquad().size();
             team.addPlayer(new FieldPlayer(team.getName() + " " + position + " " + i, id, "DNI",
-                    MATCH_DATE.minusYears(25), team.getCountry(), 0, 0, 0, 0, 0, 0, position,
-                    70, 70, 70, 70, 70, 70, 70, 70));
+                    MATCH_DATE.minusYears(25), team.getCountry(), 0, 0, 0, 0, 0, 0, position, 70, 70, 70, 70, 70, 70,
+                    70, 70));
         }
     }
 }

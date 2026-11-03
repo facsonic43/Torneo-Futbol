@@ -7,9 +7,8 @@ import model.participant.Team;
 
 import java.time.LocalDate;
 
-/**
- * Final a partido único: decide por el marcador o, si hay empate, por una tanda de penales.
- */
+// Final a partido único: decide por el marcador o, si hay empate, por una tanda de penales.
+
 public class FinalMatch extends Match {
     private static final long serialVersionUID = -5476613621063167277L;
 

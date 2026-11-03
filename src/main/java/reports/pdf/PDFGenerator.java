@@ -18,11 +18,10 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.Objects;
 
-/**
- * Genera las credenciales de identificación de los participantes en PDF con numeración
- * de páginas y créditos fotográficos. Escribe primero un archivo temporal para conservar
- * el reporte anterior si la generación falla.
- */
+// Genera las credenciales de identificación de los participantes en PDF con numeración
+// de páginas y créditos fotográficos. Escribe primero un archivo temporal para conservar
+// el reporte anterior si la generación falla.
+
 public class PDFGenerator {
     public static void generate(TournamentData data, Path output, ReportOptions options) throws IOException {
         generate(new ReportData(data), output, options);
@@ -44,9 +43,8 @@ public class PDFGenerator {
     }
 
     private static void write(ReportData data, ReportOptions options, Path output) throws IOException {
-        try (PdfWriter writer = new PdfWriter(output.toString());
-             PdfDocument pdf = new PdfDocument(writer);
-             Document document = new Document(pdf, PageSize.A4)) {
+        try (PdfWriter writer = new PdfWriter(output.toString()); PdfDocument pdf = new PdfDocument(writer); Document document = new Document(pdf,
+                PageSize.A4)) {
             PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
             document.setFont(font).setFontSize(10);
             document.setMargins(36, 36, 42, 36);
@@ -55,9 +53,9 @@ public class PDFGenerator {
             new IdentificationPdfSection().addTo(document, data, options.photosDirectory());
             Path photoCredits = options.photosDirectory().resolve("PHOTO-CREDITS.md");
             if (Files.isRegularFile(photoCredits)) {
-                PdfFileSpec attachment = PdfFileSpec.createEmbeddedFileSpec(pdf,
-                        Files.readAllBytes(photoCredits), "Photograph sources, authors and licenses",
-                        "PHOTO-CREDITS.md", new PdfName("text/markdown"), null, PdfName.Source);
+                PdfFileSpec attachment = PdfFileSpec.createEmbeddedFileSpec(pdf, Files.readAllBytes(photoCredits),
+                        "Photograph sources, authors and licenses", "PHOTO-CREDITS.md", new PdfName("text/markdown"),
+                        null, PdfName.Source);
                 pdf.addFileAttachment("Photograph credits and licenses", attachment);
             }
         }

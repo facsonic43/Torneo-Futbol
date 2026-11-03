@@ -23,10 +23,9 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-/**
- * Comprueba que la exportación PDF use la ventana principal como propietaria desde cada pantalla,
- * sin cambiar la vista actual ni abrir diálogos asociados a una ventana incorrecta.
- */
+// Comprueba que la exportación PDF use la ventana principal como propietaria desde cada pantalla,
+// sin cambiar la vista actual ni abrir diálogos asociados a una ventana incorrecta.
+
 class PdfDialogOwnerTest {
     @BeforeAll
     static void startJavaFx() throws Exception {

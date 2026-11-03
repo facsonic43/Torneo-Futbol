@@ -3,10 +3,9 @@ package model.match;
 import model.participant.Player;
 import model.participant.Team;
 
-/**
- * Representa una lesión ocurrida durante el partido y permite describirla
- * y procesarla como incidencia.
- */
+// Representa una lesión ocurrida durante el partido y permite describirla
+// y procesarla como incidencia.
+
 public class Injury extends Event {
     private int matchesOut;
 

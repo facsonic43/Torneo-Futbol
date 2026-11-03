@@ -19,10 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Lee el archivo JSON inicial y construye equipos, jugadores, entrenadores y árbitros.
- * Valida los datos obligatorios, las estadísticas y las referencias compartidas entre participantes.
- */
+// Lee el archivo JSON inicial y construye equipos, jugadores, entrenadores y árbitros.
+// Valida los datos obligatorios, las estadísticas y las referencias compartidas entre participantes.
+
 public class TournamentDataLoader {
     private Map<String, Country> countries;
     private Set<String> documents;
@@ -37,12 +36,10 @@ public class TournamentDataLoader {
     public TournamentData load(String fileName) {
         countries.clear();
         documents.clear();
-
         try {
             JsonObject tournamentJson = loadTournamentJson(fileName);
             List<Team> teams = loadTeams(tournamentJson);
             List<Referee> referees = loadReferees(tournamentJson);
-
             return new TournamentData(teams, referees);
         } catch (InvalidTournamentDataException e) {
             throw e;
@@ -53,18 +50,14 @@ public class TournamentDataLoader {
 
     private JsonObject loadTournamentJson(String fileName) {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileName);
-
         if (inputStream == null) {
             throw new InvalidTournamentDataException("JSON file not found: " + fileName);
         }
-
         try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
             JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
-
             if (!root.has("torneo")) {
                 throw new InvalidTournamentDataException("The JSON does not contain tournament data.");
             }
-
             return root.getAsJsonObject("torneo");
         } catch (InvalidTournamentDataException e) {
             throw e;
@@ -77,13 +70,10 @@ public class TournamentDataLoader {
         List<Team> teams = new ArrayList<>();
         JsonObject teamsObject = tournamentJson.getAsJsonObject("equipos");
         JsonArray teamsArray = teamsObject.getAsJsonArray("equipo");
-
         if (teamsArray.size() != 16) {
-            throw new InvalidTournamentDataException(
-                    "The tournament must contain exactly 16 teams. Found: " + teamsArray.size()
-            );
+            throw new InvalidTournamentDataException("The tournament must contain exactly 16 teams. Found: "
+                    + teamsArray.size());
         }
-
         for (JsonElement element : teamsArray) {
             JsonObject teamJson = element.getAsJsonObject();
             String name = teamJson.get("name").getAsString();
@@ -94,21 +84,12 @@ public class TournamentDataLoader {
             int nationalTitles = teamJson.get("nationalTitles").getAsInt();
             JsonObject squadJson = teamJson.getAsJsonObject("plantel");
             Coach coach = loadCoach(squadJson.getAsJsonObject("dt"));
-            Team team = new Team(
-                    name,
-                    country,
-                    ranking,
-                    coach,
-                    editionsPlayed,
-                    internationalTitles,
-                    nationalTitles,
-                    null
-            );
+            Team team = new Team(name, country, ranking, coach, editionsPlayed, internationalTitles, nationalTitles,
+                    null);
             loadPlayers(team, squadJson);
             validateSquad(team);
             teams.add(team);
         }
-
         return teams;
     }
 
@@ -121,25 +102,19 @@ public class TournamentDataLoader {
         Country nationality = getCountry(personJson.get("nationality").getAsString());
         int titlesObtained = coachJson.get("titlesObtained").getAsInt();
         registerDocument(idType, idNumber, name);
-
         if (titlesObtained < 0) {
             throw new InvalidTournamentDataException("Coach titles cannot be negative: " + name);
         }
-
         return new Coach(name, idNumber, idType, birthDate, nationality, titlesObtained);
     }
 
     private void loadPlayers(Team team, JsonObject squadJson) {
         JsonObject playersObject = squadJson.getAsJsonObject("jugadores");
         JsonArray playersArray = playersObject.getAsJsonArray("jugador");
-
         if (playersArray.size() != 18) {
-            throw new InvalidTournamentDataException(
-                    "Team " + team.getName() +
-                            " must have exactly 18 players. Found: " + playersArray.size()
-            );
+            throw new InvalidTournamentDataException("Team " + team.getName() + " must have exactly 18 players. Found: "
+                    + playersArray.size());
         }
-
         for (JsonElement element : playersArray) {
             Player player = loadPlayer(element.getAsJsonObject());
             team.addPlayer(player);
@@ -149,13 +124,11 @@ public class TournamentDataLoader {
     private Player loadPlayer(JsonObject playerJson) {
         String positionText = playerJson.get("position").getAsString();
         Position position;
-
         try {
             position = Position.valueOf(positionText);
         } catch (IllegalArgumentException e) {
             throw new InvalidTournamentDataException("Invalid player position: " + positionText);
         }
-
         JsonObject personJson = playerJson.getAsJsonObject("persona");
         JsonObject characteristicsJson = playerJson.getAsJsonObject("caracteristicas");
         JsonObject statisticsJson = playerJson.getAsJsonObject("estadisticas");
@@ -171,62 +144,28 @@ public class TournamentDataLoader {
         int goals = statisticsJson.get("goals").getAsInt();
         int assists = statisticsJson.get("assists").getAsInt();
         registerDocument(idType, idNumber, name);
-
         if (position == Position.GOALKEEPER) {
-            return new Goalkeeper(
-                    name,
-                    idNumber,
-                    idType,
-                    birthDate,
-                    nationality,
-                    matchesPlayed,
-                    minutesPlayed,
-                    yellowCards,
-                    redCards,
-                    goals,
-                    assists,
-                    readSkill(characteristicsJson, "speed", name),
-                    readSkill(characteristicsJson, "jumping", name),
-                    readSkill(characteristicsJson, "passing", name),
-                    readSkill(characteristicsJson, "reflexes", name),
-                    readSkill(characteristicsJson, "oneOnOne", name),
-                    readSkill(characteristicsJson, "kicking", name)
-            );
+            return new Goalkeeper(name, idNumber, idType, birthDate, nationality, matchesPlayed, minutesPlayed,
+                    yellowCards, redCards, goals, assists, readSkill(characteristicsJson, "speed", name),
+                    readSkill(characteristicsJson, "jumping", name), readSkill(characteristicsJson, "passing", name),
+                    readSkill(characteristicsJson, "reflexes", name), readSkill(characteristicsJson, "oneOnOne", name),
+                    readSkill(characteristicsJson, "kicking", name));
         }
-
-        return new FieldPlayer(
-                name,
-                idNumber,
-                idType,
-                birthDate,
-                nationality,
-                matchesPlayed,
-                minutesPlayed,
-                yellowCards,
-                redCards,
-                goals,
-                assists,
-                position,
-                readSkill(characteristicsJson, "dribbling", name),
-                readSkill(characteristicsJson, "defensiveSkills", name),
-                readSkill(characteristicsJson, "finishing", name),
-                readSkill(characteristicsJson, "stamina", name),
-                readSkill(characteristicsJson, "vision", name),
-                readSkill(characteristicsJson, "heading", name),
-                readSkill(characteristicsJson, "speed", name),
-                readSkill(characteristicsJson, "passing", name)
-        );
+        return new FieldPlayer(name, idNumber, idType, birthDate, nationality, matchesPlayed, minutesPlayed,
+                yellowCards, redCards, goals, assists, position, readSkill(characteristicsJson, "dribbling", name),
+                readSkill(characteristicsJson, "defensiveSkills", name), readSkill(characteristicsJson, "finishing",
+                name), readSkill(characteristicsJson, "stamina", name), readSkill(characteristicsJson, "vision", name),
+                readSkill(characteristicsJson, "heading", name), readSkill(characteristicsJson, "speed", name),
+                readSkill(characteristicsJson, "passing", name));
     }
 
     private List<Referee> loadReferees(JsonObject tournamentJson) {
         List<Referee> referees = new ArrayList<>();
         JsonObject refereesObject = tournamentJson.getAsJsonObject("arbitros");
         JsonArray refereesArray = refereesObject.getAsJsonArray("arbitro");
-
         if (refereesArray.isEmpty()) {
             throw new InvalidTournamentDataException("The tournament must contain referees.");
         }
-
         for (JsonElement element : refereesArray) {
             JsonObject refereeJson = element.getAsJsonObject();
             JsonObject personJson = refereeJson.getAsJsonObject("persona");
@@ -238,33 +177,21 @@ public class TournamentDataLoader {
             int matchesOfficiated = refereeJson.get("matchesOfficiated").getAsInt();
             int yearsOfficiated = refereeJson.get("yearsOfficiated").getAsInt();
             registerDocument(idType, idNumber, name);
-
             if (yearsOfficiated < 0) {
                 throw new InvalidTournamentDataException("Years officiated cannot be negative: " + name);
             }
-
-            referees.add(new Referee(
-                    name,
-                    idNumber,
-                    idType,
-                    birthDate,
-                    nationality,
-                    matchesOfficiated,
-                    yearsOfficiated
-            ));
+            referees.add(new Referee(name, idNumber, idType, birthDate, nationality, matchesOfficiated,
+                    yearsOfficiated));
         }
-
         return referees;
     }
 
     private Country getCountry(String countryName) {
         String cleanName = countryName.trim();
         String key = cleanName.toLowerCase();
-
         if (!countries.containsKey(key)) {
             countries.put(key, new Country(cleanName));
         }
-
         return countries.get(key);
     }
 
@@ -278,23 +205,18 @@ public class TournamentDataLoader {
 
     private int readSkill(JsonObject characteristicsJson, String skillName, String playerName) {
         int value = characteristicsJson.get(skillName).getAsInt();
-
         if (value < 0 || value > 100) {
-            throw new InvalidTournamentDataException(
-                    "Invalid " + skillName + " value for " + playerName + ": " + value
-            );
+            throw new InvalidTournamentDataException("Invalid " + skillName + " value for " + playerName + ": "
+                    + value);
         }
-
         return value;
     }
 
     private void registerDocument(String idType, int idNumber, String personName) {
         String document = idType.trim().toUpperCase() + "-" + idNumber;
-
         if (documents.contains(document)) {
             throw new InvalidTournamentDataException("Duplicated document for " + personName + ": " + document);
         }
-
         documents.add(document);
     }
 
@@ -303,7 +225,6 @@ public class TournamentDataLoader {
         int defenders = 0;
         int midfielders = 0;
         int forwards = 0;
-
         for (Player player : team.getSquad()) {
             if (player.getPosition() == Position.GOALKEEPER) {
                 goalkeepers++;
@@ -315,12 +236,9 @@ public class TournamentDataLoader {
                 forwards++;
             }
         }
-
         if (goalkeepers != 2 || defenders != 6 || midfielders != 5 || forwards != 5) {
-            throw new InvalidTournamentDataException(
-                    "Invalid squad composition for " + team.getName() +
-                            ". Expected 2 goalkeepers, 6 defenders, 5 midfielders and 5 forwards."
-            );
+            throw new InvalidTournamentDataException("Invalid squad composition for " + team.getName()
+                    + ". Expected 2 goalkeepers, 6 defenders, 5 midfielders and 5 forwards.");
         }
     }
 }

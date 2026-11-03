@@ -2,10 +2,9 @@ package model.participant;
 
 import java.io.Serializable;
 
-/**
- * Registra la participación de un futbolista en un equipo durante un partido,
- * incluidos los minutos de entrada y salida que permiten calcular el tiempo jugado.
- */
+// Registra la participación de un futbolista en un equipo durante un partido,
+// incluidos los minutos de entrada y salida que permiten calcular el tiempo jugado.
+
 public class PlayerParticipation implements Serializable{
     private Player player;
     private Team team;

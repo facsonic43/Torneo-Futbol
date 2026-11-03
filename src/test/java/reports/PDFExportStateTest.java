@@ -19,10 +19,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Comprueba que exportar las credenciales PDF conserve el estado compartido del campeonato
- * y no cambie resultados, estadísticas ni los datos utilizados por los reportes.
- */
+// Comprueba que exportar las credenciales PDF conserve el estado compartido del campeonato
+// y no cambie resultados, estadísticas ni los datos utilizados por los reportes.
+
 class PDFExportStateTest {
     private static final Country COUNTRY = new Country("Argentina");
     private static final LocalDate BIRTH = LocalDate.of(2000, 1, 1);
@@ -35,7 +34,6 @@ class PDFExportStateTest {
         assertExpectedStatistics(fixture);
         StatisticsSnapshot statisticsBefore = statisticsSnapshot(fixture.reports());
         byte[] stateBefore = domainSnapshot(fixture.reports());
-
         for (int export = 0; export < 3; export++) {
             Path output = directory.resolve("report.pdf");
             PDFGenerator.generate(fixture.reports(), output, new ReportOptions(null, null, directory));
@@ -50,7 +48,6 @@ class PDFExportStateTest {
         assertExpectedStatistics(fixture);
         StatisticsSnapshot statisticsBefore = statisticsSnapshot(fixture.reports());
         byte[] stateBefore = domainSnapshot(fixture.reports());
-
         for (int export = 0; export < 2; export++) {
             Path output = directory.resolve("frontend.pdf");
             PDFGenerator.generate(fixture.participants(), output, new ReportOptions(null, null, directory));
@@ -121,10 +118,9 @@ class PDFExportStateTest {
         assertEquals(150, replacement.minutes());
         assertEquals(1, replacement.goalsConceded());
         assertEquals(0.5, replacement.averageGoalsConceded());
-        assertEquals(List.of(fixture.homeKeeper(), fixture.scorer(), fixture.replacement(),
-                        fixture.assister(), fixture.opponent(), fixture.awayKeeper(), fixture.bench()),
+        assertEquals(List.of(fixture.homeKeeper(), fixture.scorer(), fixture.replacement(), fixture.assister(),
+                fixture.opponent(), fixture.awayKeeper(), fixture.bench()),
                 stats.getMinutesRanking().stream().map(ChampionshipStatistics.PlayerStats::player).toList());
-
         ChampionshipStatistics.TeamStats home = stats.getTeamsAlphabetically().getFirst();
         ChampionshipStatistics.TeamStats away = stats.getTeamsAlphabetically().getLast();
         assertSame(fixture.home(), home.team());
@@ -162,13 +158,13 @@ class PDFExportStateTest {
     private static StatisticsSnapshot statisticsSnapshot(ReportData data) {
         ChampionshipStatistics stats = new ChampionshipStatistics(data);
         return new StatisticsSnapshot(stats.getPlayedMatchCount(), stats.getIncompleteMatchCount(),
-                stats.hasCompleteStartingLineups(), stats.hasCompleteGoalInformation(),
-                stats.getPlayers(null, null), stats.getTopScorers(), stats.getMinutesRanking(),
-                stats.getTeamsAlphabetically(), stats.getFairPlayRanking(), stats.getRefereeRanking(),
+                stats.hasCompleteStartingLineups(), stats.hasCompleteGoalInformation(), stats.getPlayers(null, null),
+                stats.getTopScorers(), stats.getMinutesRanking(), stats.getTeamsAlphabetically(),
+                stats.getFairPlayRanking(), stats.getRefereeRanking(),
                 stats.getTeamsAlphabetically().stream().map(ChampionshipStatistics.TeamStats::efficiency).toList(),
                 stats.getTeamsAlphabetically().stream().map(ChampionshipStatistics.TeamStats::averageAge).toList(),
-                stats.getPlayers(Position.GOALKEEPER, null).stream()
-                        .map(ChampionshipStatistics.PlayerStats::averageGoalsConceded).toList(),
+                stats.getPlayers(Position.GOALKEEPER,
+                null).stream().map(ChampionshipStatistics.PlayerStats::averageGoalsConceded).toList(),
                 stats.getAverageRefereeExperience(), stats.getRefereesWithKnownExperienceCount());
     }
 
@@ -242,8 +238,8 @@ class PDFExportStateTest {
         pending.setHomeGoals(10);
         pending.addEvent(new Goal(10, home, bench, null, false, false, awayKeeper));
         data.addMatch(pending);
-        return new Fixture(participants, data, home, away, scorer, assister, opponent,
-                homeKeeper, awayKeeper, replacement, bench);
+        return new Fixture(participants, data, home, away, scorer, assister, opponent, homeKeeper, awayKeeper,
+                replacement, bench);
     }
 
     private static void addGoal(ReportData data, Match match, Goal goal) {
@@ -258,26 +254,22 @@ class PDFExportStateTest {
     }
 
     private static Player player(String name, int id, Position position) {
-        return new FieldPlayer(name, id, "DU", BIRTH, COUNTRY, 100, 9000, 20, 5, 50, 25,
-                position, 70, 70, 70, 70, 70, 70, 70, 70);
+        return new FieldPlayer(name, id, "DU", BIRTH, COUNTRY, 100, 9000, 20, 5, 50, 25, position, 70, 70, 70, 70, 70,
+                70, 70, 70);
     }
 
     private static Goalkeeper keeper(String name, int id) {
         return new Goalkeeper(name, id, "DU", BIRTH, COUNTRY, 100, 9000, 20, 5, 0, 25, 70, 70, 70, 70, 70, 70);
     }
 
-    private record Fixture(TournamentData participants, ReportData reports, Team home, Team away,
-                           Player scorer, Player assister, Player opponent, Goalkeeper homeKeeper,
-                           Goalkeeper awayKeeper, Goalkeeper replacement, Player bench) { }
+    private record Fixture(TournamentData participants, ReportData reports, Team home, Team away, Player scorer,
+            Player assister, Player opponent, Goalkeeper homeKeeper, Goalkeeper awayKeeper, Goalkeeper replacement,
+            Player bench) { }
 
-    private record StatisticsSnapshot(int played, int incomplete, boolean completeLineups,
-                                      boolean completeGoals, List<ChampionshipStatistics.PlayerStats> players,
-                                      List<ChampionshipStatistics.PlayerStats> scorers,
-                                      List<ChampionshipStatistics.PlayerStats> minutes,
-                                      List<ChampionshipStatistics.TeamStats> teams,
-                                      List<ChampionshipStatistics.TeamStats> fairPlay,
-                                      List<ChampionshipStatistics.RefereeStats> referees,
-                                      List<Double> efficiencies, List<Double> averageAges,
-                                      List<Double> keeperAverages, double refereeExperience,
-                                      int knownRefereeExperience) { }
+    private record StatisticsSnapshot(int played, int incomplete, boolean completeLineups, boolean completeGoals,
+            List<ChampionshipStatistics.PlayerStats> players, List<ChampionshipStatistics.PlayerStats> scorers,
+            List<ChampionshipStatistics.PlayerStats> minutes, List<ChampionshipStatistics.TeamStats> teams,
+            List<ChampionshipStatistics.TeamStats> fairPlay, List<ChampionshipStatistics.RefereeStats> referees,
+            List<Double> efficiencies, List<Double> averageAges, List<Double> keeperAverages, double refereeExperience,
+            int knownRefereeExperience) { }
 }

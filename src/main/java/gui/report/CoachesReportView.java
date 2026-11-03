@@ -16,9 +16,8 @@ import static gui.TableCells.createCenterStringCell;
 import static gui.TableCells.createBoldCell;
 import static gui.TableCells.createHighlightStatCell;
 
-/**
- * Presenta los entrenadores del torneo con sus datos personales, equipo y títulos.
- */
+// Presenta los entrenadores del torneo con sus datos personales, equipo y títulos.
+
 public class CoachesReportView extends ReportView {
     public CoachesReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
             Label selectedReportTitle, Node reportsPane) {
@@ -60,7 +59,6 @@ public class CoachesReportView extends ReportView {
                         coach.getBirthDate()));
             }
         }
-
         list.sort(Comparator.comparingInt(CoachReportEntry::getTitlesWon).reversed());
         table.getItems().setAll(list);
         layout.getChildren().add(table);

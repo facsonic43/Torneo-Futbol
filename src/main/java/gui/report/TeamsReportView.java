@@ -19,9 +19,8 @@ import static gui.TableCells.createIntegerCenterCell;
 import static gui.TableCells.createHighlightStatStringCell;
 import static gui.TableCells.createBoldCell;
 
-/**
- * Muestra el resumen de los equipos participantes, sus entrenadores y su rendimiento.
- */
+// Muestra el resumen de los equipos participantes, sus entrenadores y su rendimiento.
+
 public class TeamsReportView extends ReportView {
     public TeamsReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
             Label selectedReportTitle, Node reportsPane) {
@@ -52,9 +51,8 @@ public class TeamsReportView extends ReportView {
         rankCol.setCellFactory(col -> createIntegerCenterCell());
         TableColumn<TeamSummaryEntry, String> avgAgeCol = new TableColumn<>("AVERAGE AGE");
         avgAgeCol.setPrefWidth(110);
-        avgAgeCol.setCellValueFactory(cell -> new SimpleStringProperty(
-                String.format(Locale.ENGLISH, "%.1f", cell.getValue().getSquadAverageAge())));
-
+        avgAgeCol.setCellValueFactory(cell -> new SimpleStringProperty(String.format(Locale.ENGLISH, "%.1f",
+                cell.getValue().getSquadAverageAge())));
         TableColumn<TeamSummaryEntry, String> coachCol = new TableColumn<>("HEAD COACH");
         coachCol.setPrefWidth(150);
         coachCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getCoachName()));
@@ -102,7 +100,6 @@ public class TeamsReportView extends ReportView {
             double totalAge = 0;
             int gf = 0;
             int ga = 0;
-
             for (Player p : t.getSquad()) {
                 totalAge += p.getAge();
                 gf += p.getGoals();
@@ -111,7 +108,6 @@ public class TeamsReportView extends ReportView {
             double avgAge = squadSize > 0 ? (totalAge / squadSize) : 0;
             list.add(new TeamSummaryEntry(t, avgAge, gf, ga, tournament.getGroups()));
         }
-
         list.sort(Comparator.comparing(TeamSummaryEntry::getTeamName, String.CASE_INSENSITIVE_ORDER));
         table.getItems().setAll(list);
         layout.getChildren().add(table);

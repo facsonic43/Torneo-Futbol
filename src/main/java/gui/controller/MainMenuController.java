@@ -14,10 +14,9 @@ import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import service.TournamentSessionService;
 
-/**
- * Gestiona el inicio de un campeonato, la continuación de partidas y el tema del menú.
- * Abre la ventana principal con la sesión elegida y permite cerrar la aplicación.
- */
+// Gestiona el inicio de un campeonato, la continuación de partidas y el tema del menú.
+// Abre la ventana principal con la sesión elegida y permite cerrar la aplicación.
+
 public class MainMenuController {
     @FXML
     private ImageView menuLogo;
@@ -46,7 +45,6 @@ public class MainMenuController {
     private void checkSaveFile() {
         boolean saveExists = session != null && session.saveExists();
         continueButton.setDisable(!saveExists);
-
         if (saveExists) {
             if (!continueButton.getStyleClass().contains("primary-button")) {
                 continueButton.getStyleClass().add("primary-button");
@@ -91,12 +89,10 @@ public class MainMenuController {
                         ButtonType.YES, ButtonType.NO);
                 alert.setTitle("New Game Confirmation");
                 alert.setHeaderText(null);
-
                 if (alert.showAndWait().orElse(ButtonType.NO) != ButtonType.YES) {
                     return;
                 }
             }
-
             session.createNewTournament();
             launchMainApp();
         } catch (Exception ex) {
@@ -123,7 +119,6 @@ public class MainMenuController {
         if (continueButton.getScene().getRoot().getStyleClass().contains("light-theme")) {
             root.getStyleClass().add("light-theme");
         }
-
         stage.setScene(scene);
     }
 

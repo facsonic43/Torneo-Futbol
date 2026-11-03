@@ -6,27 +6,25 @@ import model.participant.*;
 
 import java.util.*;
 
-/**
- * Construye una fotografía de las estadísticas de esta edición a partir de los partidos jugados,
- * sin repetir encuentros ni mezclar los acumulados históricos del JSON con los rankings actuales.
- * Los resultados administrativos cuentan para los equipos, sin sumar actividad a jugadores o árbitros.
- * Reconstruye participaciones e incidencias y señala los partidos con formaciones o goles incompletos.
- * Los eventos permiten identificar participantes sin formación, aunque no reconstruir sus minutos.
- * Incluye eficiencia por puntos, juego limpio (una amarilla vale uno y una roja tres) y experiencia
- * arbitral conocida. Los penales de desempate no suman goles y se contemplan registros antiguos
- * de segunda amarilla. Los filtros de posición o jugador nulos incluyen todos los participantes.
- */
+// Construye una fotografía de las estadísticas de esta edición a partir de los partidos jugados,
+// sin repetir encuentros ni mezclar los acumulados históricos del JSON con los rankings actuales.
+// Los resultados administrativos cuentan para los equipos, sin sumar actividad a jugadores o árbitros.
+// Reconstruye participaciones e incidencias y señala los partidos con formaciones o goles incompletos.
+// Los eventos permiten identificar participantes sin formación, aunque no reconstruir sus minutos.
+// Incluye eficiencia por puntos, juego limpio (una amarilla vale uno y una roja tres) y experiencia
+// arbitral conocida. Los penales de desempate no suman goles y se contemplan registros antiguos
+// de segunda amarilla. Los filtros de posición o jugador nulos incluyen todos los participantes.
+
 public class ChampionshipStatistics {
-    public record PlayerStats(Player player, Team team, int matches, int minutes,
-                              int goals, int penaltyGoals, int assists,
-                              int yellowCards, int redCards, int goalsConceded) {
+    public record PlayerStats(Player player, Team team, int matches, int minutes, int goals, int penaltyGoals,
+            int assists, int yellowCards, int redCards, int goalsConceded) {
         public double averageGoalsConceded() {
             return matches == 0 ? 0.0 : (double) goalsConceded / matches;
         }
     }
 
-    public record TeamStats(Team team, int played, int won, int drawn, int lost,
-                            int goalsFor, int goalsAgainst, int yellowCards, int redCards) {
+    public record TeamStats(Team team, int played, int won, int drawn, int lost, int goalsFor, int goalsAgainst,
+            int yellowCards, int redCards) {
         public int points() { return 3 * won + drawn; }
 
         public double efficiency() { return played == 0 ? 0.0 : points() * 100.0 / (3 * played); }
@@ -61,7 +59,6 @@ public class ChampionshipStatistics {
             registerTeam(team, teamTotals, playerTotals);
         }
         data.getReferees().forEach(referee -> refereeTotals.put(referee, 0));
-
         Set<Match> matches = new LinkedHashSet<>(data.getMatches());
         data.getGroups().forEach(group -> matches.addAll(group.getMatches()));
         int played = 0;
@@ -108,21 +105,17 @@ public class ChampionshipStatistics {
 
     public List<PlayerStats> getTopScorers() {
         return players.stream().filter(stats -> stats.goals() > 0)
-                .sorted(Comparator.comparingInt(PlayerStats::goals).reversed()
-                        .thenComparing(playerName()).thenComparing(stats -> stats.team().getName()))
+                .sorted(Comparator.comparingInt(PlayerStats::goals).reversed() .thenComparing(playerName()).thenComparing(stats -> stats.team().getName()))
                 .toList();
     }
 
     public List<PlayerStats> getMinutesRanking() {
-        return players.stream().sorted(Comparator.comparingInt(PlayerStats::minutes).reversed()
-                .thenComparing(Comparator.comparingInt(PlayerStats::matches).reversed())
-                .thenComparing(playerName()).thenComparing(stats -> stats.team().getName())).toList();
+        return players.stream().sorted(Comparator.comparingInt(PlayerStats::minutes).reversed() .thenComparing(Comparator.comparingInt(PlayerStats::matches).reversed()) .thenComparing(playerName()).thenComparing(stats -> stats.team().getName())).toList();
     }
 
     public List<TeamStats> getFairPlayRanking() {
-        return teams.stream().sorted(Comparator.comparingInt(TeamStats::fairPlayScore)
-                .thenComparingInt(TeamStats::redCards)
-                .thenComparing(stats -> stats.team().getName(), String.CASE_INSENSITIVE_ORDER)).toList();
+        return teams.stream().sorted(Comparator.comparingInt(TeamStats::fairPlayScore).thenComparingInt(TeamStats::redCards).thenComparing(stats -> stats.team().getName(),
+                String.CASE_INSENSITIVE_ORDER)).toList();
     }
 
     public List<TeamStats> getTeamsAlphabetically() {
@@ -131,8 +124,8 @@ public class ChampionshipStatistics {
     }
 
     public List<RefereeStats> getRefereeRanking() {
-        return referees.stream().sorted(Comparator.comparingInt(RefereeStats::matches).reversed()
-                .thenComparing(stats -> stats.referee().getName(), String.CASE_INSENSITIVE_ORDER)).toList();
+        return referees.stream().sorted(Comparator.comparingInt(RefereeStats::matches).reversed().thenComparing(stats -> stats.referee().getName(),
+                String.CASE_INSENSITIVE_ORDER)).toList();
     }
 
     public double getAverageRefereeExperience() {
@@ -159,14 +152,14 @@ public class ChampionshipStatistics {
         return Comparator.comparing(stats -> stats.player().getName(), String.CASE_INSENSITIVE_ORDER);
     }
 
-    private static void registerTeam(Team team, Map<Team, TeamAccumulator> teams,
-                                     Map<Player, PlayerAccumulator> players) {
+    private static void registerTeam(Team team, Map<Team, TeamAccumulator> teams, Map<Player,
+            PlayerAccumulator> players) {
         teams.computeIfAbsent(team, TeamAccumulator::new);
         team.getSquad().forEach(player -> players.putIfAbsent(player, new PlayerAccumulator(player, team)));
     }
 
-    private static void addPlayerParticipations(Match match, ReportMatchDetails details,
-                                                Map<Player, PlayerAccumulator> totals) {
+    private static void addPlayerParticipations(Match match, ReportMatchDetails details, Map<Player,
+            PlayerAccumulator> totals) {
         Map<Player, Integer> minutes = details.getPlayerMinutes(match);
         Set<Player> participants = new LinkedHashSet<>(minutes.keySet());
         for (Event event : match.getEvents()) {
@@ -176,7 +169,6 @@ public class ChampionshipStatistics {
                 public void visit(Substitution substitution) {
                     participants.add(substitution.getPlayerIn());
                 }
-
                 @Override
                 public void visit(Goal goal) {
                     if (goal.getAssistPlayer() != null) participants.add(goal.getAssistPlayer());
@@ -197,7 +189,7 @@ public class ChampionshipStatistics {
     }
 
     private static boolean addEvents(Match match, ReportMatchDetails details, Map<Team, TeamAccumulator> teams,
-                                     Map<Player, PlayerAccumulator> players) {
+            Map<Player, PlayerAccumulator> players) {
         return new EventProcessor(match, details, teams, players).process();
     }
 
@@ -213,8 +205,8 @@ public class ChampionshipStatistics {
         private PlayerAccumulator player;
         private TeamAccumulator team;
 
-        EventProcessor(Match match, ReportMatchDetails details, Map<Team, TeamAccumulator> teams,
-                       Map<Player, PlayerAccumulator> players) {
+        EventProcessor(Match match, ReportMatchDetails details, Map<Team, TeamAccumulator> teams, Map<Player,
+                PlayerAccumulator> players) {
             this.match = match;
             this.details = details;
             this.teams = teams;
@@ -272,9 +264,8 @@ public class ChampionshipStatistics {
         public void visit(RedCard redCard) {
             if (player != null) player.redCards++;
             if (team != null) team.redCards++;
-            boolean secondYellowRecorded = yellowCards.stream().anyMatch(candidate ->
-                    candidate.getPlayer() == redCard.getPlayer()
-                            && candidate.getMinute() == redCard.getMinute());
+            boolean secondYellowRecorded = yellowCards.stream().anyMatch(candidate -> candidate.getPlayer() == redCard.getPlayer()
+                    && candidate.getMinute() == redCard.getMinute());
             if (!redCard.isDirectRed() && !secondYellowRecorded) {
                 if (player != null) player.yellowCards++;
                 if (team != null) team.yellowCards++;
@@ -299,8 +290,8 @@ public class ChampionshipStatistics {
         PlayerAccumulator(Player player, Team team) { this.player = player; this.team = team; }
 
         PlayerStats snapshot() {
-            return new PlayerStats(player, team, matches, minutes, goals, penaltyGoals,
-                    assists, yellowCards, redCards, goalsConceded);
+            return new PlayerStats(player, team, matches, minutes, goals, penaltyGoals, assists, yellowCards, redCards,
+                    goalsConceded);
         }
     }
 

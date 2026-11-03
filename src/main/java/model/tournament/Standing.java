@@ -2,10 +2,9 @@ package model.tournament;
 
 import model.participant.Team;
 
-/**
- * Representa la fila de un equipo en la tabla de posiciones y acumula puntos,
- * partidos y goles a partir de sus resultados.
- */
+// Representa la fila de un equipo en la tabla de posiciones y acumula puntos,
+// partidos y goles a partir de sus resultados.
+
 public class Standing {
     private Team team;
     private int played = 0;
@@ -23,7 +22,6 @@ public class Standing {
         this.played++;
         this.scored += gS;
         this.conceded += gC;
-
         if (gS > gC) {
             this.won++;
         } else if (gS == gC) {

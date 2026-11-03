@@ -4,10 +4,9 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Representa a un defensor, mediocampista o delantero y calcula su valoración
- * ponderando las habilidades según la posición que ocupa.
- */
+// Representa a un defensor, mediocampista o delantero y calcula su valoración
+// ponderando las habilidades según la posición que ocupa.
+
 public class FieldPlayer extends Player {
     private static final long serialVersionUID = -2473516079032478862L;
 
@@ -22,16 +21,14 @@ public class FieldPlayer extends Player {
     private final int passing;
 
     public FieldPlayer(String name, int idNumber, String idType, LocalDate birthDate, Country nationality,
-                       int matchesPlayed, int minutesPlayed, int yellowCards, int redCards, int goals, int assists,
-                       Position position, int dribbling, int defensiveSkills, int finishing, int stamina,
-                       int vision, int heading, int speed, int passing) {
-        super(name, idNumber, idType, birthDate, nationality, matchesPlayed, minutesPlayed,
-                yellowCards, redCards, goals, assists);
-
+            int matchesPlayed, int minutesPlayed, int yellowCards, int redCards, int goals, int assists,
+            Position position, int dribbling, int defensiveSkills, int finishing, int stamina, int vision, int heading,
+            int speed, int passing) {
+        super(name, idNumber, idType, birthDate, nationality, matchesPlayed, minutesPlayed, yellowCards, redCards,
+                goals, assists);
         if (position == Position.GOALKEEPER) {
             throw new IllegalArgumentException("A goalkeeper is not a field player: " + name);
         }
-
         this.position = position;
         this.dribbling = dribbling;
         this.defensiveSkills = defensiveSkills;

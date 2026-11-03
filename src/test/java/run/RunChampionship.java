@@ -22,14 +22,12 @@ import reports.ReportOptions;
 import java.nio.file.Path;
 import java.util.List;
 
-/**
- * Ejecuta el campeonato por consola a partir de los datos iniciales y las sedes de PostgreSQL.
- * Muestra tablas y detalles de los partidos y exporta las credenciales de los participantes en PDF.
- */
+// Ejecuta el campeonato por consola a partir de los datos iniciales y las sedes de PostgreSQL.
+// Muestra tablas y detalles de los partidos y exporta las credenciales de los participantes en PDF.
+
 public class RunChampionship {
     public static void main(String[] args) {
         TournamentDataLoader loader = new TournamentDataLoader();
-
         try {
             TournamentData data = loader.load("torneo.json");
             CityDAO cityDAO = new CityDAO();
@@ -50,18 +48,13 @@ public class RunChampionship {
             System.out.println("FINAL GROUP STANDINGS");
             System.out.println("====================================");
             int teamWidth = getStandingsTeamWidth(groups);
-
             for (Group group : groups) {
                 printStandings(group, teamWidth);
             }
-
             tournament.generateQuarterFinals(stadiums);
             tournament.simulateQuarterFinals(simulator);
-            printTwoLegRound(
-                    "QUARTER-FINALS",
-                    tournament.getQuarterFinalFirstLegs(),
-                    tournament.getQuarterFinalSecondLegs()
-            );
+            printTwoLegRound("QUARTER-FINALS", tournament.getQuarterFinalFirstLegs(),
+                    tournament.getQuarterFinalSecondLegs());
             tournament.generateSemiFinals();
             tournament.simulateSemiFinals(simulator);
             printTwoLegRound("SEMI-FINALS", tournament.getSemiFinalFirstLegs(), tournament.getSemiFinalSecondLegs());
@@ -85,12 +78,10 @@ public class RunChampionship {
 
     private static void simulateGroupStageWithTables(List<Group> groups, MatchSimulator simulator) {
         int teamWidth = getStandingsTeamWidth(groups);
-
         for (Group group : groups) {
             System.out.println("\n====================================");
             System.out.println(group.getName().toUpperCase());
             System.out.println("====================================");
-
             for (GroupMatch match : group.getMatches()) {
                 System.out.println("\nTABLE BEFORE MATCH");
                 printStandings(group, teamWidth);
@@ -106,98 +97,57 @@ public class RunChampionship {
 
     private static int getStandingsTeamWidth(List<Group> groups) {
         int teamWidth = "TEAM".length();
-
         for (Group group : groups) {
             for (model.participant.Team team : group.getTeams()) {
                 teamWidth = Math.max(teamWidth, team.getName().length());
             }
         }
-
         return teamWidth;
     }
 
     private static void printStandings(Group group, int teamWidth) {
         List<Standing> standings = group.getStandings();
         System.out.println("\n" + group.getName());
-        System.out.printf(
-                "%-4s | %-" + teamWidth + "s | %-4s | %-3s | %-3s | %-3s | %-3s | %-4s | %-4s | %-4s%n",
-                "POS",
-                "TEAM",
-                "PTS",
-                "MP",
-                "W",
-                "D",
-                "L",
-                "GF",
-                "GA",
-                "GD"
-        );
+        System.out.printf("%-4s | %-" + teamWidth + "s | %-4s | %-3s | %-3s | %-3s | %-3s | %-4s | %-4s | %-4s%n",
+                "POS", "TEAM", "PTS", "MP", "W", "D", "L", "GF", "GA", "GD");
         System.out.println("-".repeat( 7 + teamWidth + 59 ));
-
         for (int i = 0; i < standings.size(); i++) {
             Standing standing = standings.get(i);
-            System.out.printf(
-                    "%-4d | %-" + teamWidth + "s | %-4d | %-3d | %-3d | %-3d | %-3d | %-4d | %-4d | %-4d%n",
-                    i + 1,
-                    standing.getTeam().getName(),
-                    standing.getPoints(),
-                    standing.getPlayed(),
-                    standing.getWon(),
-                    standing.getDrawn(),
-                    standing.getLost(),
-                    standing.getScored(),
-                    standing.getConceded(),
-                    standing.getGoalDifference()
-            );
+            System.out.printf("%-4d | %-" + teamWidth + "s | %-4d | %-3d | %-3d | %-3d | %-3d | %-4d | %-4d | %-4d%n", i
+                    + 1, standing.getTeam().getName(), standing.getPoints(), standing.getPlayed(), standing.getWon(),
+                    standing.getDrawn(), standing.getLost(), standing.getScored(), standing.getConceded(),
+                    standing.getGoalDifference());
         }
     }
 
     private static void printMatchDetails(GroupMatch match) {
-        System.out.println(
-                match.getHomeTeam().getName() + " " + match.getHomeGoals()
-                        + " - " + match.getAwayGoals() + " " + match.getAwayTeam()
-                        .getName()
-        );
+        System.out.println(match.getHomeTeam().getName() + " " + match.getHomeGoals() + " - " + match.getAwayGoals()
+                + " " + match.getAwayTeam().getName());
         System.out.println("Stadium: " + match.getStadium().getName());
         System.out.println("Referee: " + match.getReferee().getName());
-        System.out.println(
-                "Formations: " + match.getHomeFormation().getLabel() + " / " + match.getAwayFormation().getLabel()
-        );
-
+        System.out.println("Formations: " + match.getHomeFormation().getLabel() + " / "
+                + match.getAwayFormation().getLabel());
         for (Event event : match.getEvents()) {
             System.out.println("- " + event.getDescription());
         }
     }
 
-    private static void printTwoLegRound(
-            String title,
-            List<FirstLegMatch> firstLegMatches,
+    private static void printTwoLegRound(String title, List<FirstLegMatch> firstLegMatches,
             List<SecondLegMatch> secondLegMatches) {
         System.out.println("\n====================================");
         System.out.println(title);
         System.out.println("====================================");
-
         for (int i = 0; i < firstLegMatches.size(); i++) {
             FirstLegMatch firstLeg = firstLegMatches.get(i);
             SecondLegMatch secondLeg = secondLegMatches.get(i);
             System.out.println("\nSeries " + (i + 1));
-            System.out.println(
-                    "First leg: " + firstLeg.getHomeTeam().getName() + " "
-                            + firstLeg.getHomeGoals() + " - " + firstLeg.getAwayGoals() + " "
-                            + firstLeg.getAwayTeam().getName()
-            );
-            System.out.println(
-                    "Second leg: " + secondLeg.getHomeTeam().getName() + " "
-                            + secondLeg.getHomeGoals() + " - " + secondLeg.getAwayGoals() + " "
-                            + secondLeg.getAwayTeam().getName()
-            );
-
+            System.out.println("First leg: " + firstLeg.getHomeTeam().getName() + " " + firstLeg.getHomeGoals() + " - "
+                    + firstLeg.getAwayGoals() + " " + firstLeg.getAwayTeam().getName());
+            System.out.println("Second leg: " + secondLeg.getHomeTeam().getName() + " " + secondLeg.getHomeGoals()
+                    + " - " + secondLeg.getAwayGoals() + " " + secondLeg.getAwayTeam().getName());
             if (secondLeg.getHomePenalties() != null) {
-                System.out.println(
-                        "Penalties: " + secondLeg.getHomePenalties() + " - " + secondLeg.getAwayPenalties()
-                );
+                System.out.println("Penalties: " + secondLeg.getHomePenalties() + " - " + secondLeg.getAwayPenalties());
             }
-
             System.out.println("Winner: " + secondLeg.getWinner().getName());
             System.out.println("Resolution: " + secondLeg.getResolutionCriteria());
         }
@@ -207,16 +157,11 @@ public class RunChampionship {
         System.out.println("\n====================================");
         System.out.println("FINAL");
         System.out.println("====================================");
-        System.out.println(
-                match.getHomeTeam().getName() + " " + match.getHomeGoals()
-                        + " - " + match.getAwayGoals() + " " + match.getAwayTeam()
-                        .getName()
-        );
-
+        System.out.println(match.getHomeTeam().getName() + " " + match.getHomeGoals() + " - " + match.getAwayGoals()
+                + " " + match.getAwayTeam().getName());
         if (match.getHomePenalties() != null) {
             System.out.println("Penalties: " + match.getHomePenalties() + " - " + match.getAwayPenalties());
         }
-
         System.out.println("Stadium: " + match.getStadium().getName());
         System.out.println("Referee: " + match.getReferee().getName());
         System.out.println("Winner: " + match.getWinner().getName());

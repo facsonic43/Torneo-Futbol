@@ -3,18 +3,17 @@ package model.match;
 import model.participant.Player;
 import model.participant.Team;
 
-/**
- * Registra un gol con su autor, asistente y arquero que lo recibió, e indica si fue
- * de penal o en contra. El equipo asociado es siempre el beneficiado por el gol.
- */
+// Registra un gol con su autor, asistente y arquero que lo recibió, e indica si fue
+// de penal o en contra. El equipo asociado es siempre el beneficiado por el gol.
+
 public class Goal extends Event {
     private Player assistPlayer;
     private boolean penalty;
     private boolean ownGoal;
     private Player goalkeeperConceded;
 
-    public Goal(int minute, Team team, Player scorer, Player assistPlayer,
-                boolean penalty, boolean ownGoal, Player goalkeeperConceded) {
+    public Goal(int minute, Team team, Player scorer, Player assistPlayer, boolean penalty, boolean ownGoal,
+            Player goalkeeperConceded) {
         super(minute, team, scorer);
         this.assistPlayer = assistPlayer;
         this.penalty = penalty;
@@ -41,7 +40,6 @@ public class Goal extends Event {
     @Override
     public String getDescription() {
         String description = minute + "' GOAL - " + player.getName();
-
         if (ownGoal) {
             description += " (Own goal)";
         } else if (penalty) {
@@ -49,9 +47,7 @@ public class Goal extends Event {
         } else if (assistPlayer != null) {
             description += " (Assist from: " + assistPlayer.getName() + ")";
         }
-
         description += " [" + team.getName() + "]";
-
         return description;
     }
 

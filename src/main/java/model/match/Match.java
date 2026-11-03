@@ -12,13 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.Serializable;
 
-/*
- * Clase base de todos los partidos del campeonato.
- * Guarda equipos, resultado, árbitro, estadio, formaciones, titulares, incidencias
- * y participaciones de jugadores para que cada tipo de partido resuelva su ganador.
- * Centraliza los criterios comunes y las derrotas administrativas por 3-0 sin goles individuales.
- * También reconstruye incidencias, jugadores en cancha y arquero para las tandas de penales.
- */
+// Clase base de todos los partidos del campeonato.
+// Guarda equipos, resultado, árbitro, estadio, formaciones, titulares, incidencias
+// y participaciones de jugadores para que cada tipo de partido resuelva su ganador.
+// Centraliza los criterios comunes y las derrotas administrativas por 3-0 sin goles individuales.
+// También reconstruye incidencias, jugadores en cancha y arquero para las tandas de penales.
+
 public abstract class Match implements Serializable {
     private static final long serialVersionUID = -606546183674919432L;
     protected Team homeTeam;
@@ -56,7 +55,6 @@ public abstract class Match implements Serializable {
 
     public Team getWinner() {
         Team winner = null;
-
         if (played) {
             if (homeGoals > awayGoals) {
                 winner = homeTeam;
@@ -64,7 +62,6 @@ public abstract class Match implements Serializable {
                 winner = awayTeam;
             }
         }
-
         return winner;
     }
 
@@ -253,11 +250,9 @@ public abstract class Match implements Serializable {
 
     private EventCollector collectEvents() {
         EventCollector collector = new EventCollector();
-
         for (Event event : events) {
             event.accept(collector);
         }
-
         return collector;
     }
 
@@ -284,25 +279,21 @@ public abstract class Match implements Serializable {
 
     public List<PenaltyTaken> getPenaltyKicks(Team team) {
         List<PenaltyTaken> penalties = new ArrayList<>();
-
         for (PenaltyTaken penalty : getPenaltyKicks()) {
             if (penalty.getTeam() == team) {
                 penalties.add(penalty);
             }
         }
-
         return penalties;
     }
 
     public List<Player> getPlayersOnPitchAtEnd(Team team) {
         List<Player> players = new ArrayList<>();
-
         for (PlayerParticipation participation : getPlayerParticipations()) {
             if (participation.getTeam() == team && participation.getExitMinute() >= 90) {
                 players.add(participation.getPlayer());
             }
         }
-
         if (players.isEmpty()) {
             if (team == getHomeTeam()) {
                 players.addAll(getHomeStarters());
@@ -310,31 +301,25 @@ public abstract class Match implements Serializable {
                 players.addAll(getAwayStarters());
             }
         }
-
         return players;
     }
 
     public Player getShootoutGoalkeeper(Team team) {
         List<Player> players = getPlayersOnPitchAtEnd(team);
-
         if (players.isEmpty()) {
             return null;
         }
-
         for (Player player : players) {
             if (player.isGoalkeeper()) {
                 return player;
             }
         }
-
         Player emergencyGoalkeeper = players.get(0);
-
         for (Player player : players) {
             if (player.getOverall() > emergencyGoalkeeper.getOverall()) {
                 emergencyGoalkeeper = player;
             }
         }
-
         return emergencyGoalkeeper;
     }
 }

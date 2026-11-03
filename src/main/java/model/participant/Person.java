@@ -4,9 +4,8 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.io.Serializable;
 
-/**
- * Reúne los datos personales y de identificación comunes a jugadores, entrenadores y árbitros.
- */
+// Reúne los datos personales y de identificación comunes a jugadores, entrenadores y árbitros.
+
 public abstract class Person implements Serializable{
     private String name;
     private int idNumber;

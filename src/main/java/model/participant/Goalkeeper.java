@@ -4,10 +4,9 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Representa al arquero con sus habilidades específicas y calcula su valoración.
- * Registra los goles recibidos para las estadísticas y reportes del campeonato.
- */
+// Representa al arquero con sus habilidades específicas y calcula su valoración.
+// Registra los goles recibidos para las estadísticas y reportes del campeonato.
+
 public class Goalkeeper extends Player {
     private int speed;
     private int jumping;
@@ -18,10 +17,10 @@ public class Goalkeeper extends Player {
     private int goalsConceded;
 
     public Goalkeeper(String name, int idNumber, String idType, LocalDate birthDate, Country nationality,
-                      int matchesPlayed, int minutesPlayed, int yellowCards, int redCards, int goals, int assists,
-                      int speed, int jumping, int passing, int reflexes, int oneOnOne, int kicking) {
-        super(name, idNumber, idType, birthDate, nationality, matchesPlayed, minutesPlayed,
-                yellowCards, redCards, goals, assists);
+            int matchesPlayed, int minutesPlayed, int yellowCards, int redCards, int goals, int assists, int speed,
+            int jumping, int passing, int reflexes, int oneOnOne, int kicking) {
+        super(name, idNumber, idType, birthDate, nationality, matchesPlayed, minutesPlayed, yellowCards, redCards,
+                goals, assists);
         this.speed = speed;
         this.jumping = jumping;
         this.passing = passing;

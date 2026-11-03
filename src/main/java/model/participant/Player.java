@@ -3,11 +3,10 @@ package model.participant;
 import java.time.LocalDate;
 import java.util.Map;
 
-/**
- * Reúne los datos y estadísticas comunes de los futbolistas y controla su disponibilidad
- * por lesiones y suspensiones. Cada especialidad define su posición y valoración;
- * los goles recibidos se registran únicamente en los arqueros.
- */
+// Reúne los datos y estadísticas comunes de los futbolistas y controla su disponibilidad
+// por lesiones y suspensiones. Cada especialidad define su posición y valoración;
+// los goles recibidos se registran únicamente en los arqueros.
+
 public abstract class Player extends Person {
     protected int matchesPlayed;
     protected int minutesPlayed;
@@ -20,8 +19,8 @@ public abstract class Player extends Person {
     protected int injuryMatchesLeft = 0;
     protected int tournamentYellowCards = 0;
 
-    public Player(String name, int idNumber, String idType, LocalDate birthDate, Country nationality,
-                  int matchesPlayed, int minutesPlayed, int yellowCards, int redCards, int goals, int assists) {
+    public Player(String name, int idNumber, String idType, LocalDate birthDate, Country nationality, int matchesPlayed,
+            int minutesPlayed, int yellowCards, int redCards, int goals, int assists) {
         super(name, idNumber, idType, birthDate, nationality);
         this.matchesPlayed = matchesPlayed;
         this.minutesPlayed = minutesPlayed;
@@ -65,7 +64,6 @@ public abstract class Player extends Person {
     public void addYellowCard() {
         yellowCards++;
         tournamentYellowCards++;
-
         if (tournamentYellowCards >= 3) {
             suspensionMatchesLeft = 1;
             tournamentYellowCards = 0;
@@ -81,7 +79,6 @@ public abstract class Player extends Person {
         if (suspensionMatchesLeft > 0) {
             suspensionMatchesLeft--;
         }
-
         if (injuryMatchesLeft > 0) {
             injuryMatchesLeft--;
         }

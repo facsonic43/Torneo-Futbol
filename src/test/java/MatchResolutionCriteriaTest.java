@@ -12,10 +12,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Comprueba que ganador, criterio y necesidad de penales respeten el mismo orden de resolución.
- * Cubre partidos pendientes, series por puntos y goles ponderados, y tandas incompletas o empatadas.
- */
+// Comprueba que ganador, criterio y necesidad de penales respeten el mismo orden de resolución.
+// Cubre partidos pendientes, series por puntos y goles ponderados, y tandas incompletas o empatadas.
+
 class MatchResolutionCriteriaTest {
     private static final LocalDate MATCH_DATE = LocalDate.of(2026, 10, 1);
     private final Team a = new Team("A", null, 1, null, 0, 0, 0, null);
@@ -24,11 +23,9 @@ class MatchResolutionCriteriaTest {
     @Test
     void allMatchTypesExposeTheSamePendingCriterion() {
         FirstLegMatch first = firstLeg(0, 0);
-        for (Match match : List.of(
-                new GroupMatch(a, b, null, null, MATCH_DATE),
-                new FirstLegMatch(a, b, null, null, MATCH_DATE),
-                new SecondLegMatch(b, a, null, null, MATCH_DATE, first),
-                new FinalMatch(a, b, null, null, MATCH_DATE))) {
+        for (Match match : List.of(new GroupMatch(a, b, null, null, MATCH_DATE), new FirstLegMatch(a, b, null, null,
+                MATCH_DATE), new SecondLegMatch(b, a, null, null, MATCH_DATE, first), new FinalMatch(a, b, null, null,
+                MATCH_DATE))) {
             assertCriterion(match, ResolutionCriterion.NOT_PLAYED);
             assertNull(match.getWinner());
             assertFalse(match.requiresTieBreak());
@@ -37,9 +34,8 @@ class MatchResolutionCriteriaTest {
 
     @Test
     void groupAndFirstLegUseConsistentRegularTimeAndDrawCriteria() {
-        for (Match match : List.of(
-                new GroupMatch(a, b, null, null, MATCH_DATE),
-                new FirstLegMatch(a, b, null, null, MATCH_DATE))) {
+        for (Match match : List.of(new GroupMatch(a, b, null, null, MATCH_DATE), new FirstLegMatch(a, b, null, null,
+                MATCH_DATE))) {
             score(match, 2, 1);
             assertCriterion(match, ResolutionCriterion.REGULAR_TIME);
             assertSame(a, match.getWinner());
@@ -55,7 +51,6 @@ class MatchResolutionCriteriaTest {
         FirstLegMatch first = new FirstLegMatch(a, b, null, null, MATCH_DATE);
         SecondLegMatch second = new SecondLegMatch(b, a, null, null, MATCH_DATE.plusDays(7), first);
         score(second, 2, 0);
-
         assertNull(second.getWinner());
         assertFalse(second.requiresTieBreak());
         assertCriterion(second, ResolutionCriterion.NOT_PLAYED);
@@ -67,7 +62,6 @@ class MatchResolutionCriteriaTest {
         SecondLegMatch second = secondLeg(first, 0, 1);
         second.setHomePenalties(5);
         second.setAwayPenalties(0);
-
         assertSame(a, second.getWinner());
         assertCriterion(second, ResolutionCriterion.SERIES_POINTS);
         assertFalse(second.requiresTieBreak());
@@ -77,7 +71,6 @@ class MatchResolutionCriteriaTest {
     void aggregateWinAndAwayGoalsWinHaveDifferentDescriptions() {
         SecondLegMatch aggregate = secondLeg(firstLeg(3, 0), 1, 0);
         SecondLegMatch awayGoals = secondLeg(firstLeg(1, 0), 2, 1);
-
         assertSame(a, aggregate.getWinner());
         assertEquals(3, aggregate.getSeriesPoints(a));
         assertEquals(3, aggregate.getSeriesPoints(b));
@@ -86,7 +79,6 @@ class MatchResolutionCriteriaTest {
         assertCriterion(aggregate, ResolutionCriterion.AGGREGATE_GOALS);
         assertEquals("BY AGGREGATE GOALS", aggregate.getResolutionCriterion().getDescription());
         assertFalse(aggregate.requiresTieBreak());
-
         assertSame(a, awayGoals.getWinner());
         assertEquals(2, awayGoals.getAggregateGoals(a));
         assertEquals(2, awayGoals.getAggregateGoals(b));
@@ -99,7 +91,6 @@ class MatchResolutionCriteriaTest {
     void descriptionsAlsoIdentifyTheWinnerWhenFirstLegAwayTeamAdvances() {
         SecondLegMatch aggregate = secondLeg(firstLeg(0, 3), 0, 1);
         SecondLegMatch awayGoals = secondLeg(firstLeg(2, 1), 1, 0);
-
         assertSame(b, aggregate.getWinner());
         assertCriterion(aggregate, ResolutionCriterion.AGGREGATE_GOALS);
         assertSame(b, awayGoals.getWinner());
@@ -109,7 +100,6 @@ class MatchResolutionCriteriaTest {
     @Test
     void weightedDrawStillRequiresPenaltiesEvenWithAnAggregateAdvantage() {
         SecondLegMatch second = secondLeg(firstLeg(4, 2), 2, 1);
-
         assertEquals(5, second.getAggregateGoals(a));
         assertEquals(4, second.getAggregateGoals(b));
         assertEquals(6, second.getWeightedGoals(a));
@@ -123,7 +113,6 @@ class MatchResolutionCriteriaTest {
         SecondLegMatch second = secondLeg(first, 1, 0);
         second.setHomePenalties(0);
         second.setAwayPenalties(5);
-
         assertEquals(3, second.getSeriesPoints(a));
         assertEquals(3, second.getSeriesPoints(b));
         assertEquals(4, second.getWeightedGoals(a));
@@ -136,14 +125,12 @@ class MatchResolutionCriteriaTest {
     @Test
     void seriesNeedsPenaltiesUntilBothScoresAreRecordedAndDifferent() {
         SecondLegMatch second = secondLeg(firstLeg(0, 0), 0, 0);
-
         assertUnresolved(second);
         second.setHomePenalties(3);
         assertUnresolved(second);
         second.setAwayPenalties(3);
         assertUnresolved(second);
         second.setAwayPenalties(4);
-
         assertSame(a, second.getWinner());
         assertCriterion(second, ResolutionCriterion.PENALTIES);
         assertFalse(second.requiresTieBreak());
@@ -153,14 +140,12 @@ class MatchResolutionCriteriaTest {
     void tiedFinalNeedsPenaltiesUntilBothScoresAreRecordedAndDifferent() {
         FinalMatch match = new FinalMatch(a, b, null, null, MATCH_DATE);
         score(match, 1, 1);
-
         assertUnresolved(match);
         match.setAwayPenalties(4);
         assertUnresolved(match);
         match.setHomePenalties(4);
         assertUnresolved(match);
         match.setHomePenalties(5);
-
         assertSame(a, match.getWinner());
         assertCriterion(match, ResolutionCriterion.PENALTIES);
         assertFalse(match.requiresTieBreak());
@@ -172,7 +157,6 @@ class MatchResolutionCriteriaTest {
         score(match, 2, 0);
         match.setHomePenalties(0);
         match.setAwayPenalties(5);
-
         assertSame(a, match.getWinner());
         assertCriterion(match, ResolutionCriterion.REGULAR_TIME);
         assertFalse(match.requiresTieBreak());

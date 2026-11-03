@@ -19,10 +19,9 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Comprueba la generación de credenciales PDF con datos personales, fotografías y códigos de barras.
- * Verifica el contenido exportado y el tratamiento de fotografías disponibles o ausentes.
- */
+// Comprueba la generación de credenciales PDF con datos personales, fotografías y códigos de barras.
+// Verifica el contenido exportado y el tratamiento de fotografías disponibles o ausentes.
+
 class PDFGeneratorTest {
     @TempDir Path directory;
 
@@ -35,13 +34,12 @@ class PDFGeneratorTest {
         Path coaches = Files.createDirectory(directory.resolve("Coaches"));
         Files.copy(Path.of("Images", "Person", "Coaches", "DU-10000019.jpg"), coaches.resolve("DU-10000019.jpg"));
         PDFGenerator.generate(data, output, new ReportOptions(Position.GOALKEEPER, selected, directory));
-
         try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
             String text = text(pdf);
             assertTrue(text.contains("I. Participant identification cards"));
-            for (String heading : List.of("II. Top scorers",
-                    "III. Fair Play ranking", "IV. Most minutes played", "V. Championship bracket",
-                    "VI. Team statistics", "VII. Referee ranking", "VIII. Player information")) {
+            for (String heading : List.of("II. Top scorers", "III. Fair Play ranking", "IV. Most minutes played",
+                    "V. Championship bracket", "VI. Team statistics", "VII. Referee ranking",
+                    "VIII. Player information")) {
                 assertFalse(text.contains(heading), "PDF must not include section: " + heading);
             }
             List<Person> people = new ArrayList<>(data.getReferees());
@@ -109,8 +107,8 @@ class PDFGeneratorTest {
     @Test
     void handlesEmptyTournamentWithoutAddingOtherReports() throws Exception {
         Path output = directory.resolve("empty.pdf");
-        PDFGenerator.generate(new ReportData(new TournamentData(List.of(), List.of())), output,
-                new ReportOptions(null, null, directory));
+        PDFGenerator.generate(new ReportData(new TournamentData(List.of(), List.of())), output, new ReportOptions(null,
+                null, directory));
         try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
             String text = text(pdf);
             assertTrue(text.contains("I. Participant identification cards"));
@@ -158,16 +156,16 @@ class PDFGeneratorTest {
         Coach coach = new Coach("Coach One", 101, "DU", LocalDate.of(1970, 1, 1), country, 3);
         Team first = new Team("Alpha", country, 1, coach, 1, 1, 1, null);
         first.addPlayer(keeper("Keeper One", 201));
-        Team second = new Team("Beta", country, 2,
-                new Coach("Coach Two", 102, "DU", LocalDate.of(1975, 1, 1), country, 1), 1, 1, 1, null);
+        Team second = new Team("Beta", country, 2, new Coach("Coach Two", 102, "DU", LocalDate.of(1975, 1, 1), country,
+                1), 1, 1, 1, null);
         second.addPlayer(keeper("Keeper Two", 202));
         Referee referee = new Referee("Referee One", 300, "DU", LocalDate.of(1980, 1, 1), country, 99, 12);
         return new ReportData(new TournamentData(List.of(first, second), List.of(referee)));
     }
 
     private static Player keeper(String name, int id) {
-        return new Goalkeeper(name, id, "DU", LocalDate.of(1995, 1, 1), new Country("Argentina"),
-                0, 0, 0, 0, 0, 0, 60, 70, 80, 90, 80, 70);
+        return new Goalkeeper(name, id, "DU", LocalDate.of(1995, 1, 1), new Country("Argentina"), 0, 0, 0, 0, 0, 0, 60,
+                70, 80, 90, 80, 70);
     }
 
     private static String text(PdfDocument pdf) {

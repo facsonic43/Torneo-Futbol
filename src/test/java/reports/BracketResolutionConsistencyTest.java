@@ -18,10 +18,9 @@ import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Comprueba que el cuadro publicado coincida con los ganadores y criterios del modelo,
- * incluidos los resultados administrativos y las resoluciones pendientes.
- */
+// Comprueba que el cuadro publicado coincida con los ganadores y criterios del modelo,
+// incluidos los resultados administrativos y las resoluciones pendientes.
+
 class BracketResolutionConsistencyTest {
     private static final LocalDate MATCH_DATE = LocalDate.of(2026, 10, 1);
 
@@ -30,15 +29,13 @@ class BracketResolutionConsistencyTest {
         ReportData data = completedGroups();
         BracketReport.BracketNode quarter = new BracketReport(data).getNodes().getFirst();
         FirstLegMatch first = firstLeg(quarter.homeTeam(), quarter.awayTeam(), 3, 0);
-        SecondLegMatch second = new SecondLegMatch(quarter.awayTeam(), quarter.homeTeam(),
-                null, null, MATCH_DATE.plusDays(7), first);
+        SecondLegMatch second = new SecondLegMatch(quarter.awayTeam(), quarter.homeTeam(), null, null,
+                MATCH_DATE.plusDays(7), first);
         score(second, 1, 0);
         data.addMatch(second);
-
         BracketReport.BracketNode aggregate = new BracketReport(data).getNodes().getFirst();
         assertSame(quarter.homeTeam(), aggregate.winner());
         assertEquals("Aggregate goals: 3 - 1", aggregate.resolution());
-
         score(first, 1, 0);
         score(second, 2, 1);
         BracketReport.BracketNode awayGoals = new BracketReport(data).getNodes().getFirst();
@@ -53,10 +50,8 @@ class BracketResolutionConsistencyTest {
         FinalMatch match = new FinalMatch(pending.homeTeam(), pending.awayTeam(), null, null, MATCH_DATE);
         match.forfeit(match.getHomeTeam());
         data.addMatch(match);
-
         BracketReport report = new BracketReport(data);
         BracketReport.BracketNode finalNode = report.getNodes().get(6);
-
         assertEquals(ResolutionCriterion.FORFEIT, match.getResolutionCriterion());
         assertSame(match.getWinner(), finalNode.winner());
         assertSame(match.getAwayTeam(), report.getChampion());
@@ -71,13 +66,11 @@ class BracketResolutionConsistencyTest {
         ReportData data = completedGroups();
         BracketReport.BracketNode quarter = new BracketReport(data).getNodes().getFirst();
         FirstLegMatch first = firstLeg(quarter.homeTeam(), quarter.awayTeam(), 3, 0);
-        SecondLegMatch second = new SecondLegMatch(quarter.awayTeam(), quarter.homeTeam(),
-                null, null, MATCH_DATE.plusDays(7), first);
+        SecondLegMatch second = new SecondLegMatch(quarter.awayTeam(), quarter.homeTeam(), null, null,
+                MATCH_DATE.plusDays(7), first);
         second.forfeit(quarter.homeTeam());
         data.addMatch(second);
-
         BracketReport.BracketNode result = new BracketReport(data).getNodes().getFirst();
-
         assertEquals(ResolutionCriterion.UNRESOLVED, second.getResolutionCriterion());
         assertFalse(second.requiresTieBreak());
         assertNull(second.getWinner());
@@ -92,13 +85,11 @@ class BracketResolutionConsistencyTest {
         ReportData data = completedGroups();
         BracketReport.BracketNode quarter = new BracketReport(data).getNodes().getFirst();
         FirstLegMatch first = firstLeg(quarter.homeTeam(), quarter.awayTeam(), 10, 0);
-        SecondLegMatch second = new SecondLegMatch(quarter.awayTeam(), quarter.homeTeam(),
-                null, null, MATCH_DATE.plusDays(7), first);
+        SecondLegMatch second = new SecondLegMatch(quarter.awayTeam(), quarter.homeTeam(), null, null,
+                MATCH_DATE.plusDays(7), first);
         second.forfeit(quarter.homeTeam());
         data.addMatch(second);
-
         BracketReport.BracketNode result = new BracketReport(data).getNodes().getFirst();
-
         assertEquals(ResolutionCriterion.AGGREGATE_GOALS, second.getResolutionCriterion());
         assertSame(second.getWinner(), result.winner());
         assertSame(quarter.homeTeam(), result.winner());
@@ -113,7 +104,6 @@ class BracketResolutionConsistencyTest {
         score(match, 1, 1);
         match.setHomePenalties(4);
         data.addMatch(match);
-
         BracketReport.BracketNode partial = new BracketReport(data).getNodes().get(6);
         assertNull(partial.winner());
         assertEquals("Penalty shootout pending", partial.resolution());

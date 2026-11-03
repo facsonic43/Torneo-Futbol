@@ -14,10 +14,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Comprueba que el campeonato pueda guardarse, recuperarse y continuar hasta la final,
- * conservando resultados, estadísticas y referencias compartidas entre los participantes.
- */
+// Comprueba que el campeonato pueda guardarse, recuperarse y continuar hasta la final,
+// conservando resultados, estadísticas y referencias compartidas entre los participantes.
+
 public class TournamentPersistenceTest {
     @Test
     void tournamentShouldBeSavedLoadedAndContinued() throws Exception {
@@ -38,7 +37,6 @@ public class TournamentPersistenceTest {
         int minutesBeforeSave = playerBeforeSave.getMinutesPlayed();
         int goalsBeforeSave = playerBeforeSave.getGoals();
         String groupLeaderBeforeSave = tournament.getGroups().get(0).getStandings().get(0).getTeam().getName();
-
         try {
             assertEquals(TournamentStage.QUARTER_FINALS, persistence.getStage( tournament ));
             assertEquals(32, tournament.getAllMatches().size());
@@ -78,11 +76,9 @@ public class TournamentPersistenceTest {
 
     private List<Stadium> createTestStadiums() {
         List<Stadium> stadiums = new ArrayList<>();
-
         for (int i = 1; i <= 16; i++) {
             stadiums.add(new Stadium( "Persistence Stadium " + i, i ));
         }
-
         return stadiums;
     }
 }

@@ -15,11 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Conserva los datos adicionales de los reportes, como titulares y detalles de goles,
- * sin modificar el modelo del partido. Reconstruye los minutos a partir de titulares, cambios
- * y expulsiones; la ausencia de información se conserva como dato desconocido.
- */
+// Conserva los datos adicionales de los reportes, como titulares y detalles de goles,
+// sin modificar el modelo del partido. Reconstruye los minutos a partir de titulares, cambios
+// y expulsiones; la ausencia de información se conserva como dato desconocido.
+
 public class ReportMatchDetails {
     public record GoalDetails(boolean penalty, boolean ownGoal, Player receivingGoalkeeper) { }
 
@@ -57,7 +56,6 @@ public class ReportMatchDetails {
         awayStarters.forEach(player -> entered.put(player, 0));
         entered.keySet().forEach(player -> minutes.put(player, 0));
         int duration = match.isExtraTimePlayed() ? 120 : 90;
-
         for (Event event : match.getEvents().stream().sorted(Comparator.comparingInt(Event::getMinute)).toList()) {
             int minute = Math.max(0, Math.min(duration, event.getMinute()));
             event.accept(new EventVisitor() {
@@ -67,7 +65,6 @@ public class ReportMatchDetails {
                     entered.put(substitution.getPlayerIn(), minute);
                     minutes.putIfAbsent(substitution.getPlayerIn(), 0);
                 }
-
                 @Override
                 public void visit(RedCard redCard) {
                     finishParticipation(redCard.getPlayer(), minute, entered, minutes);
@@ -78,8 +75,8 @@ public class ReportMatchDetails {
         return Map.copyOf(minutes);
     }
 
-    private static void finishParticipation(Player player, int minute,
-                                            Map<Player, Integer> entered, Map<Player, Integer> minutes) {
+    private static void finishParticipation(Player player, int minute, Map<Player, Integer> entered, Map<Player,
+            Integer> minutes) {
         Integer start = entered.remove(player);
         if (start != null) minutes.merge(player, minute - start, Integer::sum);
     }

@@ -19,10 +19,9 @@ import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import java.util.List;
 
-/**
- * Dibuja el cuadro eliminatorio con las tarjetas de cada ronda y sus conexiones.
- * Ajusta la distribución al tamaño disponible y resalta la ronda activa y el camino del campeón.
- */
+// Dibuja el cuadro eliminatorio con las tarjetas de cada ronda y sus conexiones.
+// Ajusta la distribución al tamaño disponible y resalta la ronda activa y el camino del campeón.
+
 public class BracketView extends StackPane {
     public static final String CHAMPION_PATH = "championPath";
 
@@ -44,7 +43,6 @@ public class BracketView extends StackPane {
         grid.setHgap(56);
         grid.setVgap(8);
         grid.setAlignment(Pos.CENTER);
-
         for (int i = 0; i < 3; i++) {
             ColumnConstraints col = new ColumnConstraints();
             col.setPercentWidth(100.0 / 3);
@@ -56,7 +54,6 @@ public class BracketView extends StackPane {
         header.setPrefHeight(28);
         header.setMaxHeight(28);
         grid.getRowConstraints().add(header);
-
         for (int i = 0; i < BODY_ROWS; i++) {
             RowConstraints row = new RowConstraints();
             row.setMinHeight(ROW_HEIGHT);
@@ -64,7 +61,6 @@ public class BracketView extends StackPane {
             row.setVgrow(Priority.ALWAYS);
             grid.getRowConstraints().add(row);
         }
-
         linesLayer.setMouseTransparent(true);
         linesLayer.setPickOnBounds(false);
         getChildren().addAll(grid, linesLayer);
@@ -98,7 +94,6 @@ public class BracketView extends StackPane {
 
     private void rebuild() {
         grid.getChildren().clear();
-
         for (int i = 0; i < HEADER_TITLES.length; i++) {
             addHeader(i);
         }
@@ -108,7 +103,6 @@ public class BracketView extends StackPane {
         if (finalMatch != null) {
             place(List.of(finalMatch), 2, 8);
         }
-
         requestRedraw();
     }
 
@@ -146,11 +140,9 @@ public class BracketView extends StackPane {
 
     private void drawLines() {
         linesLayer.getChildren().clear();
-
         if (quarters.size() != 4 || semis.size() != 2 || finalMatch == null) {
             return;
         }
-
         connect(quarters.get(0), quarters.get(1), semis.get(0));
         connect(quarters.get(2), quarters.get(3), semis.get(1));
         connect(semis.get(0), semis.get(1), finalMatch);
@@ -162,25 +154,19 @@ public class BracketView extends StackPane {
         Bounds bt = toLayer(target);
         double midX = (ba.getMaxX() + bt.getMinX()) / 2;
         double targetY = bt.getCenterY();
-
         Path base = new Path(new MoveTo(ba.getMaxX(), ba.getCenterY()), new LineTo(midX, ba.getCenterY()),
                 new LineTo(midX, bb.getCenterY()), new LineTo(bb.getMaxX(), bb.getCenterY()), new MoveTo(midX, targetY),
                 new LineTo(bt.getMinX(), targetY));
-
         base.setFill(Color.TRANSPARENT);
         base.getStyleClass().add("bracket-line");
         linesLayer.getChildren().add(base);
-
         for (Node feeder : new Node[]{a, b}) {
             if (!isChampionPath(feeder)) {
                 continue;
             }
-
             Bounds bf = toLayer(feeder);
-
             Path gold = new Path(new MoveTo(bf.getMaxX(), bf.getCenterY()), new LineTo(midX, bf.getCenterY()),
                     new LineTo(midX, targetY), new LineTo(bt.getMinX(), targetY));
-
             gold.setFill(Color.TRANSPARENT);
             gold.getStyleClass().add("bracket-line-champion");
             linesLayer.getChildren().add(gold);

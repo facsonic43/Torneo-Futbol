@@ -1,8 +1,7 @@
 package model.match;
 
-/**
- * Criterios comunes para describir la resolución de partidos y series en todas las vistas.
- */
+// Criterios comunes para describir la resolución de partidos y series en todas las vistas.
+
 public enum ResolutionCriterion {
     NOT_PLAYED("NOT PLAYED"),
     REGULAR_TIME("IN 90 MIN"),

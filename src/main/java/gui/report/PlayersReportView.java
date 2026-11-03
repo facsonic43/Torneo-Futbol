@@ -27,13 +27,12 @@ import static gui.TableCells.createIntegerCenterCell;
 import static gui.TableCells.createCenterStringCell;
 import static gui.TableCells.createBoldCell;
 
-/**
- * Muestra los jugadores del campeonato con filtros, estadísticas y datos de identificación.
- * Permite consultar el detalle de sus atributos deportivos desde la valoración general.
- */
+// Muestra los jugadores del campeonato con filtros, estadísticas y datos de identificación.
+// Permite consultar el detalle de sus atributos deportivos desde la valoración general.
+
 public class PlayersReportView extends ReportView {
     public PlayersReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
-                             Label selectedReportTitle, Node reportsPane) {
+            Label selectedReportTitle, Node reportsPane) {
         super(reportContentHost, reportMetricChip, selectedReportSubtitle, selectedReportTitle, reportsPane);
     }
 
@@ -65,10 +64,8 @@ public class PlayersReportView extends ReportView {
         btnReset.getStyleClass().add("secondary-button");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-
         filterBar.getChildren().addAll(new Label("POSITION:"), posFilter, new Label("TEAM:"), teamFilter, btnReset,
                 spacer);
-
         TableView<PlayerDirectoryEntry> table = new TableView<>();
         table.getStyleClass().add("dark-table");
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
@@ -218,12 +215,10 @@ public class PlayersReportView extends ReportView {
                 masterList.add(new PlayerDirectoryEntry(p, t));
             }
         }
-
         FilteredList<PlayerDirectoryEntry> filteredList = new FilteredList<>(masterList, p -> true);
         SortedList<PlayerDirectoryEntry> sortedList = new SortedList<>(filteredList);
         sortedList.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(sortedList);
-
         Runnable updateFilter = () -> {
             String pSel = posFilter.getValue();
             String tSel = teamFilter.getValue();
@@ -236,7 +231,6 @@ public class PlayersReportView extends ReportView {
         };
         posFilter.valueProperty().addListener((obs, o, n) -> updateFilter.run());
         teamFilter.valueProperty().addListener((obs, o, n) -> updateFilter.run());
-
         btnReset.setOnAction(e -> {
             posFilter.setValue("ALL POSITIONS");
             teamFilter.setValue("ALL TEAMS");
@@ -250,13 +244,11 @@ public class PlayersReportView extends ReportView {
     private void showPlayerAttributesDialog(Player player) {
         Dialog<Void> dialog = new Dialog<>();
         DialogPane dialogPane = dialog.getDialogPane();
-
         if (reportsPane != null && reportsPane.getScene() != null) {
             dialogPane.getStylesheets().addAll(reportsPane.getScene().getStylesheets());
             Node rootNode = reportsPane.getScene().getRoot();
             dialogPane.getStyleClass().addAll(rootNode.getStyleClass());
         }
-
         dialogPane.getStyleClass().add("panel");
         VBox contentContainer = new VBox(12);
         contentContainer.setPadding(new Insets(10));
@@ -280,7 +272,6 @@ public class PlayersReportView extends ReportView {
             grid.add(valLbl, 1, row);
             row++;
         }
-
         contentContainer.getChildren().addAll(headerBox, new Separator(), grid);
         dialogPane.setContent(contentContainer);
         dialogPane.getButtonTypes().add(ButtonType.CLOSE);

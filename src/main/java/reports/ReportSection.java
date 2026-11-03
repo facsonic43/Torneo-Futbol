@@ -1,8 +1,7 @@
 package reports;
 
-/**
- * Define los reportes estadísticos disponibles y sus títulos para la pantalla de reportes.
- */
+// Define los reportes estadísticos disponibles y sus títulos para la pantalla de reportes.
+
 public enum ReportSection {
     TOP_SCORERS,
     FAIR_PLAY,

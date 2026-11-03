@@ -20,10 +20,9 @@ import service.TournamentSessionService;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Controla la administración de ciudades y estadios desde la interfaz.
- * Valida las entradas y comunica los resultados de las operaciones con la base de datos.
- */
+// Controla la administración de ciudades y estadios desde la interfaz.
+// Valida las entradas y comunica los resultados de las operaciones con la base de datos.
+
 public class DatabaseController {
     @FXML
     private ListView<City> cityList;
@@ -61,13 +60,11 @@ public class DatabaseController {
     public void initialize() {
         cityDAO = new CityDAO();
         stadiumDAO = new StadiumDAO();
-
         cityList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 showCity(newValue);
             }
         });
-
         stadiumList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 showStadium(newValue);
@@ -103,12 +100,10 @@ public class DatabaseController {
     private void handleAddCity() {
         String name = cityNameField.getText().trim();
         String country = cityCountryField.getText().trim();
-
         if (name.isEmpty() || country.isEmpty()) {
             databaseStatus.setText("Complete city name and country.");
             return;
         }
-
         try {
             City city = new City(name, country);
             cityDAO.add(city);
@@ -123,20 +118,16 @@ public class DatabaseController {
     @FXML
     private void handleUpdateCity() {
         City selectedCity = cityList.getSelectionModel().getSelectedItem();
-
         if (selectedCity == null) {
             databaseStatus.setText("Select a city first.");
             return;
         }
-
         String name = cityNameField.getText().trim();
         String country = cityCountryField.getText().trim();
-
         if (name.isEmpty() || country.isEmpty()) {
             databaseStatus.setText("Complete city name and country.");
             return;
         }
-
         try {
             City updatedCity = new City(selectedCity.getId(), name, country);
             cityDAO.update(updatedCity);
@@ -150,12 +141,10 @@ public class DatabaseController {
     @FXML
     private void handleDeleteCity() {
         City selectedCity = cityList.getSelectionModel().getSelectedItem();
-
         if (selectedCity == null) {
             databaseStatus.setText("Select a city first.");
             return;
         }
-
         try {
             cityDAO.delete(selectedCity.getId());
             databaseStatus.setText("City deleted successfully.");
@@ -170,12 +159,10 @@ public class DatabaseController {
     private void handleAddStadium() {
         String name = stadiumNameField.getText().trim();
         City selectedCity = stadiumCityCombo.getValue();
-
         if (name.isEmpty() || selectedCity == null) {
             databaseStatus.setText("Complete stadium name and city.");
             return;
         }
-
         try {
             Stadium stadium = new Stadium(name, selectedCity.getId());
             stadiumDAO.add(stadium);
@@ -193,17 +180,14 @@ public class DatabaseController {
         Stadium selectedStadium = stadiumList.getSelectionModel().getSelectedItem();
         City selectedCity = stadiumCityCombo.getValue();
         String name = stadiumNameField.getText().trim();
-
         if (selectedStadium == null) {
             databaseStatus.setText("Select a stadium first.");
             return;
         }
-
         if (name.isEmpty() || selectedCity == null) {
             databaseStatus.setText("Complete stadium name and city.");
             return;
         }
-
         try {
             Stadium updatedStadium = new Stadium(selectedStadium.getId(), name, selectedCity.getId());
             stadiumDAO.update(updatedStadium);
@@ -218,12 +202,10 @@ public class DatabaseController {
     @FXML
     private void handleDeleteStadium() {
         Stadium selectedStadium = stadiumList.getSelectionModel().getSelectedItem();
-
         if (selectedStadium == null) {
             databaseStatus.setText("Select a stadium first.");
             return;
         }
-
         try {
             stadiumDAO.delete(selectedStadium.getId());
             databaseStatus.setText("Stadium deleted successfully.");
@@ -252,15 +234,12 @@ public class DatabaseController {
 
     private void showStadium(Stadium stadium) {
         stadiumNameField.setText(stadium.getName());
-
         for (City city : stadiumCityCombo.getItems()) {
-            if (city.getId()
-                    == stadium.getCityId()) {
+            if (city.getId() == stadium.getCityId()) {
                 stadiumCityCombo.setValue(city);
                 return;
             }
         }
-
         stadiumCityCombo.setValue(null);
     }
 
@@ -268,7 +247,6 @@ public class DatabaseController {
         if (session == null) {
             return;
         }
-
         try {
             session.refreshStadiums();
         } catch (Exception exception) {
@@ -283,7 +261,6 @@ public class DatabaseController {
         if (message == null || message.isBlank()) {
             message = exception.getClass().getSimpleName();
         }
-
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Database error");
         dialog.setHeaderText(null);
@@ -294,7 +271,6 @@ public class DatabaseController {
         if (scene != null) {
             dialog.initOwner(scene.getWindow());
             pane.getStylesheets().addAll(scene.getStylesheets());
-
             if (scene.getRoot().getStyleClass().contains("light-theme")) {
                 pane.getStyleClass().add("light-theme");
             }

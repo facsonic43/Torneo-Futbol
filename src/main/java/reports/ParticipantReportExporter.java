@@ -7,10 +7,9 @@ import reports.pdf.PDFGenerator;
 import java.io.IOException;
 import java.nio.file.Path;
 
-/**
- * Exporta las credenciales de identificación de todos los participantes del campeonato
- * a un archivo PDF utilizando las opciones de fotografías indicadas.
- */
+// Exporta las credenciales de identificación de todos los participantes del campeonato
+// a un archivo PDF utilizando las opciones de fotografías indicadas.
+
 public final class ParticipantReportExporter {
     private ParticipantReportExporter() {
     }

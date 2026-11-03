@@ -8,17 +8,16 @@ import model.tournament.Group;
 import java.time.LocalDate;
 import java.util.*;
 
-/**
- * Construye una vista de los clasificados y del cuadro eliminatorio a partir de los partidos.
- * Consulta los ganadores y criterios del modelo para conservar resultados coherentes con el torneo.
- * Valida la clasificación de los grupos y las parejas de cada cruce sin modificar sus partidos.
- */
-public final class BracketReport {
-    public record GroupQualification(String groupName, Team first, Team second,
-                                     String status, int playedMatches, int requiredMatches) {}
+// Construye una vista de los clasificados y del cuadro eliminatorio a partir de los partidos.
+// Consulta los ganadores y criterios del modelo para conservar resultados coherentes con el torneo.
+// Valida la clasificación de los grupos y las parejas de cada cruce sin modificar sus partidos.
 
-    public record MatchResult(Team homeTeam, Team awayTeam, LocalDate date, boolean played,
-                              int homeGoals, int awayGoals, Integer homePenalties, Integer awayPenalties) {
+public final class BracketReport {
+    public record GroupQualification(String groupName, Team first, Team second, String status, int playedMatches,
+            int requiredMatches) {}
+
+    public record MatchResult(Team homeTeam, Team awayTeam, LocalDate date, boolean played, int homeGoals,
+            int awayGoals, Integer homePenalties, Integer awayPenalties) {
         static MatchResult of(Match match) {
             return match == null ? null : new MatchResult(match.getHomeTeam(), match.getAwayTeam(),
                     match.getMatchDate(), match.isPlayed(), match.getHomeGoals(), match.getAwayGoals(),
@@ -36,9 +35,9 @@ public final class BracketReport {
         }
     }
 
-    public record BracketNode(String id, String round, String homeSource, String awaySource,
-                              Team homeTeam, Team awayTeam, MatchResult firstLeg, MatchResult secondLeg,
-                              MatchResult finalMatch, Team winner, String status, String resolution) {}
+    public record BracketNode(String id, String round, String homeSource, String awaySource, Team homeTeam,
+            Team awayTeam, MatchResult firstLeg, MatchResult secondLeg, MatchResult finalMatch, Team winner,
+            String status, String resolution) {}
 
     private final List<GroupQualification> qualifiers;
     private final List<BracketNode> nodes;
@@ -53,24 +52,24 @@ public final class BracketReport {
         List<Match> matches = data.getMatches();
         List<GroupQualification> qualification = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            qualification.add(i < data.getGroups().size() ? qualify(data.getGroups().get(i), matches)
-                    : new GroupQualification("Zone " + (i + 1), null, null, "Not drawn", 0, 6));
+            qualification.add(i < data.getGroups().size() ? qualify(data.getGroups().get(i),
+                    matches) : new GroupQualification("Zone " + (i + 1), null, null, "Not drawn", 0, 6));
         }
         qualifiers = List.copyOf(qualification);
         Set<Match> used = Collections.newSetFromMap(new IdentityHashMap<>());
         List<BracketNode> tree = new ArrayList<>();
-        tree.add(tie("I", "Quarter-final", "1st Zone 1", "2nd Zone 4",
-                qualification.get(0).first(), qualification.get(3).second(), matches, used));
-        tree.add(tie("II", "Quarter-final", "1st Zone 2", "2nd Zone 3",
-                qualification.get(1).first(), qualification.get(2).second(), matches, used));
-        tree.add(tie("III", "Quarter-final", "1st Zone 3", "2nd Zone 1",
-                qualification.get(2).first(), qualification.get(0).second(), matches, used));
-        tree.add(tie("IV", "Quarter-final", "1st Zone 4", "2nd Zone 2",
-                qualification.get(3).first(), qualification.get(1).second(), matches, used));
-        tree.add(tie("V", "Semi-final", "Winner I", "Winner II",
-                tree.get(0).winner(), tree.get(1).winner(), matches, used));
-        tree.add(tie("VI", "Semi-final", "Winner III", "Winner IV",
-                tree.get(2).winner(), tree.get(3).winner(), matches, used));
+        tree.add(tie("I", "Quarter-final", "1st Zone 1", "2nd Zone 4", qualification.get(0).first(),
+                qualification.get(3).second(), matches, used));
+        tree.add(tie("II", "Quarter-final", "1st Zone 2", "2nd Zone 3", qualification.get(1).first(),
+                qualification.get(2).second(), matches, used));
+        tree.add(tie("III", "Quarter-final", "1st Zone 3", "2nd Zone 1", qualification.get(2).first(),
+                qualification.get(0).second(), matches, used));
+        tree.add(tie("IV", "Quarter-final", "1st Zone 4", "2nd Zone 2", qualification.get(3).first(),
+                qualification.get(1).second(), matches, used));
+        tree.add(tie("V", "Semi-final", "Winner I", "Winner II", tree.get(0).winner(), tree.get(1).winner(), matches,
+                used));
+        tree.add(tie("VI", "Semi-final", "Winner III", "Winner IV", tree.get(2).winner(), tree.get(3).winner(), matches,
+                used));
         tree.add(finalNode(tree.get(4).winner(), tree.get(5).winner(), matches, used));
         nodes = List.copyOf(tree);
         unassignedMatches = matches.stream().filter(Match::isKnockout).filter(m -> !used.contains(m))
@@ -124,8 +123,8 @@ public final class BracketReport {
         boolean duplicatePair = false;
         for (Match match : allMatches) {
             GroupMatch gm = match.asGroupMatch().orElse(null);
-            if (gm == null || !rows.containsKey(match.getHomeTeam())
-                    || !rows.containsKey(match.getAwayTeam()) || match.getHomeTeam() == match.getAwayTeam()) continue;
+            if (gm == null || !rows.containsKey(match.getHomeTeam()) || !rows.containsKey(match.getAwayTeam())
+                    || match.getHomeTeam() == match.getAwayTeam()) continue;
             Set<Team> pair = Set.of(match.getHomeTeam(), match.getAwayTeam());
             if (fixtures.putIfAbsent(pair, gm) != null) duplicatePair = true;
         }
@@ -138,9 +137,8 @@ public final class BracketReport {
         }
         if (duplicatePair) return new GroupQualification(group.getName(), null, null,
                 "Incomplete zone: duplicate pairing", played, 6);
-        if (played != 6) return new GroupQualification(group.getName(), null, null,
-                played == 0 ? "Not started" : "In progress", played, 6);
-
+        if (played != 6) return new GroupQualification(group.getName(), null, null, played == 0
+                ? "Not started" : "In progress", played, 6);
         List<Row> sorted = new ArrayList<>(rows.values());
         Comparator<Row> order = Comparator.comparingInt((Row r) -> r.points).reversed()
                 .thenComparing(Comparator.comparingInt((Row r) -> r.scored - r.conceded).reversed())
@@ -170,22 +168,22 @@ public final class BracketReport {
         Team second = sorted.get(1).team;
         boolean qualificationTied = unresolved.contains(first) || unresolved.contains(second);
         return new GroupQualification(group.getName(), unresolved.contains(first) ? null : first,
-                unresolved.contains(second) ? null : second,
-                qualificationTied ? "Unresolved qualification tie" : "Completed", played, 6);
+                unresolved.contains(second) ? null : second, qualificationTied
+                ? "Unresolved qualification tie" : "Completed", played, 6);
     }
 
-    private static BracketNode tie(String id, String round, String homeSource, String awaySource,
-                                   Team home, Team away, List<Match> matches, Set<Match> used) {
+    private static BracketNode tie(String id, String round, String homeSource, String awaySource, Team home, Team away,
+            List<Match> matches, Set<Match> used) {
         if (home == null || away == null)
-            return new BracketNode(id, round, homeSource, awaySource, home, away, null, null, null,
-                    null, "Awaiting qualification", "");
+            return new BracketNode(id, round, homeSource, awaySource, home, away, null, null, null, null,
+                    "Awaiting qualification", "");
         List<FirstLegMatch> firsts = matches.stream().map(Match::asFirstLeg).flatMap(Optional::stream)
                 .filter(m -> pair(m, home, away)).toList();
         List<SecondLegMatch> seconds = matches.stream().map(Match::asSecondLeg).flatMap(Optional::stream)
                 .filter(m -> pair(m, home, away)).toList();
         if (firsts.size() > 1 || seconds.size() > 1)
-            return new BracketNode(id, round, homeSource, awaySource, home, away, null, null, null,
-                    null, "Conflicting tie records", "");
+            return new BracketNode(id, round, homeSource, awaySource, home, away, null, null, null, null,
+                    "Conflicting tie records", "");
         FirstLegMatch first = firsts.isEmpty() ? null : firsts.get(0);
         SecondLegMatch second = seconds.isEmpty() ? null : seconds.get(0);
         if (first != null) used.add(first);
@@ -218,8 +216,8 @@ public final class BracketReport {
             status = first != null && first.isPlayed() ? "Second leg pending"
                     : second != null && second.isPlayed() ? "First leg pending" : "Not played";
         }
-        return new BracketNode(id, round, homeSource, awaySource, home, away,
-                MatchResult.of(first), MatchResult.of(second), null, winner, status, resolution);
+        return new BracketNode(id, round, homeSource, awaySource, home, away, MatchResult.of(first),
+                MatchResult.of(second), null, winner, status, resolution);
     }
 
     private static BracketNode finalNode(Team home, Team away, List<Match> matches, Set<Match> used) {
@@ -248,8 +246,8 @@ public final class BracketReport {
                 }
             }
         }
-        return new BracketNode("VII", "Final", "Winner V", "Winner VI", home, away,
-                null, null, MatchResult.of(match), winner, status, resolution);
+        return new BracketNode("VII", "Final", "Winner V", "Winner VI", home, away, null, null, MatchResult.of(match),
+                winner, status, resolution);
     }
 
     private static boolean pair(Match match, Team a, Team b) {

@@ -5,10 +5,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import model.tournament.Tournament;
 
-/**
- * Define la base de los reportes que se muestran en el panel compartido del campeonato.
- * Gestiona el torneo actual, los títulos y el contenido que dibuja cada subclase.
- */
+// Define la base de los reportes que se muestran en el panel compartido del campeonato.
+// Gestiona el torneo actual, los títulos y el contenido que dibuja cada subclase.
+
 public abstract class ReportView {
     protected final StackPane reportContentHost;
     protected final Label reportMetricChip;
@@ -18,7 +17,7 @@ public abstract class ReportView {
     protected Tournament tournament;
 
     protected ReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
-                         Label selectedReportTitle, Node reportsPane) {
+            Label selectedReportTitle, Node reportsPane) {
         this.reportContentHost = reportContentHost;
         this.reportMetricChip = reportMetricChip;
         this.selectedReportSubtitle = selectedReportSubtitle;

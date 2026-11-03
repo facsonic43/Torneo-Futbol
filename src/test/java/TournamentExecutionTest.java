@@ -12,10 +12,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Verifica la ejecución manual de partidos, fechas y fases del campeonato.
- * Comprueba los bloqueos cronológicos y que los penales queden pendientes hasta su ejecución.
- */
+// Verifica la ejecución manual de partidos, fechas y fases del campeonato.
+// Comprueba los bloqueos cronológicos y que los penales queden pendientes hasta su ejecución.
+
 public class TournamentExecutionTest {
     @Test
     void userShouldControlTournamentExecution() throws Exception {
@@ -73,14 +72,12 @@ public class TournamentExecutionTest {
         Match finalMatch = tournament.getFinalMatch();
         execution.playMatch(tournament, finalMatch, stadiums);
         assertTrue(finalMatch.isPlayed());
-
         if (execution.requiresPenalties(finalMatch)) {
             assertNull(tournament.getChampion());
             assertNull(finalMatch.getHomePenalties());
             assertNull(finalMatch.getAwayPenalties());
             execution.simulatePenalties(tournament, finalMatch, stadiums);
         }
-
         assertNotNull(tournament.getChampion());
         assertEquals(TournamentStage.FINISHED, execution.getCurrentStage(tournament));
         assertEquals(37, countPlayedMatches(tournament));
@@ -88,9 +85,7 @@ public class TournamentExecutionTest {
         assertTrue(execution.getPendingPenaltyMatches(tournament).isEmpty());
     }
 
-    private void resolvePendingPenalties(
-            TournamentExecutionService execution,
-            Tournament tournament,
+    private void resolvePendingPenalties(TournamentExecutionService execution, Tournament tournament,
             List<Stadium> stadiums) {
         while (!execution.getPendingPenaltyMatches(tournament).isEmpty()) {
             Match pending = execution.getPendingPenaltyMatches(tournament).get(0);
@@ -111,25 +106,21 @@ public class TournamentExecutionTest {
                 return match;
             }
         }
-
         return null;
     }
 
     private int countPlayedMatches(Tournament tournament) {
         int count = 0;
-
         for (Match match : tournament.getAllMatches()) {
             if (match.isPlayed()) {
                 count++;
             }
         }
-
         return count;
     }
 
     private int countPlayedGroupMatches(Tournament tournament) {
         int count = 0;
-
         for (model.tournament.Group group : tournament.getGroups()) {
             for (Match match : group.getMatches()) {
                 if (match.isPlayed()) {
@@ -137,17 +128,14 @@ public class TournamentExecutionTest {
                 }
             }
         }
-
         return count;
     }
 
     private List<Stadium> createTestStadiums() {
         List<Stadium> stadiums = new ArrayList<>();
-
         for (int i = 1; i <= 16; i++) {
             stadiums.add(new Stadium( "Execution Stadium " + i, i ));
         }
-
         return stadiums;
     }
 }

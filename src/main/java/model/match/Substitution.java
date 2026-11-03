@@ -3,10 +3,9 @@ package model.match;
 import model.participant.Player;
 import model.participant.Team;
 
-/**
- * Representa un cambio de futbolistas y conserva al jugador que sale y al que ingresa
- * para describir el cambio y reconstruir las participaciones.
- */
+// Representa un cambio de futbolistas y conserva al jugador que sale y al que ingresa
+// para describir el cambio y reconstruir las participaciones.
+
 public class Substitution extends Event {
     private Player playerIn;
 

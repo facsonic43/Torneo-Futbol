@@ -8,11 +8,10 @@ import java.util.List;
 
 import java.io.Serializable;
 
-/**
- * Mantiene los datos del club, su entrenador, estadio y plantel de hasta 18 jugadores.
- * Calcula su valoración y potencia combinando habilidades del plantel, ranking, historial
- * y títulos del entrenador para orientar las simulaciones.
- */
+// Mantiene los datos del club, su entrenador, estadio y plantel de hasta 18 jugadores.
+// Calcula su valoración y potencia combinando habilidades del plantel, ranking, historial
+// y títulos del entrenador para orientar las simulaciones.
+
 public class Team implements Serializable{
     private String name;
     private Country country;
@@ -68,16 +67,13 @@ public class Team implements Serializable{
     public double getOverall(){
         if(squad.isEmpty()) return 0.0;
         double total=0.0;
-
         for(Player p : squad)
             total += p.getOverall();
-
         return total/squad.size();
     }
 
     public double getPrestigeRating() {
         double prestige = (internationalTitles * 5.0) + (nationalTitles * 2.0) + (editionsPlayed * 1.0);
-
         return Math.min(100.0, prestige);
     }
 
@@ -88,7 +84,6 @@ public class Team implements Serializable{
         double coachRating = Math.min(100.0, this.coach.getTitlesObtained() * 5.0);
         double totalPower = (squadRating    * 0.50) + (prestigeRating * 0.25)
                 + (coachRating    * 0.15) + (rankingRating  * 0.10);
-
         return Math.min(100.0, Math.max(0.0, totalPower));
     }
 }

@@ -14,10 +14,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Comprueba el sorteo de los cuatro grupos, la generación y simulación de sus 24 partidos,
- * los dos clasificados por grupo y las estadísticas de la fase.
- */
+// Comprueba el sorteo de los cuatro grupos, la generación y simulación de sus 24 partidos,
+// los dos clasificados por grupo y las estadísticas de la fase.
+
 public class GroupStageSimulationTest {
     @Test
     void groupStageShouldGenerateAndSimulateMatches() {
@@ -37,7 +36,6 @@ public class GroupStageSimulationTest {
             assertEquals(4, group.getStandings().size());
             assertEquals(2, group.getQualifiedTeams().size());
             totalMatches += group.getMatches().size();
-
             for (GroupMatch match : group.getMatches()) {
                 assertTrue(match.isPlayed());
                 assertNotNull(match.getReferee());
@@ -48,7 +46,6 @@ public class GroupStageSimulationTest {
                 assertEquals(11, match.getAwayStarters().size());
             }
         }
-
         assertEquals(24, totalMatches);
     }
 

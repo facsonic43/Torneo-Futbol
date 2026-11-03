@@ -21,9 +21,8 @@ import static gui.TableCells.createRankBadgeCell;
 import static gui.TableCells.createBoldCell;
 import static gui.TableCells.createHighlightStatCell;
 
-/**
- * Presenta los árbitros del torneo, su identificación, experiencia y partidos dirigidos.
- */
+// Presenta los árbitros del torneo, su identificación, experiencia y partidos dirigidos.
+
 public class RefereesReportView extends ReportView {
     public RefereesReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
             Label selectedReportTitle, Node reportsPane) {
@@ -67,12 +66,11 @@ public class RefereesReportView extends ReportView {
             for (Referee ref : tournament.getReferees()) {
                 String nat = ref.getNationality() != null ? ref.getNationality().getName() : "-";
                 totalYears += ref.getYearsOfficiated();
-                list.add(new RefereeReportEntry(ref.getName(), nat, ref.getBirthDate(),
-                        ref.getIdType() != null ? ref.getIdType().toString() : "-", ref.getIdNumber(),
-                        ref.getYearsOfficiated(), ref.getMatchesOfficiated()));
+                list.add(new RefereeReportEntry(ref.getName(), nat, ref.getBirthDate(), ref.getIdType() != null
+                        ? ref.getIdType().toString() : "-", ref.getIdNumber(), ref.getYearsOfficiated(),
+                        ref.getMatchesOfficiated()));
             }
         }
-
         list.sort(Comparator.comparingInt(RefereeReportEntry::getMatchesOfficiated).reversed());
         table.getItems().setAll(list);
         double avgExp = !list.isEmpty() ? (double) totalYears / list.size() : 0.0;

@@ -21,10 +21,9 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Comprueba la simulación completa del campeonato, sus 37 partidos y el campeón.
- * Verifica árbitros, estadios, incidencias, estadísticas y los criterios de las eliminatorias.
- */
+// Comprueba la simulación completa del campeonato, sus 37 partidos y el campeón.
+// Verifica árbitros, estadios, incidencias, estadísticas y los criterios de las eliminatorias.
+
 public class TournamentSimulationTest {
     @Test
     void fullTournamentShouldFinishCorrectly() {
@@ -70,14 +69,8 @@ public class TournamentSimulationTest {
         TournamentData data = loader.load("torneo.json");
         Team home = data.getTeams().get(0);
         Team away = data.getTeams().get(1);
-        FinalMatch match = new FinalMatch(
-                        home,
-                        away,
-                        data.getReferees().get(0),
-                        new Stadium("Penalty Test Stadium", 1),
-                        java.time.LocalDate.now()
-                );
-
+        FinalMatch match = new FinalMatch(home, away, data.getReferees().get(0), new Stadium("Penalty Test Stadium", 1),
+                java.time.LocalDate.now());
         List<Player> homePlayers = new ArrayList<>(home.getSquad().subList(0, 11));
         List<Player> awayPlayers = new ArrayList<>(away.getSquad().subList(0, 11));
         int goalsBefore = countPlayerGoals(data.getTeams());
@@ -89,11 +82,9 @@ public class TournamentSimulationTest {
         assertNotNull(match.getAwayPenalties());
         assertNotEquals(match.getHomePenalties(), match.getAwayPenalties());
         boolean penaltyEventFound = false;
-
         if (!match.getPenaltyKicks().isEmpty()) {
             penaltyEventFound = true;
         }
-
         assertTrue(penaltyEventFound);
     }
 
@@ -103,11 +94,9 @@ public class TournamentSimulationTest {
         Team home = data.getTeams().get(0);
         Team away = data.getTeams().get(1);
         boolean tiedFinalFound = false;
-
         for (long seed = 0; seed < 100 && !tiedFinalFound; seed++) {
             FinalMatch match = new FinalMatch(home, away, null, null, LocalDate.now());
             new MatchSimulator(seed).simulateMatch(match);
-
             if (match.getHomeGoals() == match.getAwayGoals()) {
                 assertNotNull(match.getHomePenalties());
                 assertNotNull(match.getAwayPenalties());
@@ -116,7 +105,6 @@ public class TournamentSimulationTest {
                 tiedFinalFound = true;
             }
         }
-
         assertTrue(tiedFinalFound, "Expected to find a tied final within the deterministic seed range.");
     }
 
@@ -128,26 +116,13 @@ public class TournamentSimulationTest {
         Team teamB = data.getTeams().get(1);
         Stadium firstStadium = new Stadium("First Leg Stadium", 1);
         Stadium secondStadium = new Stadium("Second Leg Stadium", 2);
-        model.match.FirstLegMatch firstLeg = new model.match.FirstLegMatch(
-                        teamA,
-                        teamB,
-                        data.getReferees().get(0),
-                        firstStadium,
-                        java.time.LocalDate.now()
-                );
-
+        model.match.FirstLegMatch firstLeg = new model.match.FirstLegMatch(teamA, teamB, data.getReferees().get(0),
+                firstStadium, java.time.LocalDate.now());
         firstLeg.setHomeGoals(1);
         firstLeg.setAwayGoals(0);
         firstLeg.setPlayed(true);
-        SecondLegMatch secondLeg = new SecondLegMatch(
-                        teamB,
-                        teamA,
-                        data.getReferees().get(1),
-                        secondStadium,
-                        java.time.LocalDate.now().plusDays(7),
-                        firstLeg
-                );
-
+        SecondLegMatch secondLeg = new SecondLegMatch(teamB, teamA, data.getReferees().get(1), secondStadium,
+                java.time.LocalDate.now().plusDays(7), firstLeg);
         secondLeg.setHomeGoals(2);
         secondLeg.setAwayGoals(1);
         secondLeg.setPlayed(true);
@@ -160,21 +135,17 @@ public class TournamentSimulationTest {
 
     private List<Stadium> createTestStadiums() {
         List<Stadium> stadiums = new ArrayList<>();
-
         for (int i = 1; i <= 16; i++) {
             stadiums.add(new Stadium( "Test Stadium " + i, i ));
         }
-
         return stadiums;
     }
 
     private int countGroupMatches(List<Group> groups) {
         int total = 0;
-
         for (Group group : groups) {
             total += group.getMatches().size();
         }
-
         return total;
     }
 
@@ -212,18 +183,15 @@ public class TournamentSimulationTest {
         for (SecondLegMatch match : tournament.getQuarterFinalSecondLegs()) {
             assertNotNull(match.getWinner());
         }
-
         for (SecondLegMatch match : tournament.getSemiFinalSecondLegs()) {
             assertNotNull(match.getWinner());
         }
-
         assertNotNull(tournament.getFinalMatch().getWinner());
     }
 
     private void validateKnockoutStadiums(List<Match> matches) {
         Set<String> stadiumNames = new HashSet<>();
         int knockoutMatches = 0;
-
         for (Match match : matches) {
             if (match.isKnockout()) {
                 knockoutMatches++;
@@ -231,14 +199,12 @@ public class TournamentSimulationTest {
                 stadiumNames.add(match.getStadium().getName());
             }
         }
-
         assertEquals(13, knockoutMatches);
         assertEquals(13, stadiumNames.size());
     }
 
     private int countScorerGoalsFromEvents(List<Match> matches) {
         int goals = 0;
-
         for (Match match : matches) {
             for (Goal goal : match.getGoals()) {
                 if (!goal.isOwnGoal()) {
@@ -246,19 +212,16 @@ public class TournamentSimulationTest {
                 }
             }
         }
-
         return goals;
     }
 
     private int countPlayerGoals(List<Team> teams) {
         int goals = 0;
-
         for (Team team : teams) {
             for (Player player : team.getSquad()) {
                 goals += player.getGoals();
             }
         }
-
         return goals;
     }
 }

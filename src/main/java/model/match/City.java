@@ -1,8 +1,7 @@
 package model.match;
 
-/**
- * Representa una ciudad con su identificador, nombre y país para administrar las sedes de los estadios.
- */
+// Representa una ciudad con su identificador, nombre y país para administrar las sedes de los estadios.
+
 public class City {
     private int id;
     private String name;

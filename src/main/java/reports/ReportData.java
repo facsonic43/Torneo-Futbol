@@ -10,11 +10,10 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-/**
- * Agrupa participantes, zonas, partidos y datos adicionales utilizados por los reportes.
- * Incluye cada encuentro una sola vez y recupera perfiles opcionales del archivo inicial
- * sin cargar resultados ni ejecutar simulaciones.
- */
+// Agrupa participantes, zonas, partidos y datos adicionales utilizados por los reportes.
+// Incluye cada encuentro una sola vez y recupera perfiles opcionales del archivo inicial
+// sin cargar resultados ni ejecutar simulaciones.
+
 public final class ReportData {
     private final TournamentData participants;
     private final List<Group> groups = new ArrayList<>();

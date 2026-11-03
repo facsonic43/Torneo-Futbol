@@ -7,9 +7,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
 import model.participant.Team;
 
-/**
- * Muestra el cuadro eliminatorio del campeonato dentro de la pantalla de reportes.
- */
+// Muestra el cuadro eliminatorio del campeonato dentro de la pantalla de reportes.
+
 public class BracketReportView extends ReportView {
     private final BracketSection bracketSection;
 
