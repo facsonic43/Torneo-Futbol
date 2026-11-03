@@ -234,7 +234,7 @@ class MatchForfeitTest {
         assertEquals(10, second.getWeightedGoals(a));
         assertEquals(3, second.getWeightedGoals(b));
         assertSame(a, second.getWinner());
-        assertEquals(ResolutionCriterion.WEIGHTED_GOAL_DIFFERENCE, second.getResolutionCriterion());
+        assertEquals(ResolutionCriterion.AGGREGATE_GOALS, second.getResolutionCriterion());
         assertTrue(second.getEvents().isEmpty());
     }
 

@@ -74,6 +74,50 @@ class MatchResolutionCriteriaTest {
     }
 
     @Test
+    void aggregateWinAndAwayGoalsWinHaveDifferentDescriptions() {
+        SecondLegMatch aggregate = secondLeg(firstLeg(3, 0), 1, 0);
+        SecondLegMatch awayGoals = secondLeg(firstLeg(1, 0), 2, 1);
+
+        assertSame(a, aggregate.getWinner());
+        assertEquals(3, aggregate.getSeriesPoints(a));
+        assertEquals(3, aggregate.getSeriesPoints(b));
+        assertEquals(3, aggregate.getAggregateGoals(a));
+        assertEquals(1, aggregate.getAggregateGoals(b));
+        assertCriterion(aggregate, ResolutionCriterion.AGGREGATE_GOALS);
+        assertEquals("BY AGGREGATE GOALS", aggregate.getResolutionCriterion().getDescription());
+        assertFalse(aggregate.requiresTieBreak());
+
+        assertSame(a, awayGoals.getWinner());
+        assertEquals(2, awayGoals.getAggregateGoals(a));
+        assertEquals(2, awayGoals.getAggregateGoals(b));
+        assertCriterion(awayGoals, ResolutionCriterion.AWAY_GOALS);
+        assertEquals("BY AWAY GOALS", awayGoals.getResolutionCriterion().getDescription());
+        assertFalse(awayGoals.requiresTieBreak());
+    }
+
+    @Test
+    void descriptionsAlsoIdentifyTheWinnerWhenFirstLegAwayTeamAdvances() {
+        SecondLegMatch aggregate = secondLeg(firstLeg(0, 3), 0, 1);
+        SecondLegMatch awayGoals = secondLeg(firstLeg(2, 1), 1, 0);
+
+        assertSame(b, aggregate.getWinner());
+        assertCriterion(aggregate, ResolutionCriterion.AGGREGATE_GOALS);
+        assertSame(b, awayGoals.getWinner());
+        assertCriterion(awayGoals, ResolutionCriterion.AWAY_GOALS);
+    }
+
+    @Test
+    void weightedDrawStillRequiresPenaltiesEvenWithAnAggregateAdvantage() {
+        SecondLegMatch second = secondLeg(firstLeg(4, 2), 2, 1);
+
+        assertEquals(5, second.getAggregateGoals(a));
+        assertEquals(4, second.getAggregateGoals(b));
+        assertEquals(6, second.getWeightedGoals(a));
+        assertEquals(6, second.getWeightedGoals(b));
+        assertUnresolved(second);
+    }
+
+    @Test
     void weightedGoalDifferenceTakesPriorityOverAnyRecordedPenalties() {
         FirstLegMatch first = firstLeg(4, 2);
         SecondLegMatch second = secondLeg(first, 1, 0);

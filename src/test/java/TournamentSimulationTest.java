@@ -155,7 +155,7 @@ public class TournamentSimulationTest {
         assertEquals(3, secondLeg.getSeriesPoints( teamB ));
         assertTrue(secondLeg.getWeightedGoalDifference( teamA ) > 0);
         assertEquals(teamA, secondLeg.getWinner());
-        assertEquals("WEIGHTED_GOAL_DIFFERENCE", secondLeg.getResolutionCriteria());
+        assertEquals("AWAY_GOALS", secondLeg.getResolutionCriteria());
     }
 
     private List<Stadium> createTestStadiums() {

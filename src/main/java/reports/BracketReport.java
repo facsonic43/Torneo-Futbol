@@ -201,6 +201,10 @@ public final class BracketReport {
             resolution = switch (second.getResolutionCriterion()) {
                 case SERIES_POINTS -> "Points across both legs: " + second.getSeriesPoints(home)
                         + " - " + second.getSeriesPoints(away);
+                case AGGREGATE_GOALS -> "Aggregate goals: " + second.getAggregateGoals(home)
+                        + " - " + second.getAggregateGoals(away);
+                case AWAY_GOALS -> "Away goals break aggregate tie: " + second.getAggregateGoals(home)
+                        + " - " + second.getAggregateGoals(away);
                 case WEIGHTED_GOAL_DIFFERENCE -> "Goal difference with away goals doubled: "
                         + second.getWeightedGoals(home) + " - " + second.getWeightedGoals(away);
                 case PENALTIES -> "Penalty shootout";

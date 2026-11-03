@@ -9,6 +9,8 @@ import java.util.Optional;
 /**
  * Resuelve una serie una vez jugadas la ida y la vuelta, incluidos los resultados administrativos.
  * Compara primero los puntos y luego los goles ponderados, contando doble los de visitante.
+ * Distingue si el ganador ya tenía ventaja global, si desempató por goles visitantes
+ * o si la ponderación revirtió la ventaja global, sin cambiar la regla de clasificación.
  * Sólo una igualdad en ambos criterios requiere penales; una tanda incompleta no define ganador.
  * Si la vuelta se pierde sin jugar y la serie sigue empatada, queda pendiente de resolución.
  */
@@ -40,7 +42,8 @@ public class SecondLegMatch extends Match {
     public Team getWinner() {
         return switch (getResolutionCriterion()) {
             case SERIES_POINTS -> getSeriesPoints(homeTeam) > getSeriesPoints(awayTeam) ? homeTeam : awayTeam;
-            case WEIGHTED_GOAL_DIFFERENCE -> getWeightedGoalDifference(homeTeam) > 0 ? homeTeam : awayTeam;
+            case AGGREGATE_GOALS, AWAY_GOALS, WEIGHTED_GOAL_DIFFERENCE ->
+                    getWeightedGoalDifference(homeTeam) > 0 ? homeTeam : awayTeam;
             case PENALTIES -> getPenaltyWinner();
             default -> null;
         };
@@ -54,7 +57,15 @@ public class SecondLegMatch extends Match {
         if (getSeriesPoints(homeTeam) != getSeriesPoints(awayTeam)) {
             return ResolutionCriterion.SERIES_POINTS;
         }
-        if (getWeightedGoalDifference(homeTeam) != 0) {
+        int weightedDifference = getWeightedGoalDifference(homeTeam);
+        if (weightedDifference != 0) {
+            int aggregateDifference = getAggregateGoals(homeTeam) - getAggregateGoals(awayTeam);
+            if (aggregateDifference == 0) {
+                return ResolutionCriterion.AWAY_GOALS;
+            }
+            if (Integer.signum(aggregateDifference) == Integer.signum(weightedDifference)) {
+                return ResolutionCriterion.AGGREGATE_GOALS;
+            }
             return ResolutionCriterion.WEIGHTED_GOAL_DIFFERENCE;
         }
         return getPenaltyWinner() == null ? ResolutionCriterion.UNRESOLVED : ResolutionCriterion.PENALTIES;
@@ -62,6 +73,20 @@ public class SecondLegMatch extends Match {
 
     public int getSeriesPoints(Team team) {
         return getMatchPoints(firstLeg, team) + getMatchPoints(this, team);
+    }
+
+    public int getAggregateGoals(Team team) {
+        return getGoals(firstLeg, team) + getGoals(this, team);
+    }
+
+    private int getGoals(Match match, Team team) {
+        if (!match.isPlayed()) {
+            return 0;
+        }
+        if (match.getHomeTeam() == team) {
+            return match.getHomeGoals();
+        }
+        return match.getAwayTeam() == team ? match.getAwayGoals() : 0;
     }
 
     public int getWeightedGoals(Team team) {

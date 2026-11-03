@@ -26,6 +26,27 @@ class BracketResolutionConsistencyTest {
     private static final LocalDate MATCH_DATE = LocalDate.of(2026, 10, 1);
 
     @Test
+    void reportDistinguishesAggregateVictoryFromAwayGoalsTieBreak() {
+        ReportData data = completedGroups();
+        BracketReport.BracketNode quarter = new BracketReport(data).getNodes().getFirst();
+        FirstLegMatch first = firstLeg(quarter.homeTeam(), quarter.awayTeam(), 3, 0);
+        SecondLegMatch second = new SecondLegMatch(quarter.awayTeam(), quarter.homeTeam(),
+                null, null, MATCH_DATE.plusDays(7), first);
+        score(second, 1, 0);
+        data.addMatch(second);
+
+        BracketReport.BracketNode aggregate = new BracketReport(data).getNodes().getFirst();
+        assertSame(quarter.homeTeam(), aggregate.winner());
+        assertEquals("Aggregate goals: 3 - 1", aggregate.resolution());
+
+        score(first, 1, 0);
+        score(second, 2, 1);
+        BracketReport.BracketNode awayGoals = new BracketReport(data).getNodes().getFirst();
+        assertSame(quarter.homeTeam(), awayGoals.winner());
+        assertEquals("Away goals break aggregate tie: 2 - 2", awayGoals.resolution());
+    }
+
+    @Test
     void forfeitedFinalPublishesAdministrativeCriterionAndActualChampion() {
         ReportData data = tournamentAwaitingFinal();
         BracketReport.BracketNode pending = new BracketReport(data).getNodes().get(6);
@@ -78,10 +99,10 @@ class BracketResolutionConsistencyTest {
 
         BracketReport.BracketNode result = new BracketReport(data).getNodes().getFirst();
 
-        assertEquals(ResolutionCriterion.WEIGHTED_GOAL_DIFFERENCE, second.getResolutionCriterion());
+        assertEquals(ResolutionCriterion.AGGREGATE_GOALS, second.getResolutionCriterion());
         assertSame(second.getWinner(), result.winner());
         assertSame(quarter.homeTeam(), result.winner());
-        assertEquals("Goal difference with away goals doubled: 10 - 3", result.resolution());
+        assertEquals("Aggregate goals: 10 - 3", result.resolution());
     }
 
     @Test
