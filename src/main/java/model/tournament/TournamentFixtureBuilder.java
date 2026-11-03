@@ -13,10 +13,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-/*
- * Construye el fixture de grupos, cuartos, semifinales y final.
- * El estado del torneo (fechas, árbitros, estadios, listas) sigue en Tournament;
- * esta clase solamente concentra las reglas de armado de los partidos.
+/**
+ * Construye el sorteo y el calendario de las fases del campeonato.
+ * Distribuye equipos por ranking, arma los cruces y asigna fechas, árbitros habilitados y estadios disponibles.
  */
 class TournamentFixtureBuilder {
     private Tournament tournament;
@@ -31,15 +30,11 @@ class TournamentFixtureBuilder {
         }
 
         List<Team> orderedTeams = new ArrayList<>(tournament.getTeams());
-
         orderedTeams.sort( Comparator.comparingInt(Team::getRanking) );
-
-        // Cuatro bombos por ranking: cada grupo recibe un equipo de cada bombo.
         List<List<Team>> pots = new ArrayList<>();
 
         for (int pot = 0; pot < 4; pot++) {
             List<Team> potTeams = new ArrayList<>( orderedTeams.subList(pot * 4, pot * 4 + 4) );
-
             Collections.shuffle(potTeams);
             pots.add(potTeams);
         }
@@ -60,11 +55,8 @@ class TournamentFixtureBuilder {
     }
 
     void generateGroupMatches(List<Stadium> stadiums) {
-
         int stadiumIndex = 0;
-
         LocalDate firstMatchDate = LocalDate.now();
-
         int[][] pairingsByRound = {
                 {0, 1, 2, 3},
                 {0, 2, 1, 3},
@@ -74,78 +66,47 @@ class TournamentFixtureBuilder {
         for (Group group : tournament.getGroups()) {
             List<Team> groupTeams = group.getTeams();
 
-            for (int round = 0;
-                 round < pairingsByRound.length;
-                 round++) {
-
+            for (int round = 0; round < pairingsByRound.length; round++) {
                 int[] pairings = pairingsByRound[round];
 
-                for (int pairing = 0;
-                     pairing < pairings.length;
-                     pairing += 2) {
-
+                for (int pairing = 0; pairing < pairings.length; pairing += 2) {
                     Team home = groupTeams.get( pairings[pairing] );
-
                     Team away = groupTeams.get( pairings[pairing + 1] );
-
                     Referee referee = tournament.selectReferee( home, away );
-
                     Stadium stadium;
 
                     if (stadiums.isEmpty()) {
                         stadium = new Stadium( "Stadium of " + home.getName(), 1 );
                     } else {
                         stadium = stadiums.get( stadiumIndex % stadiums.size() );
-
                         stadiumIndex++;
                     }
 
-                    GroupMatch match =
-                            new GroupMatch(
-                                    home,
-                                    away,
-                                    referee,
-                                    stadium,
-                                    firstMatchDate.plusDays(round) );
-
+                    GroupMatch match = new GroupMatch(home, away, referee, stadium, firstMatchDate.plusDays(round));
                     group.addMatch(match);
                 }
             }
         }
     }
 
-    void generateQuarterFinals(
-            List<Stadium> stadiums) {
-
+    void generateQuarterFinals(List<Stadium> stadiums) {
         if (tournament.getGroups().size() != 4) {
             throw new IllegalStateException( "The four groups must exist before generating quarter-finals." );
         }
 
         tournament.prepareKnockoutStadiums( stadiums );
-
         tournament.getQuarterFinalFirstLegs().clear();
         tournament.getQuarterFinalSecondLegs().clear();
-
         Team a1 = tournament.getGroups().get(0).getQualifiedTeams().get(0);
-
         Team a2 = tournament.getGroups().get(0).getQualifiedTeams().get(1);
-
         Team b1 = tournament.getGroups().get(1).getQualifiedTeams().get(0);
-
         Team b2 = tournament.getGroups().get(1).getQualifiedTeams().get(1);
-
         Team c1 = tournament.getGroups().get(2).getQualifiedTeams().get(0);
-
         Team c2 = tournament.getGroups().get(2).getQualifiedTeams().get(1);
-
         Team d1 = tournament.getGroups().get(3).getQualifiedTeams().get(0);
-
         Team d2 = tournament.getGroups().get(3).getQualifiedTeams().get(1);
-
         LocalDate firstLegDate = getLastGroupDate().plusDays(7);
-
         LocalDate secondLegDate = firstLegDate.plusDays(7);
-
         addTwoLegSeries(
                 a1,
                 d2,
@@ -181,20 +142,13 @@ class TournamentFixtureBuilder {
         }
 
         Team winner1 = requireWinner( tournament.getQuarterFinalSecondLegs().get(0) );
-
         Team winner2 = requireWinner( tournament.getQuarterFinalSecondLegs().get(1) );
-
         Team winner3 = requireWinner( tournament.getQuarterFinalSecondLegs().get(2) );
-
         Team winner4 = requireWinner( tournament.getQuarterFinalSecondLegs().get(3) );
-
         tournament.getSemiFinalFirstLegs().clear();
         tournament.getSemiFinalSecondLegs().clear();
-
         LocalDate firstLegDate = tournament.getQuarterFinalSecondLegs().get(0).getMatchDate().plusDays(7);
-
         LocalDate secondLegDate = firstLegDate.plusDays(7);
-
         addTwoLegSeries(
                 winner1,
                 winner2,
@@ -216,18 +170,13 @@ class TournamentFixtureBuilder {
         }
 
         Team finalist1 = requireWinner( tournament.getSemiFinalSecondLegs().get(0) );
-
         Team finalist2 = requireWinner( tournament.getSemiFinalSecondLegs().get(1) );
-
         LocalDate finalDate = tournament.getSemiFinalSecondLegs().get(0).getMatchDate().plusDays(7);
 
         return new FinalMatch(
                 finalist1,
                 finalist2,
-                tournament.selectReferee(
-                        finalist1,
-                        finalist2
-                ),
+                tournament.selectReferee(finalist1, finalist2),
                 tournament.nextKnockoutStadium(), finalDate );
     }
 
@@ -238,29 +187,19 @@ class TournamentFixtureBuilder {
             LocalDate secondLegDate,
             List<FirstLegMatch> firstLegMatches,
             List<SecondLegMatch> secondLegMatches) {
-
-        FirstLegMatch firstLeg =
-                new FirstLegMatch(
+        FirstLegMatch firstLeg = new FirstLegMatch(
                         firstLegHome,
                         firstLegAway,
-                        tournament.selectReferee(
-                                firstLegHome,
-                                firstLegAway
-                        ),
+                        tournament.selectReferee(firstLegHome, firstLegAway),
                         tournament.nextKnockoutStadium(), firstLegDate );
 
-        SecondLegMatch secondLeg =
-                new SecondLegMatch(
+        SecondLegMatch secondLeg = new SecondLegMatch(
                         firstLegAway,
                         firstLegHome,
-                        tournament.selectReferee(
-                                firstLegAway,
-                                firstLegHome
-                        ),
+                        tournament.selectReferee(firstLegAway, firstLegHome),
                         tournament.nextKnockoutStadium(), secondLegDate, firstLeg );
 
         firstLegMatches.add( firstLeg );
-
         secondLegMatches.add( secondLeg );
     }
 
@@ -268,12 +207,8 @@ class TournamentFixtureBuilder {
         LocalDate lastDate = LocalDate.now();
 
         for (Group group : tournament.getGroups()) {
-            for (GroupMatch match :
-                    group.getMatches()) {
-
-                if (match.getMatchDate()
-                        .isAfter(lastDate)) {
-
+            for (GroupMatch match : group.getMatches()) {
+                if (match.getMatchDate().isAfter(lastDate)) {
                     lastDate = match.getMatchDate();
                 }
             }
@@ -282,9 +217,7 @@ class TournamentFixtureBuilder {
         return lastDate;
     }
 
-    private Team requireWinner(
-            SecondLegMatch match) {
-
+    private Team requireWinner(SecondLegMatch match) {
         Team winner = match.getWinner();
 
         if (winner == null) {
@@ -293,5 +226,4 @@ class TournamentFixtureBuilder {
 
         return winner;
     }
-
 }

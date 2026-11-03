@@ -4,10 +4,9 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/*
- * Representa a un arquero con sus habilidades específicas.
- * Además guarda la cantidad de goles recibidos durante el torneo para utilizarla
- * posteriormente en los reportes estadísticos de jugadores por posición.
+/**
+ * Representa al arquero con sus habilidades específicas y calcula su valoración.
+ * Registra los goles recibidos para las estadísticas y reportes del campeonato.
  */
 public class Goalkeeper extends Player {
     private int speed;

@@ -12,11 +12,14 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/**
+ * Verifica los filtros y valores predeterminados de los reportes,
+ * la coherencia entre jugador y posición y el directorio de fotografías obligatorio.
+ */
 class ReportOptionsTest {
     @Test
     void defaultsIncludeEveryPlayerAndUseThePersonImagesDirectory() {
         ReportOptions options = ReportOptions.defaults();
-
         assertNull(options.position());
         assertNull(options.player());
         assertEquals(Path.of("Images", "Person"), options.photosDirectory());
@@ -26,7 +29,6 @@ class ReportOptionsTest {
     void selectedPlayerCanBeExportedWithAllPositions() {
         Player player = player(Position.FORWARD);
         ReportOptions options = new ReportOptions(null, player, Path.of("player-images"));
-
         assertSame(player, options.player());
         assertEquals(Path.of("player-images"), options.photosDirectory());
     }
@@ -34,7 +36,6 @@ class ReportOptionsTest {
     @Test
     void selectedPositionCanIncludeEveryMatchingPlayer() {
         ReportOptions options = new ReportOptions(Position.DEFENDER, null, Path.of("photos"));
-
         assertEquals(Position.DEFENDER, options.position());
         assertNull(options.player());
     }
@@ -43,7 +44,6 @@ class ReportOptionsTest {
     void selectedPlayerMustMatchTheSelectedPosition() {
         Player goalkeeper = player(Position.GOALKEEPER);
         ReportOptions options = new ReportOptions(Position.GOALKEEPER, goalkeeper, Path.of("photos"));
-
         assertSame(goalkeeper, options.player());
         assertThrows(IllegalArgumentException.class,
                 () -> new ReportOptions(Position.FORWARD, goalkeeper, Path.of("photos")));
@@ -55,8 +55,7 @@ class ReportOptionsTest {
     }
 
     private static Player player(Position position) {
-        return new Player("Test player", 10000001, "DU", LocalDate.of(2000, 1, 1), null,
-                0, 0, 0, 0, 0, 0) {
+        return new Player("Test player", 10000001, "DU", LocalDate.of(2000, 1, 1), null, 0, 0, 0, 0, 0, 0) {
             @Override
             public double getOverall() { return 0; }
 

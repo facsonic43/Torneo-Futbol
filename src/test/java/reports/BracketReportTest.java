@@ -12,6 +12,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Comprueba la clasificación de grupos y la construcción del cuadro hasta la final.
+ * Verifica los cruces, los criterios de desempate y los casos con información pendiente o inválida.
+ */
 class BracketReportTest {
     @Test
     void undrawnTournamentHasNoInventedQualifiersOrChampion() {
@@ -120,12 +124,10 @@ class BracketReportTest {
     void weightedAwayGoalsResolveTiesAndPenaltiesResolveEqualWeightedGoals() {
         ReportData data = completedGroups();
         BracketReport.BracketNode quarter = new BracketReport(data).getNodes().get(0);
-        // Equal points; ordinary aggregate favors A 4-3, but weighted goals favor B 5-4.
         addTie(data, quarter.homeTeam(), quarter.awayTeam(), 4, 2, 1, 0);
         BracketReport.BracketNode resolved = new BracketReport(data).getNodes().get(0);
         assertSame(quarter.awayTeam(), resolved.winner());
         assertTrue(resolved.resolution().contains("away goals doubled"));
-
         BracketReport.BracketNode other = new BracketReport(data).getNodes().get(1);
         SecondLegMatch returnLeg = addTie(data, other.homeTeam(), other.awayTeam(), 0, 0, 0, 0);
         assertNull(new BracketReport(data).getNodes().get(1).winner());
@@ -187,7 +189,7 @@ class BracketReportTest {
         FirstLegMatch first = firstLeg(home, away, firstHome, firstAway);
         SecondLegMatch second = new SecondLegMatch(away, home, null, null, LocalDate.of(2026, 9, 20), first);
         score(second, secondHome, secondAway);
-        data.addMatch(second); // The registration also makes its first leg available to reports.
+        data.addMatch(second);
         return second;
     }
     private static void score(Match match, int hg, int ag) {

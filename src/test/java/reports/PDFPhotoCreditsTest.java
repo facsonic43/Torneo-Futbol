@@ -13,6 +13,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Comprueba que los créditos fotográficos se incluyan como archivo adjunto en el PDF
+ * y no agreguen páginas visibles a las credenciales.
+ */
 class PDFPhotoCreditsTest {
     @TempDir Path directory;
 

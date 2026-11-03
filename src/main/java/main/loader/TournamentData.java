@@ -5,9 +5,9 @@ import model.participant.Team;
 
 import java.util.List;
 
-
-// permite crear el torneo y despues llamar al getTeams y getReferees
-// agrupa las listas de equipos y arbitros para leer el archivo una sola vez
+/**
+ * Agrupa los equipos y árbitros cargados para crear el torneo sin volver a leer el archivo inicial.
+ */
 public class TournamentData {
     private List<Team> teams;
     private List<Referee> referees;

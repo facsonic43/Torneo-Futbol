@@ -20,12 +20,11 @@ import service.TournamentSessionService;
 import java.sql.SQLException;
 import java.util.List;
 
-/*
- * Administra ciudades y estadios almacenados en PostgreSQL.
- * Las consultas SQL siguen delegadas a los DAO.
+/**
+ * Controla la administración de ciudades y estadios desde la interfaz.
+ * Valida las entradas y comunica los resultados de las operaciones con la base de datos.
  */
 public class DatabaseController {
-
     @FXML
     private ListView<City> cityList;
 
@@ -60,505 +59,226 @@ public class DatabaseController {
 
     @FXML
     public void initialize() {
+        cityDAO = new CityDAO();
+        stadiumDAO = new StadiumDAO();
 
-        cityDAO =
-                new CityDAO();
+        cityList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                showCity(newValue);
+            }
+        });
 
-        stadiumDAO =
-                new StadiumDAO();
-
-        cityList
-                .getSelectionModel()
-                .selectedItemProperty()
-                .addListener(
-                        (observable,
-                         oldValue,
-                         newValue) -> {
-
-                            if (newValue != null) {
-
-                                showCity(
-                                        newValue
-                                );
-                            }
-                        }
-                );
-
-        stadiumList
-                .getSelectionModel()
-                .selectedItemProperty()
-                .addListener(
-                        (observable,
-                         oldValue,
-                         newValue) -> {
-
-                            if (newValue != null) {
-
-                                showStadium(
-                                        newValue
-                                );
-                            }
-                        }
-                );
+        stadiumList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                showStadium(newValue);
+            }
+        });
     }
 
-    public void setSession(
-            TournamentSessionService session) {
-
-        this.session =
-                session;
-
+    public void setSession(TournamentSessionService session) {
+        this.session = session;
         refreshData();
     }
 
     public void refreshFromMain() {
-
         refreshData();
     }
 
     private void refreshData() {
-
         try {
-
-            List<City> cities =
-                    cityDAO.findAll();
-
-            List<Stadium> stadiums =
-                    stadiumDAO.findAll();
-
-            cityList
-                    .getItems()
-                    .setAll(
-                            cities
-                    );
-
-            stadiumCityCombo
-                    .getItems()
-                    .setAll(
-                            cities
-                    );
-
-            stadiumList
-                    .getItems()
-                    .setAll(
-                            stadiums
-                    );
-
-            cityCount.setText(
-                    cities.size()
-                            + " CITIES"
-            );
-
-            stadiumCount.setText(
-                    stadiums.size()
-                            + " STADIUMS"
-            );
-
-            databaseStatus.setText(
-                    "Database connected."
-            );
-
+            List<City> cities = cityDAO.findAll();
+            List<Stadium> stadiums = stadiumDAO.findAll();
+            cityList.getItems().setAll(cities);
+            stadiumCityCombo.getItems().setAll(cities);
+            stadiumList.getItems().setAll(stadiums);
+            cityCount.setText(cities.size() + " CITIES");
+            stadiumCount.setText(stadiums.size() + " STADIUMS");
+            databaseStatus.setText("Database connected.");
         } catch (SQLException exception) {
-
-            showDatabaseError(
-                    "Could not load cities and stadiums",
-                    exception
-            );
+            showDatabaseError("Could not load cities and stadiums", exception);
         }
     }
 
     @FXML
     private void handleAddCity() {
+        String name = cityNameField.getText().trim();
+        String country = cityCountryField.getText().trim();
 
-        String name =
-                cityNameField
-                        .getText()
-                        .trim();
-
-        String country =
-                cityCountryField
-                        .getText()
-                        .trim();
-
-        if (name.isEmpty()
-                || country.isEmpty()) {
-
-            databaseStatus.setText(
-                    "Complete city name and country."
-            );
-
+        if (name.isEmpty() || country.isEmpty()) {
+            databaseStatus.setText("Complete city name and country.");
             return;
         }
 
         try {
-
-            City city =
-                    new City(
-                            name,
-                            country
-                    );
-
-            cityDAO.add(
-                    city
-            );
-
-            databaseStatus.setText(
-                    "City added successfully."
-            );
-
+            City city = new City(name, country);
+            cityDAO.add(city);
+            databaseStatus.setText("City added successfully.");
             clearCity();
-
             refreshData();
-
         } catch (SQLException | RuntimeException exception) {
-
-            showDatabaseError(
-                    "Could not add the city",
-                    exception
-            );
+            showDatabaseError("Could not add the city", exception);
         }
     }
 
     @FXML
     private void handleUpdateCity() {
-
-        City selectedCity =
-                cityList
-                        .getSelectionModel()
-                        .getSelectedItem();
+        City selectedCity = cityList.getSelectionModel().getSelectedItem();
 
         if (selectedCity == null) {
-
-            databaseStatus.setText(
-                    "Select a city first."
-            );
-
+            databaseStatus.setText("Select a city first.");
             return;
         }
 
-        String name =
-                cityNameField
-                        .getText()
-                        .trim();
+        String name = cityNameField.getText().trim();
+        String country = cityCountryField.getText().trim();
 
-        String country =
-                cityCountryField
-                        .getText()
-                        .trim();
-
-        if (name.isEmpty()
-                || country.isEmpty()) {
-
-            databaseStatus.setText(
-                    "Complete city name and country."
-            );
-
+        if (name.isEmpty() || country.isEmpty()) {
+            databaseStatus.setText("Complete city name and country.");
             return;
         }
 
         try {
-
-            City updatedCity =
-                    new City(
-                            selectedCity.getId(),
-                            name,
-                            country
-                    );
-
-            cityDAO.update(
-                    updatedCity
-            );
-
-            databaseStatus.setText(
-                    "City updated successfully."
-            );
-
+            City updatedCity = new City(selectedCity.getId(), name, country);
+            cityDAO.update(updatedCity);
+            databaseStatus.setText("City updated successfully.");
             refreshData();
-
         } catch (SQLException | RuntimeException exception) {
-
-            showDatabaseError(
-                    "Could not update the city",
-                    exception
-            );
+            showDatabaseError("Could not update the city", exception);
         }
     }
 
     @FXML
     private void handleDeleteCity() {
-
-        City selectedCity =
-                cityList
-                        .getSelectionModel()
-                        .getSelectedItem();
+        City selectedCity = cityList.getSelectionModel().getSelectedItem();
 
         if (selectedCity == null) {
-
-            databaseStatus.setText(
-                    "Select a city first."
-            );
-
+            databaseStatus.setText("Select a city first.");
             return;
         }
 
         try {
-
-            cityDAO.delete(
-                    selectedCity.getId()
-            );
-
-            databaseStatus.setText(
-                    "City deleted successfully."
-            );
-
+            cityDAO.delete(selectedCity.getId());
+            databaseStatus.setText("City deleted successfully.");
             clearCity();
-
             refreshData();
-
         } catch (SQLException | RuntimeException exception) {
-
-            showDatabaseError(
-                    "Could not delete the city",
-                    exception
-            );
+            showDatabaseError("Could not delete the city", exception);
         }
     }
 
     @FXML
     private void handleAddStadium() {
+        String name = stadiumNameField.getText().trim();
+        City selectedCity = stadiumCityCombo.getValue();
 
-        String name =
-                stadiumNameField
-                        .getText()
-                        .trim();
-
-        City selectedCity =
-                stadiumCityCombo
-                        .getValue();
-
-        if (name.isEmpty()
-                || selectedCity == null) {
-
-            databaseStatus.setText(
-                    "Complete stadium name and city."
-            );
-
+        if (name.isEmpty() || selectedCity == null) {
+            databaseStatus.setText("Complete stadium name and city.");
             return;
         }
 
         try {
-
-            Stadium stadium =
-                    new Stadium(
-                            name,
-                            selectedCity.getId()
-                    );
-
-            stadiumDAO.add(
-                    stadium
-            );
-
-            databaseStatus.setText(
-                    "Stadium added successfully."
-            );
-
+            Stadium stadium = new Stadium(name, selectedCity.getId());
+            stadiumDAO.add(stadium);
+            databaseStatus.setText("Stadium added successfully.");
             clearStadium();
-
             refreshData();
-
             refreshTournamentStadiums();
-
         } catch (SQLException | RuntimeException exception) {
-
-            showDatabaseError(
-                    "Could not add the stadium",
-                    exception
-            );
+            showDatabaseError("Could not add the stadium", exception);
         }
     }
 
     @FXML
     private void handleUpdateStadium() {
-
-        Stadium selectedStadium =
-                stadiumList
-                        .getSelectionModel()
-                        .getSelectedItem();
-
-        City selectedCity =
-                stadiumCityCombo
-                        .getValue();
-
-        String name =
-                stadiumNameField
-                        .getText()
-                        .trim();
+        Stadium selectedStadium = stadiumList.getSelectionModel().getSelectedItem();
+        City selectedCity = stadiumCityCombo.getValue();
+        String name = stadiumNameField.getText().trim();
 
         if (selectedStadium == null) {
-
-            databaseStatus.setText(
-                    "Select a stadium first."
-            );
-
+            databaseStatus.setText("Select a stadium first.");
             return;
         }
 
-        if (name.isEmpty()
-                || selectedCity == null) {
-
-            databaseStatus.setText(
-                    "Complete stadium name and city."
-            );
-
+        if (name.isEmpty() || selectedCity == null) {
+            databaseStatus.setText("Complete stadium name and city.");
             return;
         }
 
         try {
-
-            Stadium updatedStadium =
-                    new Stadium(
-                            selectedStadium.getId(),
-                            name,
-                            selectedCity.getId()
-                    );
-
-            stadiumDAO.update(
-                    updatedStadium
-            );
-
-            databaseStatus.setText(
-                    "Stadium updated successfully."
-            );
-
+            Stadium updatedStadium = new Stadium(selectedStadium.getId(), name, selectedCity.getId());
+            stadiumDAO.update(updatedStadium);
+            databaseStatus.setText("Stadium updated successfully.");
             refreshData();
-
             refreshTournamentStadiums();
-
         } catch (SQLException | RuntimeException exception) {
-
-            showDatabaseError(
-                    "Could not update the stadium",
-                    exception
-            );
+            showDatabaseError("Could not update the stadium", exception);
         }
     }
 
     @FXML
     private void handleDeleteStadium() {
-
-        Stadium selectedStadium =
-                stadiumList
-                        .getSelectionModel()
-                        .getSelectedItem();
+        Stadium selectedStadium = stadiumList.getSelectionModel().getSelectedItem();
 
         if (selectedStadium == null) {
-
-            databaseStatus.setText(
-                    "Select a stadium first."
-            );
-
+            databaseStatus.setText("Select a stadium first.");
             return;
         }
 
         try {
-
-            stadiumDAO.delete(
-                    selectedStadium.getId()
-            );
-
-            databaseStatus.setText(
-                    "Stadium deleted successfully."
-            );
-
+            stadiumDAO.delete(selectedStadium.getId());
+            databaseStatus.setText("Stadium deleted successfully.");
             clearStadium();
-
             refreshData();
-
             refreshTournamentStadiums();
-
         } catch (SQLException | RuntimeException exception) {
-
-            showDatabaseError(
-                    "Could not delete the stadium",
-                    exception
-            );
+            showDatabaseError("Could not delete the stadium", exception);
         }
     }
 
     @FXML
     private void handleClearCity() {
-
         clearCity();
     }
 
     @FXML
     private void handleClearStadium() {
-
         clearStadium();
     }
 
-    private void showCity(
-            City city) {
-
-        cityNameField.setText(
-                city.getName()
-        );
-
-        cityCountryField.setText(
-                city.getCountry()
-        );
+    private void showCity(City city) {
+        cityNameField.setText(city.getName());
+        cityCountryField.setText(city.getCountry());
     }
 
-    private void showStadium(
-            Stadium stadium) {
+    private void showStadium(Stadium stadium) {
+        stadiumNameField.setText(stadium.getName());
 
-        stadiumNameField.setText(
-                stadium.getName()
-        );
-
-        for (City city :
-                stadiumCityCombo
-                        .getItems()) {
-
+        for (City city : stadiumCityCombo.getItems()) {
             if (city.getId()
                     == stadium.getCityId()) {
-
-                stadiumCityCombo.setValue(
-                        city
-                );
-
+                stadiumCityCombo.setValue(city);
                 return;
             }
         }
 
-        stadiumCityCombo.setValue(
-                null
-        );
+        stadiumCityCombo.setValue(null);
     }
 
     private void refreshTournamentStadiums() {
-
         if (session == null) {
             return;
         }
 
         try {
-
             session.refreshStadiums();
-
         } catch (Exception exception) {
-
-            showDatabaseError(
-                    "Stadiums were saved, but the tournament could not refresh",
-                    exception
-            );
+            showDatabaseError("Stadiums were saved, but the tournament could not refresh", exception);
         }
     }
 
     private void showDatabaseError(String title, Exception exception) {
         exception.printStackTrace();
         databaseStatus.setText("Database operation failed.");
-
         String message = exception.getMessage();
         if (message == null || message.isBlank()) {
             message = exception.getClass().getSimpleName();
@@ -567,11 +287,9 @@ public class DatabaseController {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Database error");
         dialog.setHeaderText(null);
-
         DialogPane pane = dialog.getDialogPane();
         pane.getButtonTypes().add(ButtonType.CLOSE);
         pane.setMinWidth(460);
-
         Scene scene = databaseStatus.getScene();
         if (scene != null) {
             dialog.initOwner(scene.getWindow());
@@ -582,54 +300,35 @@ public class DatabaseController {
             }
         }
         pane.getStyleClass().add("app-root");
-
         Button closeButton = (Button) pane.lookupButton(ButtonType.CLOSE);
         closeButton.setText("Cerrar");
         closeButton.getStyleClass().add("utility-button");
-
         Label errorType = new Label("DATABASE ERROR");
         errorType.getStyleClass().add("blocked-chip");
-
         Label heading = new Label(title);
         heading.getStyleClass().add("section-title");
         heading.setWrapText(true);
-
         Label details = new Label(message);
         details.getStyleClass().add("info-value");
         details.setWrapText(true);
         details.setMaxWidth(500);
-
         VBox errorCard = new VBox(12, errorType, heading, details);
         errorCard.getStyleClass().add("info-card");
-
         VBox content = new VBox(14, errorCard);
         content.getStyleClass().add("page-content");
         pane.setContent(content);
-
         dialog.showAndWait();
     }
 
     private void clearCity() {
-
-        cityList
-                .getSelectionModel()
-                .clearSelection();
-
+        cityList.getSelectionModel().clearSelection();
         cityNameField.clear();
-
         cityCountryField.clear();
     }
 
     private void clearStadium() {
-
-        stadiumList
-                .getSelectionModel()
-                .clearSelection();
-
+        stadiumList.getSelectionModel().clearSelection();
         stadiumNameField.clear();
-
-        stadiumCityCombo.setValue(
-                null
-        );
+        stadiumCityCombo.setValue(null);
     }
 }

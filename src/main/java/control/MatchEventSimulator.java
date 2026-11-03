@@ -12,20 +12,17 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-/*
- * Simula las incidencias que pueden ocurrir durante los 90 minutos.
- * Decide cuándo ocurre cada incidencia y delega goles y cambios
- * a colaboradores especializados, manteniendo el orden de simulación.
+/**
+ * Simula las incidencias de los 90 minutos y actualiza jugadores y marcador.
+ * Coordina goles, tarjetas, lesiones y sustituciones mediante colaboradores que comparten
+ * el generador aleatorio y conservan el orden de los acontecimientos.
  */
 public class MatchEventSimulator {
-
     private Random random;
     private GoalEventSimulator goalSimulator;
     private MatchSquadManager squadManager;
 
-    public MatchEventSimulator(
-            Random random) {
-
+    public MatchEventSimulator(Random random) {
         this.random = random;
         this.goalSimulator = new GoalEventSimulator(random);
         this.squadManager = new MatchSquadManager(random);
@@ -46,29 +43,15 @@ public class MatchEventSimulator {
             int[] awaySubsCount,
             int maxSubs,
             Map<Player, PlayerParticipation> participations) {
-
         Team home = match.getHomeTeam();
-
         Team away = match.getAwayTeam();
-
         double homePower = home.getTeamPower();
-
         double awayPower = away.getTeamPower();
-
         double totalPower = homePower + awayPower;
+        double homeGoalChance = (homePower / totalPower) * 0.04;
+        double awayGoalChance = (awayPower / totalPower) * 0.03;
 
-        double homeGoalChance =
-                (homePower / totalPower)
-                        * 0.04;
-
-        double awayGoalChance =
-                (awayPower / totalPower)
-                        * 0.03;
-
-        for (int minute = startMinute;
-             minute <= endMinute;
-             minute++) {
-
+        for (int minute = startMinute; minute <= endMinute; minute++) {
             simulatePossibleGoal(
                     minute,
                     match,
@@ -81,7 +64,6 @@ public class MatchEventSimulator {
                     homeGoalChance,
                     awayGoalChance
             );
-
             simulatePossibleYellowCard(
                     minute,
                     match,
@@ -99,7 +81,6 @@ public class MatchEventSimulator {
                     maxSubs,
                     participations
             );
-
             simulatePossibleDirectRed(
                     minute,
                     match,
@@ -116,7 +97,6 @@ public class MatchEventSimulator {
                     maxSubs,
                     participations
             );
-
             simulatePossibleInjury(
                     minute,
                     match,
@@ -133,7 +113,6 @@ public class MatchEventSimulator {
                     maxSubs,
                     participations
             );
-
             simulatePossibleSubstitutions(
                     minute,
                     match,
@@ -164,20 +143,12 @@ public class MatchEventSimulator {
             Player[] awayGoalkeeper,
             double homeGoalChance,
             double awayGoalChance) {
-
         double roll = random.nextDouble();
 
-        if (roll < homeGoalChance
-                && !homePitch.isEmpty()) {
-
-            goalSimulator.simulateGoal( minute, home, homePitch, awayPitch, awayGoalkeeper[0], match, true );
-
-        } else if (roll
-                < homeGoalChance
-                + awayGoalChance
-                && !awayPitch.isEmpty()) {
-
-            goalSimulator.simulateGoal( minute, away, awayPitch, homePitch, homeGoalkeeper[0], match, false );
+        if (roll < homeGoalChance && !homePitch.isEmpty()) {
+            goalSimulator.simulateGoal(minute, home, homePitch, awayPitch, awayGoalkeeper[0], match, true);
+        } else if (roll < homeGoalChance + awayGoalChance && !awayPitch.isEmpty()) {
+            goalSimulator.simulateGoal(minute, away, awayPitch, homePitch, homeGoalkeeper[0], match, false);
         }
     }
 
@@ -197,31 +168,22 @@ public class MatchEventSimulator {
             int[] awaySubsCount,
             int maxSubs,
             Map<Player, PlayerParticipation> participations) {
-
-        if (random.nextDouble()
-                >= 0.018) {
-
+        if (random.nextDouble() >= 0.018) {
             return;
         }
 
         boolean homeTeamCard = random.nextBoolean();
-
         List<Player> pitch = homeTeamCard ? homePitch : awayPitch;
-
         List<Player> subs = homeTeamCard ? homeSubs : awaySubs;
-
         Team team = homeTeamCard ? home : away;
-
         Player[] activeGoalkeeper = homeTeamCard ? homeGoalkeeper : awayGoalkeeper;
-
         int[] substitutionsCount = homeTeamCard ? homeSubsCount : awaySubsCount;
 
         if (pitch.isEmpty()) {
             return;
         }
 
-        Player player = pitch.get( random.nextInt( pitch.size() ) );
-
+        Player player = pitch.get(random.nextInt(pitch.size()));
         handleCard(
                 minute,
                 team,
@@ -252,35 +214,24 @@ public class MatchEventSimulator {
             int[] awaySubsCount,
             int maxSubs,
             Map<Player, PlayerParticipation> participations) {
-
-        if (random.nextDouble()
-                >= 0.004) {
-
+        if (random.nextDouble() >= 0.004) {
             return;
         }
 
         boolean homeTeamCard = random.nextBoolean();
-
         List<Player> pitch = homeTeamCard ? homePitch : awayPitch;
-
         List<Player> subs = homeTeamCard ? homeSubs : awaySubs;
-
         Team team = homeTeamCard ? home : away;
-
         Player[] activeGoalkeeper = homeTeamCard ? homeGoalkeeper : awayGoalkeeper;
-
         int[] substitutionsCount = homeTeamCard ? homeSubsCount : awaySubsCount;
 
         if (pitch.isEmpty()) {
             return;
         }
 
-        Player player = pitch.get( random.nextInt( pitch.size() ) );
-
+        Player player = pitch.get(random.nextInt(pitch.size()));
         player.addRedCard();
-
-        match.addEvent( new RedCard( minute, team, player, true ) );
-
+        match.addEvent(new RedCard(minute, team, player, true));
         squadManager.sendOffPlayer(
                 minute,
                 team,
@@ -310,31 +261,22 @@ public class MatchEventSimulator {
             int[] awaySubsCount,
             int maxSubs,
             Map<Player, PlayerParticipation> participations) {
-
-        if (random.nextDouble()
-                >= 0.002) {
-
+        if (random.nextDouble() >= 0.002) {
             return;
         }
 
         boolean homeTeamInjury = random.nextBoolean();
-
         List<Player> pitch = homeTeamInjury ? homePitch : awayPitch;
-
         List<Player> subs = homeTeamInjury ? homeSubs : awaySubs;
-
         Team team = homeTeamInjury ? home : away;
-
         Player[] activeGoalkeeper = homeTeamInjury ? homeGoalkeeper : awayGoalkeeper;
-
         int[] substitutionsCount = homeTeamInjury ? homeSubsCount : awaySubsCount;
 
         if (pitch.isEmpty()) {
             return;
         }
 
-        Player injuredPlayer = pitch.get( random.nextInt( pitch.size() ) );
-
+        Player injuredPlayer = pitch.get(random.nextInt(pitch.size()));
         squadManager.handleInjury(
                 minute,
                 team,
@@ -364,17 +306,11 @@ public class MatchEventSimulator {
             int[] awaySubsCount,
             int maxSubs,
             Map<Player, PlayerParticipation> participations) {
-
-        if (minute < 55
-                || random.nextDouble() >= 0.12) {
-
+        if (minute < 55 || random.nextDouble() >= 0.12) {
             return;
         }
 
-        if (homeSubsCount[0] < maxSubs
-                && !homeSubs.isEmpty()
-                && !homePitch.isEmpty()) {
-
+        if (homeSubsCount[0] < maxSubs && !homeSubs.isEmpty() && !homePitch.isEmpty()) {
             squadManager.executeSub(
                     minute,
                     home,
@@ -387,10 +323,7 @@ public class MatchEventSimulator {
             );
         }
 
-        if (awaySubsCount[0] < maxSubs
-                && !awaySubs.isEmpty()
-                && !awayPitch.isEmpty()) {
-
+        if (awaySubsCount[0] < maxSubs && !awaySubs.isEmpty() && !awayPitch.isEmpty()) {
             squadManager.executeSub(
                     minute,
                     away,
@@ -416,19 +349,11 @@ public class MatchEventSimulator {
             int[] substitutionsCount,
             int maxSubs,
             Map<Player, PlayerParticipation> participations) {
-
-        if (matchYellows.contains(
-                player
-        )) {
-
+        if (matchYellows.contains(player)) {
             player.addYellowCard();
-
-            match.addEvent( new YellowCard( minute, team, player ) );
-
+            match.addEvent(new YellowCard(minute, team, player));
             player.addRedCard();
-
-            match.addEvent( new RedCard( minute, team, player, false ) );
-
+            match.addEvent(new RedCard(minute, team, player, false));
             squadManager.sendOffPlayer(
                     minute,
                     team,
@@ -441,18 +366,13 @@ public class MatchEventSimulator {
                     match,
                     participations
             );
-
         } else {
-
-            matchYellows.add( player );
-
+            matchYellows.add(player);
             player.addYellowCard();
-
-            match.addEvent( new YellowCard( minute, team, player ) );
+            match.addEvent(new YellowCard(minute, team, player));
         }
     }
 
-    // Conserva la API usada por MatchSimulator sin duplicar la búsqueda.
     public Player findActiveGoalkeeper(List<Player> pitch) {
         return squadManager.findActiveGoalkeeper(pitch);
     }

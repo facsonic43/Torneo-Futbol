@@ -6,8 +6,10 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import reports.ReportSection;
 
+/**
+ * Configura el reporte de jugadores con mayor cantidad de minutos disputados.
+ */
 public class MostMinutesReportView extends RankingReportView {
-
     public MostMinutesReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
                                  Label selectedReportTitle, Node reportsPane, StatisticsReportView statisticsReportView) {
         super(reportContentHost, reportMetricChip, selectedReportSubtitle, selectedReportTitle, reportsPane,

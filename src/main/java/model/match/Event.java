@@ -4,6 +4,11 @@ import model.participant.Player;
 import model.participant.Team;
 import java.io.Serializable;
 
+/**
+ * Define los datos comunes de una incidencia: minuto, equipo y futbolista involucrados.
+ * Cada tipo aporta su descripción y se procesa mediante un visitante; las ejecuciones
+ * de una tanda se distinguen de las incidencias del tiempo de juego.
+ */
 public abstract class Event implements Serializable{
     protected int minute;
     protected Team team;
@@ -29,10 +34,8 @@ public abstract class Event implements Serializable{
 
     public abstract String getDescription();
 
-    /** Double dispatch: the incident tells the visitor which concrete type it is. */
     public abstract void accept(EventVisitor visitor);
 
-    /** True only for the kicks of a penalty shootout, which are not incidents of the 90 minutes. */
     public boolean belongsToShootout() {
         return false;
     }

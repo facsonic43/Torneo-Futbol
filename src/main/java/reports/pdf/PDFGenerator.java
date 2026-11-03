@@ -18,7 +18,11 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.util.Objects;
 
-/** Exports participant identification cards required by section E, item I. */
+/**
+ * Genera las credenciales de identificación de los participantes en PDF con numeración
+ * de páginas y créditos fotográficos. Escribe primero un archivo temporal para conservar
+ * el reporte anterior si la generación falla.
+ */
 public class PDFGenerator {
     public static void generate(TournamentData data, Path output, ReportOptions options) throws IOException {
         generate(new ReportData(data), output, options);
@@ -28,7 +32,6 @@ public class PDFGenerator {
         Objects.requireNonNull(data, "Tournament data is required");
         Objects.requireNonNull(output, "Output path is required");
         Objects.requireNonNull(options, "Report options are required");
-        // Preserve the previous report if generation fails before the new file is closed.
         Path destination = output.toAbsolutePath();
         Files.createDirectories(destination.getParent());
         Path temporary = Files.createTempFile(destination.getParent(), ".championship-report-", ".pdf");

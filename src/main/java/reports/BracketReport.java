@@ -8,7 +8,11 @@ import model.tournament.Group;
 import java.time.LocalDate;
 import java.util.*;
 
-/** A read-only snapshot of qualification and the knockout tree. */
+/**
+ * Construye una vista de los clasificados y del cuadro eliminatorio a partir de los partidos.
+ * Consulta los ganadores y criterios del modelo para conservar resultados coherentes con el torneo.
+ * Valida la clasificación de los grupos y las parejas de cada cruce sin modificar sus partidos.
+ */
 public final class BracketReport {
     public record GroupQualification(String groupName, Team first, Team second,
                                      String status, int playedMatches, int requiredMatches) {}
@@ -49,8 +53,7 @@ public final class BracketReport {
         List<Match> matches = data.getMatches();
         List<GroupQualification> qualification = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
-            qualification.add(i < data.getGroups().size()
-                    ? qualify(data.getGroups().get(i), matches)
+            qualification.add(i < data.getGroups().size() ? qualify(data.getGroups().get(i), matches)
                     : new GroupQualification("Zone " + (i + 1), null, null, "Not drawn", 0, 6));
         }
         qualifiers = List.copyOf(qualification);
@@ -194,22 +197,18 @@ public final class BracketReport {
                 || first.getHomeTeam() != second.getAwayTeam() || first.getAwayTeam() != second.getHomeTeam())) {
             status = "Invalid return-leg pairing";
         } else if (first != null && second != null && first.isPlayed() && second.isPlayed()) {
-            int homePoints = points(goals(first, home), goals(first, away)) + points(goals(second, home), goals(second, away));
-            int awayPoints = points(goals(first, away), goals(first, home)) + points(goals(second, away), goals(second, home));
-            if (homePoints != awayPoints) {
-                winner = homePoints > awayPoints ? home : away;
-                resolution = "Points across both legs: " + homePoints + " - " + awayPoints;
-            } else {
-                int homeWeighted = weightedGoals(first, home) + weightedGoals(second, home);
-                int awayWeighted = weightedGoals(first, away) + weightedGoals(second, away);
-                if (homeWeighted != awayWeighted) {
-                    winner = homeWeighted > awayWeighted ? home : away;
-                    resolution = "Goal difference with away goals doubled: " + homeWeighted + " - " + awayWeighted;
-                } else if (validPenalties(second)) {
-                    winner = second.getHomePenalties() > second.getAwayPenalties() ? second.getHomeTeam() : second.getAwayTeam();
-                    resolution = "Penalty shootout";
-                } else resolution = "Tied on points and weighted goals; penalty shootout pending";
-            }
+            winner = second.getWinner();
+            resolution = switch (second.getResolutionCriterion()) {
+                case SERIES_POINTS -> "Points across both legs: " + second.getSeriesPoints(home)
+                        + " - " + second.getSeriesPoints(away);
+                case WEIGHTED_GOAL_DIFFERENCE -> "Goal difference with away goals doubled: "
+                        + second.getWeightedGoals(home) + " - " + second.getWeightedGoals(away);
+                case PENALTIES -> "Penalty shootout";
+                case UNRESOLVED -> second.requiresTieBreak()
+                        ? "Tied on points and weighted goals; penalty shootout pending"
+                        : "Tied on points and weighted goals; resolution pending";
+                default -> second.getResolutionCriterion().getDescription();
+            };
             status = winner == null ? "Unresolved tie" : "Completed";
         } else if (first != null || second != null) {
             status = first != null && first.isPlayed() ? "Second leg pending"
@@ -233,13 +232,14 @@ public final class BracketReport {
                 used.add(match);
                 status = "Not played";
                 if (match.isPlayed()) {
-                    if (match.getHomeGoals() != match.getAwayGoals()) {
-                        winner = match.getHomeGoals() > match.getAwayGoals() ? match.getHomeTeam() : match.getAwayTeam();
-                        resolution = match.isExtraTimePlayed() ? "After extra time" : "Regular time";
-                    } else if (validPenalties(match)) {
-                        winner = match.getHomePenalties() > match.getAwayPenalties() ? match.getHomeTeam() : match.getAwayTeam();
-                        resolution = "Penalty shootout";
-                    }
+                    winner = match.getWinner();
+                    resolution = switch (match.getResolutionCriterion()) {
+                        case REGULAR_TIME -> match.isExtraTimePlayed() ? "After extra time" : "Regular time";
+                        case PENALTIES -> "Penalty shootout";
+                        case UNRESOLVED -> match.requiresTieBreak() ? "Penalty shootout pending"
+                                : match.getResolutionCriterion().getDescription();
+                        default -> match.getResolutionCriterion().getDescription();
+                    };
                     status = winner == null ? "Unresolved tie" : "Completed";
                 }
             }
@@ -252,18 +252,7 @@ public final class BracketReport {
         return match.getHomeTeam() == a && match.getAwayTeam() == b
                 || match.getHomeTeam() == b && match.getAwayTeam() == a;
     }
-    private static int goals(Match match, Team team) {
-        return match.getHomeTeam() == team ? match.getHomeGoals() : match.getAwayGoals();
-    }
-    private static int weightedGoals(Match match, Team team) {
-        return goals(match, team) * (match.getAwayTeam() == team ? 2 : 1);
-    }
     private static int points(int scored, int conceded) { return scored > conceded ? 3 : scored == conceded ? 1 : 0; }
-    private static boolean validPenalties(Match match) {
-        return match.getHomePenalties() != null && match.getAwayPenalties() != null
-                && match.getHomePenalties() >= 0 && match.getAwayPenalties() >= 0
-                && !match.getHomePenalties().equals(match.getAwayPenalties());
-    }
     private static final class Row {
         final Team team;
         int points;

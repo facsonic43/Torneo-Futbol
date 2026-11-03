@@ -10,26 +10,29 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import model.match.GroupMatch;
 import model.match.Match;
+import model.match.ResolutionCriterion;
 import model.participant.Team;
 import model.tournament.Group;
 import model.tournament.Tournament;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntFunction;
-import gui.BracketView;
 import java.util.function.Supplier;
+
 import model.tournament.TournamentStage;
+
 import static gui.MatchFormat.scoreText;
 import static gui.MatchFormat.matchDate;
 import static gui.MatchFormat.matchStadium;
 import static gui.MatchFormat.matchReferee;
 
 /**
- * Knockout bracket: builds the quarter-final, semi-final and final cards, the tie-break texts
- * and the match detail dialog, and loads them into the {@link BracketView}.
+ * Construye las tarjetas de cuartos, semifinales y final y los diálogos de detalle del cuadro.
+ * Muestra los criterios definidos por el modelo sin recalcular las reglas de clasificación.
+ * Conserva el orden de los equipos al mostrar penales y resalta el recorrido del campeón.
  */
 public class BracketSection {
-
     private final BracketView bracketView;
     private final Node ownerPane;
     private final Supplier<TournamentStage> stage;
@@ -45,7 +48,6 @@ public class BracketSection {
         return bracketView;
     }
 
-    /** Loads the bracket of the tournament into the view and returns the champion (null if undefined). */
     public Team load(Tournament tournament) {
         this.tournament = tournament;
 
@@ -77,10 +79,8 @@ public class BracketSection {
             {3, 0, 1, 1}
     };
 
-    // Numeración de las series: cuartos I-IV, semifinales V-VI.
     private static final String[] ROMAN = {"I", "II", "III", "IV", "V", "VI"};
 
-    /* Ronda en juego según la etapa del torneo (-1 si no hay ronda eliminatoria activa). */
     private int activeRound() {
         switch (stage.get()) {
             case QUARTER_FINALS:
@@ -108,7 +108,6 @@ public class BracketSection {
         return true;
     }
 
-    /* Una tarjeta por cruce; si el cruce no existe todavía, una tarjeta bloqueada. */
     private List<Region> buildRound(
             List<? extends Match> firstLegs,
             List<? extends Match> secondLegs,
@@ -117,7 +116,6 @@ public class BracketSection {
             String roundTitle,
             Team champion,
             IntFunction<Region> placeholder) {
-
         List<Region> cards = new ArrayList<>();
 
         for (int i = 0; i < slots; i++) {
@@ -138,18 +136,13 @@ public class BracketSection {
         return cards;
     }
 
-    /*
-     * Cruce de ida y vuelta. Estados:
-     *  - READY:  los equipos ya están definidos pero la serie no terminó.
-     *  - PLAYED: la serie terminó (se resalta el ganador y el criterio).
-     */
     private Region twoLegCard(String title, Match first, Match second, Team champion) {
         Team a = first.getHomeTeam();
         Team b = first.getAwayTeam();
 
         Team winner = (second != null && second.isPlayed()) ? second.getWinner() : null;
         boolean decided = winner != null;
-        String criterion = decided ? tieCriterion(first, second, a, b) : null;
+        String criterion = decided ? resolutionText(second, a, b) : null;
 
         VBox card = new VBox(4,
                 teamRow(a.getName(), a.equals(winner), legGoals(first, a), legGoals(second, a)),
@@ -169,7 +162,6 @@ public class BracketSection {
 
         card.getStyleClass().addAll("bracket-card", decided ? "bracket-card-played" : "bracket-card-ready");
 
-        // Marca la tarjeta si el campeón ganó esta serie (para pintar su camino en dorado).
         card.getProperties().put(BracketView.CHAMPION_PATH, decided && winner.equals(champion));
 
         makeClickable(card, title, first, second,
@@ -189,7 +181,7 @@ public class BracketSection {
         Team b = finalMatch.getAwayTeam();
 
         boolean played = finalMatch.isPlayed();
-        String criterion = played ? finalCriterion(finalMatch, a, b) : null;
+        String criterion = played ? resolutionText(finalMatch, a, b) : null;
 
         VBox card = new VBox(4,
                 teamRow(a.getName(), a.equals(champion), finalScore(finalMatch, a)),
@@ -205,7 +197,6 @@ public class BracketSection {
 
         card.getStyleClass().addAll("bracket-card", played ? "bracket-card-played" : "bracket-card-ready");
 
-        // Centramos verticalmente los elementos internos de la tarjeta
         card.setAlignment(Pos.CENTER_LEFT);
 
         makeClickable(card, "FINAL", finalMatch, null,
@@ -214,7 +205,6 @@ public class BracketSection {
         return card;
     }
 
-    /* Fila de un equipo: nombre + una celda por cada marcador. */
     private HBox teamRow(String name, boolean winner, String... scores) {
         Label nameLabel = new Label(name);
         nameLabel.getStyleClass().add("bracket-team");
@@ -239,7 +229,6 @@ public class BracketSection {
         return row;
     }
 
-    /* Línea compacta con fecha, estadio y árbitro; el texto completo va en un tooltip. */
     private Label infoLine(String tag, Match match) {
         Label line = new Label(
                 tag + " · " + matchDate(match)
@@ -261,31 +250,11 @@ public class BracketSection {
         return match.getHomeTeam().equals(team) ? match.getHomeGoals() : match.getAwayGoals();
     }
 
-    private int goalsAgainst(Match match, Team team) {
-        return match.getHomeTeam().equals(team) ? match.getAwayGoals() : match.getHomeGoals();
-    }
-
-    /* Goles de un equipo en un partido (sin importar si fue local o visitante). */
     private String legGoals(Match match, Team team) {
         if (match == null || !match.isPlayed()) {
             return "-";
         }
         return String.valueOf(goalsOf(match, team));
-    }
-
-    /* Puntos obtenidos en un partido: 3 gana, 1 empata, 0 pierde. */
-    private int legPoints(Match match, Team team) {
-        if (match == null || !match.isPlayed()) {
-            return 0;
-        }
-
-        int scored = goalsOf(match, team);
-        int conceded = goalsAgainst(match, team);
-
-        if (scored > conceded) {
-            return 3;
-        }
-        return scored == conceded ? 1 : 0;
     }
 
     private String penalties(Match match, Team team) {
@@ -295,30 +264,11 @@ public class BracketSection {
         return value == null ? "-" : String.valueOf(value);
     }
 
-    /*
-     * Criterio de desempate en series de ida y vuelta, en el orden del reglamento:
-     * puntos de ambos partidos, diferencia de gol (goles de visitante doble) y penales.
-     */
-    private String tieCriterion(Match first, Match second, Team a, Team b) {
-        if (second.getHomePenalties() != null) {
-            return "BY PENALTIES (" + penalties(second, a) + "-" + penalties(second, b) + ")";
-        }
-
-        int pointsA = legPoints(first, a) + legPoints(second, a);
-        int pointsB = legPoints(first, b) + legPoints(second, b);
-
-        if (pointsA != pointsB) {
-            return "BY AGGREGATE";
-        }
-
-        return "BY GOAL DIFFERENCE";
-    }
-
-    private String finalCriterion(Match match, Team a, Team b) {
-        if (match.getHomePenalties() != null) {
-            return "BY PENALTIES (" + penalties(match, a) + "-" + penalties(match, b) + ")";
-        }
-        return "IN 90 MIN";
+    private String resolutionText(Match match, Team a, Team b) {
+        String description = match.getResolutionCriterion().getDescription();
+        return match.getResolutionCriterion() == ResolutionCriterion.PENALTIES
+                ? description + " (" + penalties(match, a) + "-" + penalties(match, b) + ")"
+                : description;
     }
 
     private String finalScore(Match match, Team team) {
@@ -330,7 +280,7 @@ public class BracketSection {
         String goals = String.valueOf(home ? match.getHomeGoals() : match.getAwayGoals());
         Integer pens = home ? match.getHomePenalties() : match.getAwayPenalties();
 
-        return pens != null ? goals + " (" + pens + ")" : goals;
+        return match.getResolutionCriterion() == ResolutionCriterion.PENALTIES ? goals + " (" + pens + ")" : goals;
     }
 
     private Region lockedCard(String top, String bottom) {
@@ -357,7 +307,6 @@ public class BracketSection {
         );
     }
 
-    /* Nombre real del clasificado si la zona ya terminó; si no, "1st Group A", etc. */
     private String seedLabel(int groupIndex, int position) {
         List<Group> groups = tournament.getGroups();
 
@@ -401,7 +350,6 @@ public class BracketSection {
         pane.getButtonTypes().add(ButtonType.CLOSE);
         pane.setMinWidth(440);
 
-        // El diálogo es otra ventana: hay que pasarle los estilos y el tema actual.
         if (ownerPane.getScene() != null) {
             dialog.initOwner(ownerPane.getScene().getWindow());
             pane.getStylesheets().addAll(ownerPane.getScene().getStylesheets());

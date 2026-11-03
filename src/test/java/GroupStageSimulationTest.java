@@ -14,39 +14,28 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Comprueba el sorteo de los cuatro grupos, la generación y simulación de sus 24 partidos,
+ * los dos clasificados por grupo y las estadísticas de la fase.
+ */
 public class GroupStageSimulationTest {
-
-    /*
-     * Comprueba que el torneo pueda crear cuatro grupos, generar los 24 partidos
-     * correspondientes a la fase de grupos, simularlos y obtener dos clasificados
-     * por cada grupo.
-     */
     @Test
     void groupStageShouldGenerateAndSimulateMatches() {
         TournamentDataLoader loader = new TournamentDataLoader();
         TournamentData data = loader.load("torneo.json");
-
-        Tournament tournament = new Tournament(
-                data.getTeams(),
-                data.getReferees()
-        );
-
+        Tournament tournament = new Tournament(data.getTeams(), data.getReferees());
         List<Group> groups = tournament.drawGroups();
         assertEquals(4, groups.size());
-
         List<Stadium> stadiums = createTestStadiums();
         tournament.generateGroupMatches(stadiums);
-
         MatchSimulator simulator = new MatchSimulator();
         tournament.simulateGroupStage(simulator);
-
         int totalMatches = 0;
         for (Group group : groups) {
             assertEquals(4, group.getTeams().size());
             assertEquals(6, group.getMatches().size());
             assertEquals(4, group.getStandings().size());
             assertEquals(2, group.getQualifiedTeams().size());
-
             totalMatches += group.getMatches().size();
 
             for (GroupMatch match : group.getMatches()) {
@@ -67,30 +56,21 @@ public class GroupStageSimulationTest {
     void simulatedMatchesShouldNotBeMarkedAsIncompleteForMissingReportMetadata() {
         TournamentDataLoader loader = new TournamentDataLoader();
         TournamentData data = loader.load("torneo.json");
-
-        Tournament tournament = new Tournament(
-                data.getTeams(),
-                data.getReferees()
-        );
-
+        Tournament tournament = new Tournament(data.getTeams(), data.getReferees());
         List<Group> groups = tournament.drawGroups();
         List<Stadium> stadiums = createTestStadiums();
         tournament.generateGroupMatches(stadiums);
-
         MatchSimulator simulator = new MatchSimulator();
         tournament.simulateGroupStage(simulator);
-
         ReportData reportData = ReportData.fromInitialData(data);
         groups.forEach(reportData::addGroup);
         ChampionshipStatistics stats = new ChampionshipStatistics(reportData);
-
         assertTrue(stats.getPlayedMatchCount() > 0);
         assertEquals(0, stats.getIncompleteMatchCount());
         assertTrue(stats.hasCompleteStartingLineups());
         assertTrue(stats.hasCompleteGoalInformation());
     }
 
-    // Crea estadios simples para probar la fase de grupos sin depender de PostgreSQL.
     private List<Stadium> createTestStadiums() {
         List<Stadium> stadiums = new ArrayList<>();
         for (int i = 1; i <= 16; i++) {

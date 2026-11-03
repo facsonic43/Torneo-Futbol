@@ -28,7 +28,10 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
-/** Native report controls using the same tournament snapshot and calculations as the PDF. */
+/**
+ * Genera las tablas estadísticas y el cuadro del campeonato a partir de una copia del torneo.
+ * Calcula el contenido en segundo plano y cancela las tareas que dejan de ser necesarias.
+ */
 public final class StatisticsReportView extends VBox {
     private Task<Content> currentTask;
 
@@ -60,8 +63,7 @@ public final class StatisticsReportView extends VBox {
             @Override
             protected Content call() throws Exception {
                 ReportData data = readSnapshot(snapshot);
-                return section == ReportSection.BRACKET
-                        ? new Content(null, new BracketReport(data))
+                return section == ReportSection.BRACKET ? new Content(null, new BracketReport(data))
                         : new Content(new ChampionshipStatistics(data), null);
             }
         };
@@ -81,8 +83,7 @@ public final class StatisticsReportView extends VBox {
             if (currentTask != task) return;
             currentTask = null;
             String detail = task.getException().getMessage();
-            getChildren().setAll(note("Could not display this report."
-                    + (detail == null ? "" : "\n" + detail)));
+            getChildren().setAll(note("Could not display this report." + (detail == null ? "" : "\n" + detail)));
         });
         Thread worker = new Thread(task, "statistics-report");
         worker.setDaemon(true);
@@ -104,8 +105,6 @@ public final class StatisticsReportView extends VBox {
             return String.format("%.2f", avg);
         }, "table-stat-cell"));
         table.getColumns().add(column("AST", 60, row -> row.value().assists(), "table-stat-cell"));
-
-
         addTable(table);
     }
 

@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+
 import gui.BracketSection;
 import gui.BracketView;
 import gui.report.BracketReportView;
@@ -39,21 +40,18 @@ import gui.report.RefereesReportView;
 import gui.report.ReportView;
 import gui.report.TeamsReportView;
 import gui.report.TopScorersReportView;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import static gui.TableCells.createCenterCell;
 import static gui.MatchFormat.scoreText;
 
-/*
- * Controla las pantallas informativas del campeonato:
- * overview, equipos, jugadores, cuadro eliminatorio y reportes.
- * No ejecuta partidos ni modifica la base de datos.
+/**
+ * Controla la información general del campeonato, los equipos, los jugadores y el cuadro.
+ * Coordina las vistas de reportes y la exportación de las fichas de participantes.
  */
 public class TournamentController {
-
-    /*
-     * PANELES PRINCIPALES
-     */
     @FXML
     private VBox overviewPane;
 
@@ -65,10 +63,6 @@ public class TournamentController {
 
     @FXML
     private HBox reportsPane;
-
-    /*
-     * OVERVIEW
-     */
     @FXML
     private VBox overviewQuarterBox;
 
@@ -86,10 +80,6 @@ public class TournamentController {
 
     @FXML
     private HBox allGroupsContainer;
-
-    /*
-     * TEAMS
-     */
     @FXML
     private ListView<Team> teamList;
 
@@ -161,10 +151,6 @@ public class TournamentController {
 
     @FXML
     private Label goalkeeperInformation;
-
-    /*
-     * REPORTS
-     */
     @FXML
     private ListView<String> reportList;
 
@@ -191,7 +177,6 @@ public class TournamentController {
     @FXML
     public void initialize() {
         bracketSection = new BracketSection(bracketView, reportsPane, () -> session.getStage());
-
         configureTeamList();
         configurePlayerTable();
         configureReports();
@@ -209,15 +194,10 @@ public class TournamentController {
         }
 
         tournament = session.getTournament();
-
         refreshOverview();
         refreshTeams();
         refreshReports();
     }
-
-    /* =====================================================
-       NAVEGACIÓN INTERNA
-       ===================================================== */
 
     public void showOverview() {
         showPane(overviewPane);
@@ -253,10 +233,6 @@ public class TournamentController {
         }
     }
 
-    /* =====================================================
-       OVERVIEW
-       ===================================================== */
-
     private void refreshOverview() {
         if (tournament == null) {
             return;
@@ -268,22 +244,15 @@ public class TournamentController {
 
     private void refreshOverviewKnockoutStages() {
         if (overviewQuarterBox == null || overviewSemiBox == null || overviewFinalBox == null) return;
-
         overviewQuarterBox.getChildren().clear();
         overviewSemiBox.getChildren().clear();
         overviewFinalBox.getChildren().clear();
-
-        // 1. Cuartos
         List<? extends Match> qFirst = tournament.getQuarterFinalFirstLegs();
         List<? extends Match> qSecond = tournament.getQuarterFinalSecondLegs();
         populateOverviewRound(overviewQuarterBox, qFirst, qSecond);
-
-        // 2. Semis
         List<? extends Match> sFirst = tournament.getSemiFinalFirstLegs();
         List<? extends Match> sSecond = tournament.getSemiFinalSecondLegs();
         populateOverviewRound(overviewSemiBox, sFirst, sSecond);
-
-        // 3. Final
         Match finalMatch = tournament.getFinalMatch();
         if (finalMatch == null) {
             Label notPlayed = new Label("NOT PLAYED YET");
@@ -292,14 +261,11 @@ public class TournamentController {
         } else {
             VBox matchCard = new VBox(4);
             matchCard.getStyleClass().add("bracket-card");
-
             Team winner = finalMatch.isPlayed() ? finalMatch.getWinner() : null;
             Team home = finalMatch.getHomeTeam();
             Team away = finalMatch.getAwayTeam();
-
             HBox teamsLine = new HBox(6);
             teamsLine.setAlignment(Pos.CENTER_LEFT);
-
             Label homeLabel = new Label(home.getName());
             Label vsLabel = new Label("vs");
             vsLabel.getStyleClass().add("muted-text");
@@ -319,21 +285,16 @@ public class TournamentController {
             }
 
             teamsLine.getChildren().addAll(homeLabel, vsLabel, awayLabel);
-
             Label score = new Label(finalMatch.isPlayed() ? scoreText(finalMatch) : "NOT PLAYED YET");
             score.getStyleClass().add(finalMatch.isPlayed() ? "metric-value" : "muted-text");
             score.setStyle("-fx-font-size: 13px;");
-
             matchCard.getChildren().addAll(teamsLine, score);
             overviewFinalBox.getChildren().add(matchCard);
         }
-
-        // 4. Campeón
         if (overviewChampionName != null) {
             if (tournament.getChampion() != null) {
                 overviewChampionName.setText(tournament.getChampion().getName().toUpperCase());
                 overviewChampionName.setStyle("-fx-font-size: 24px; -fx-font-weight: 900; -fx-text-fill: -status-qualified-text;");
-
                 File trophyFile = new File("Images/trophy.png");
                 if (trophyFile.exists() && overviewTrophyImage != null) {
                     overviewTrophyImage.setImage(new javafx.scene.image.Image(trophyFile.toURI().toString()));
@@ -363,17 +324,13 @@ public class TournamentController {
         for (int i = 0; i < firstLegs.size(); i++) {
             Match m1 = firstLegs.get(i);
             Match m2 = (secondLegs != null && i < secondLegs.size()) ? secondLegs.get(i) : null;
-
             VBox seriesBox = new VBox(4);
             seriesBox.getStyleClass().add("bracket-card");
-
             Team winner = (m2 != null && m2.isPlayed()) ? m2.getWinner() : null;
             Team home = m1.getHomeTeam();
             Team away = m1.getAwayTeam();
-
             HBox teamsLine = new HBox(6);
             teamsLine.setAlignment(Pos.CENTER_LEFT);
-
             Label homeLabel = new Label(home.getName());
             Label vsLabel = new Label("vs");
             vsLabel.getStyleClass().add("muted-text");
@@ -393,13 +350,10 @@ public class TournamentController {
             }
 
             teamsLine.getChildren().addAll(homeLabel, vsLabel, awayLabel);
-
             String s1 = m1.isPlayed() ? (m1.getHomeGoals() + "-" + m1.getAwayGoals()) : "-";
             String s2 = (m2 != null && m2.isPlayed()) ? (m2.getHomeGoals() + "-" + m2.getAwayGoals()) : "-";
-
             Label res = new Label(m1.isPlayed() ? ("Leg 1: " + s1 + " | Leg 2: " + s2) : "NOT PLAYED YET");
             res.getStyleClass().add(m1.isPlayed() ? "small-text" : "muted-text");
-
             seriesBox.getChildren().addAll(teamsLine, res);
             container.getChildren().add(seriesBox);
         }
@@ -419,25 +373,17 @@ public class TournamentController {
         for (Group group : tournament.getGroups()) {
             VBox groupCard = new VBox(12);
             groupCard.getStyleClass().add("group-card");
-
             HBox header = new HBox();
             header.getStyleClass().add("group-card-header");
             Label title = new Label(group.getName().toUpperCase());
             title.getStyleClass().add("group-card-title");
             header.getChildren().add(title);
             groupCard.getChildren().add(header);
-
             HBox tableHeader = new HBox(8);
             tableHeader.setAlignment(Pos.CENTER_LEFT);
-            tableHeader.getChildren().addAll(
-                    createHeadLabel("#", 20),
-                    createHeadLabel("TEAM", 130),
-                    createHeadLabel("PTS", 32),
-                    createHeadLabel("P", 28),
-                    createHeadLabel("GD", 32)
-            );
+            tableHeader.getChildren().addAll(createHeadLabel("#", 20), createHeadLabel("TEAM", 130),
+                    createHeadLabel("PTS", 32), createHeadLabel("P", 28), createHeadLabel("GD", 32));
             groupCard.getChildren().add(tableHeader);
-
             List<Standing> standings = group.getStandings();
             for (int i = 0; i < standings.size(); i++) {
                 Standing standing = standings.get(i);
@@ -452,20 +398,15 @@ public class TournamentController {
 
                 Label rankLabel = createColumn(String.valueOf(i + 1), 20);
                 rankLabel.setAlignment(Pos.CENTER);
-
                 Label teamLabel = createColumn(standing.getTeam().getName(), 130);
                 teamLabel.setStyle("-fx-font-weight: 700;");
-
                 Label ptsLabel = createColumn(String.valueOf(standing.getPoints()), 32);
                 ptsLabel.setAlignment(Pos.CENTER);
                 ptsLabel.setStyle("-fx-font-weight: 900;");
-
                 Label playedLabel = createColumn(String.valueOf(standing.getPlayed()), 28);
                 playedLabel.setAlignment(Pos.CENTER);
-
                 Label gdLabel = createColumn(formatGoalDifference(standing.getGoalDifference()), 32);
                 gdLabel.setAlignment(Pos.CENTER);
-
                 row.getChildren().addAll(rankLabel, teamLabel, ptsLabel, playedLabel, gdLabel);
                 groupCard.getChildren().add(row);
             }
@@ -497,10 +438,6 @@ public class TournamentController {
         return String.valueOf(value);
     }
 
-    /* =====================================================
-       TEAMS
-       ===================================================== */
-
     private void configureTeamList() {
         if (teamList == null) return;
 
@@ -519,21 +456,16 @@ public class TournamentController {
             }
         });
 
-        teamList.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldTeam, newTeam) -> {
-                    if (newTeam != null) {
-                        showTeam(newTeam);
-                    }
-                }
-        );
+        teamList.getSelectionModel().selectedItemProperty().addListener((observable, oldTeam, newTeam) -> {
+            if (newTeam != null) {
+                showTeam(newTeam);
+            }
+        });
     }
 
     private void configurePlayerTable() {
         if (playerTable == null) return;
-
-        playerNameColumn.setCellValueFactory(
-                value -> new SimpleStringProperty(value.getValue().getName())
-        );
+        playerNameColumn.setCellValueFactory(value -> new SimpleStringProperty(value.getValue().getName()));
         playerNameColumn.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -549,8 +481,7 @@ public class TournamentController {
         });
 
         playerPositionColumn.setCellValueFactory(
-                value -> new SimpleStringProperty(value.getValue().getPosition().toString())
-        );
+                value -> new SimpleStringProperty(value.getValue().getPosition().toString()));
         playerPositionColumn.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -561,7 +492,6 @@ public class TournamentController {
                 } else {
                     Label badge = new Label(item);
                     badge.getStyleClass().add("pos-badge");
-
                     String posUpper = item.toUpperCase();
                     if (posUpper.contains("GOALKEEPER") || posUpper.contains("GK") || posUpper.contains("ARQUERO")) {
                         badge.getStyleClass().add("pos-gk");
@@ -581,8 +511,7 @@ public class TournamentController {
         });
 
         playerOverallColumn.setCellValueFactory(
-                value -> new SimpleStringProperty(String.format("%.1f", value.getValue().getOverall()))
-        );
+                value -> new SimpleStringProperty(String.format("%.1f", value.getValue().getOverall())));
         playerOverallColumn.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -601,27 +530,22 @@ public class TournamentController {
         });
 
         playerMatchesColumn.setCellValueFactory(
-                value -> new SimpleStringProperty(String.valueOf(value.getValue().getMatchesPlayed()))
-        );
+                value -> new SimpleStringProperty(String.valueOf(value.getValue().getMatchesPlayed())));
         playerMatchesColumn.setCellFactory(col -> createCenterCell());
 
         playerMinutesColumn.setCellValueFactory(
-                value -> new SimpleStringProperty(String.valueOf(value.getValue().getMinutesPlayed()))
-        );
+                value -> new SimpleStringProperty(String.valueOf(value.getValue().getMinutesPlayed())));
         playerMinutesColumn.setCellFactory(col -> createCenterCell());
 
         playerGoalsColumn.setCellValueFactory(
-                value -> new SimpleStringProperty(String.valueOf(value.getValue().getGoals()))
-        );
+                value -> new SimpleStringProperty(String.valueOf(value.getValue().getGoals())));
         playerGoalsColumn.setCellFactory(col -> createCenterCell());
 
-        playerTable.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldPlayer, newPlayer) -> {
-                    if (newPlayer != null) {
-                        showPlayer(newPlayer);
-                    }
-                }
-        );
+        playerTable.getSelectionModel().selectedItemProperty().addListener((observable, oldPlayer, newPlayer) -> {
+            if (newPlayer != null) {
+                showPlayer(newPlayer);
+            }
+        });
     }
 
     private void refreshTeams() {
@@ -630,7 +554,6 @@ public class TournamentController {
         }
 
         Team previousSelection = teamList.getSelectionModel().getSelectedItem();
-
         teamList.getItems().setAll(tournament.getTeams());
         teamList.getItems().sort(Comparator.comparing(Team::getName, String.CASE_INSENSITIVE_ORDER));
 
@@ -649,12 +572,8 @@ public class TournamentController {
 
         if (team.getCoach() != null) {
             if (coachName != null) coachName.setText(team.getCoach().getName());
-
             String titles = team.getCoach().getTitlesObtained() + " titles";
-            String country = team.getCoach().getNationality() != null
-                    ? team.getCoach().getNationality().getName()
-                    : "";
-
+            String country = team.getCoach().getNationality() != null ? team.getCoach().getNationality().getName() : "";
             if (coachDetails != null) coachDetails.setText(country.isEmpty() ? titles : country + " • " + titles);
         } else {
             if (coachName != null) coachName.setText("-");
@@ -679,25 +598,12 @@ public class TournamentController {
         if (playerRating != null) playerRating.setText(String.format("%.1f", player.getOverall()));
 
         if (playerStats != null) {
-            playerStats.setText(
-                    player.getMatchesPlayed()
-                            + " matches | "
-                            + player.getMinutesPlayed()
-                            + " min | "
-                            + player.getGoals()
-                            + " goals | "
-                            + player.getAssists()
-                            + " assists"
-            );
+            playerStats.setText(player.getMatchesPlayed() + " matches | " + player.getMinutesPlayed() + " min | "
+                    + player.getGoals() + " goals | " + player.getAssists() + " assists");
         }
 
         if (playerDiscipline != null) {
-            playerDiscipline.setText(
-                    player.getYellowCards()
-                            + " yellow | "
-                            + player.getRedCards()
-                            + " red"
-            );
+            playerDiscipline.setText(player.getYellowCards() + " yellow | " + player.getRedCards() + " red");
         }
 
         if (playerAvailability != null) {
@@ -719,12 +625,8 @@ public class TournamentController {
                     average = (double) goalkeeper.getGoalsConceded() / goalkeeper.getMatchesPlayed();
                 }
 
-                goalkeeperInformation.setText(
-                        goalkeeper.getGoalsConceded()
-                                + " goals conceded | "
-                                + String.format("%.2f", average)
-                                + " per match"
-                );
+                goalkeeperInformation.setText(goalkeeper.getGoalsConceded() + " goals conceded | "
+                        + String.format("%.2f", average) + " per match");
                 goalkeeperInformation.setVisible(true);
                 goalkeeperInformation.setManaged(true);
             } else {
@@ -734,13 +636,8 @@ public class TournamentController {
         }
     }
 
-    /* =====================================================
-       REPORTS (VISTAS RICAS Y DINÁMICAS)
-       ===================================================== */
-
     private void configureReports() {
         if (reportList == null) return;
-
         StatisticsReportView statistics = new StatisticsReportView();
         reportViews.put("Top Scorers", new TopScorersReportView(reportContentHost, reportMetricChip,
                 selectedReportSubtitle, selectedReportTitle, reportsPane, statistics));
@@ -762,25 +659,14 @@ public class TournamentController {
                 selectedReportSubtitle, selectedReportTitle, reportsPane));
 
         reportList.getItems().clear();
-        reportList.getItems().addAll(
-                "Top Scorers",
-                "Fair Play",
-                "Most Minutes",
-                "Championship Bracket",
-                "Matches Summary",
-                "Teams",
-                "Coaches",
-                "Referees",
-                "Players"
-        );
+        reportList.getItems().addAll("Top Scorers", "Fair Play", "Most Minutes", "Championship Bracket",
+                "Matches Summary", "Teams", "Coaches", "Referees", "Players");
 
-        reportList.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> {
-                    if (newValue != null) {
-                        generateReport();
-                    }
-                }
-        );
+        reportList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                generateReport();
+            }
+        });
     }
 
     private void refreshReports() {
@@ -800,7 +686,6 @@ public class TournamentController {
 
     public void handleGeneratePdf(Window owner) {
         if (tournament == null) return;
-
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Save participant report");
         chooser.setInitialFileName("Tournament-Participants.pdf");
@@ -814,7 +699,6 @@ public class TournamentController {
 
         try {
             ParticipantReportExporter.export(tournament, destination.toPath());
-
             Alert success = new Alert(Alert.AlertType.INFORMATION);
             success.setTitle("PDF generated");
             success.setHeaderText("Participant report saved");
@@ -839,7 +723,6 @@ public class TournamentController {
 
     private void generateReport() {
         if (tournament == null || reportList == null) return;
-
         String selected = reportList.getSelectionModel().getSelectedItem();
         if (selected == null) return;
 
@@ -853,7 +736,6 @@ public class TournamentController {
                 reportContentHost.getChildren().clear();
                 view.show(tournament);
             }
-
         } catch (Exception ex) {
             if (reportContentHost != null) {
                 Label errorLabel = new Label("Error loading visual report: " + ex.getMessage());

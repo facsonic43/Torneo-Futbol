@@ -6,8 +6,10 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import reports.ReportSection;
 
+/**
+ * Configura el reporte que ordena a los equipos según sus sanciones disciplinarias.
+ */
 public class FairPlayReportView extends RankingReportView {
-
     public FairPlayReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
                               Label selectedReportTitle, Node reportsPane, StatisticsReportView statisticsReportView) {
         super(reportContentHost, reportMetricChip, selectedReportSubtitle, selectedReportTitle, reportsPane,

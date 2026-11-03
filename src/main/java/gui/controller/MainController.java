@@ -19,12 +19,11 @@ import javafx.stage.Stage;
 import model.tournament.Tournament;
 import service.TournamentSessionService;
 
-/*
- * Controla la navegación principal de la aplicación.
- * Carga los módulos una sola vez y comparte la misma sesión del campeonato.
+/**
+ * Coordina la navegación de la ventana principal y comparte la sesión entre sus pantallas.
+ * Actualiza el estado del campeonato y mantiene el tema visual seleccionado.
  */
 public class MainController {
-
     @FXML
     private Button tournamentButton;
 
@@ -99,13 +98,7 @@ public class MainController {
             loadModules();
             handleTournament();
             updateGlobalStatus();
-
-            statusLabel.setText(
-                    session.isLoadedFromSave()
-                            ? "Saved tournament loaded."
-                            : "New tournament created."
-            );
-
+            statusLabel.setText(session.isLoadedFromSave() ? "Saved tournament loaded." : "New tournament created.");
         } catch (Exception exception) {
             showError("Error starting interface", exception);
         }
@@ -116,12 +109,10 @@ public class MainController {
         tournamentView = tournamentLoader.load();
         tournamentController = tournamentLoader.getController();
         tournamentController.setSession(session);
-
         FXMLLoader matchDayLoader = new FXMLLoader(getClass().getResource("/view/match-day-view.fxml"));
         matchDayView = matchDayLoader.load();
         matchDayController = matchDayLoader.getController();
         matchDayController.setSession(session);
-
         FXMLLoader databaseLoader = new FXMLLoader(getClass().getResource("/view/database-view.fxml"));
         databaseView = databaseLoader.load();
         databaseController = databaseLoader.getController();
@@ -209,30 +200,20 @@ public class MainController {
     @FXML
     private void handleMainMenu() {
         try {
-            Alert alert = new Alert(
-                    Alert.AlertType.CONFIRMATION,
-                    "Do you want to save your progress before returning to the Main Menu?",
-                    ButtonType.YES,
-                    ButtonType.NO,
-                    ButtonType.CANCEL
-            );
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                    "Do you want to save your progress before returning to the Main Menu?", ButtonType.YES,
+                    ButtonType.NO, ButtonType.CANCEL);
             alert.setTitle("Return to Main Menu");
             alert.setHeaderText("Unsaved progress may be lost.");
-
             ButtonType result = alert.showAndWait().orElse(ButtonType.CANCEL);
-
             if (result == ButtonType.CANCEL) return;
             if (result == ButtonType.YES) session.save();
-
             Stage stage = (Stage) contentHost.getScene().getWindow();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/main-menu-view.fxml"));
             Parent root = loader.load();
-
             MainMenuController menuController = loader.getController();
             menuController.setSession(session);
-
             Scene scene = new Scene(root, stage.getScene().getWidth(), stage.getScene().getHeight());
-
             java.net.URL cssUrl = getClass().getResource("/css/main.css");
             if (cssUrl != null) {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
@@ -243,7 +224,6 @@ public class MainController {
             }
 
             stage.setScene(scene);
-
         } catch (Exception exception) {
             showError("Error returning to Main Menu", exception);
         }
@@ -267,11 +247,8 @@ public class MainController {
 
     public void updateGlobalStatus() {
         if (session == null || session.getTournament() == null) return;
-
         Tournament tournament = session.getTournament();
-
         mainStageLabel.setText(session.getStage().getLabel());
-
         int played = 0;
         for (model.match.Match m : tournament.getAllMatches()) {
             if (m.isPlayed()) played++;

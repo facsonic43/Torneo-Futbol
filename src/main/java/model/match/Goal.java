@@ -3,10 +3,9 @@ package model.match;
 import model.participant.Player;
 import model.participant.Team;
 
-/*
- * Representa un gol ocurrido durante los 90 minutos de un partido.
- * Guarda si fue de penal, si fue en contra, quién asistió y qué jugador
- * estaba ocupando el arco cuando se produjo el gol.
+/**
+ * Registra un gol con su autor, asistente y arquero que lo recibió, e indica si fue
+ * de penal o en contra. El equipo asociado es siempre el beneficiado por el gol.
  */
 public class Goal extends Event {
     private Player assistPlayer;
@@ -41,22 +40,17 @@ public class Goal extends Event {
 
     @Override
     public String getDescription() {
-        String description =
-                minute + "' GOAL - " + player.getName();
+        String description = minute + "' GOAL - " + player.getName();
 
         if (ownGoal) {
             description += " (Own goal)";
         } else if (penalty) {
             description += " (Penalty)";
         } else if (assistPlayer != null) {
-            description +=
-                    " (Assist from: "
-                            + assistPlayer.getName()
-                            + ")";
+            description += " (Assist from: " + assistPlayer.getName() + ")";
         }
 
-        description +=
-                " [" + team.getName() + "]";
+        description += " [" + team.getName() + "]";
 
         return description;
     }

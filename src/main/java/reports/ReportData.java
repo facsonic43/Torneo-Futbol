@@ -11,8 +11,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * Report input kept outside the simulation and domain classes.
- * The application supplies existing groups, matches and any additional report details.
+ * Agrupa participantes, zonas, partidos y datos adicionales utilizados por los reportes.
+ * Incluye cada encuentro una sola vez y recupera perfiles opcionales del archivo inicial
+ * sin cargar resultados ni ejecutar simulaciones.
  */
 public final class ReportData {
     private final TournamentData participants;
@@ -25,7 +26,6 @@ public final class ReportData {
         this.participants = Objects.requireNonNull(participants, "Tournament participants are required");
     }
 
-    /** Uses the provided project's initial file for personal details without adding domain getters. */
     public static ReportData fromInitialData(TournamentData participants) {
         ReportData reports = new ReportData(participants);
         reports.loadInitialProfiles("torneo.json");
@@ -46,7 +46,6 @@ public final class ReportData {
         if (!matches.contains(match)) matches.add(match);
     }
 
-    /** Includes group fixtures and first legs referenced by return legs, each match only once. */
     public List<Match> getMatches() {
         List<Match> result = new ArrayList<>();
         Set<Match> seen = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -78,10 +77,6 @@ public final class ReportData {
 
     public Integer getRefereeExperience(Referee referee) { return refereeExperience.get(key(referee)); }
 
-    /**
-     * Reads only the optional report profile data; it never loads or simulates results.
-     * Missing resources leave the corresponding report fields explicitly unavailable.
-     */
     public void loadInitialProfiles(String resourceName) {
         try (InputStream stream = getClass().getClassLoader().getResourceAsStream(resourceName)) {
             if (stream == null) return;

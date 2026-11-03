@@ -14,10 +14,11 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-/*
- * Coordina la simulación de los partidos.
- * La GUI puede simular sólo los 90 minutos y dejar los penales pendientes,
- * mientras que simulateMatch() conserva la simulación completa para consola y tests.
+/**
+ * Coordina la simulación de los 90 minutos y de las tandas de penales, que pueden
+ * ejecutarse por separado. Si un equipo no completa la formación, registra la derrota
+ * por 3-0 sin sumar goles ni participaciones a futbolistas y actualiza las ausencias cumplidas.
+ * Si ninguno puede presentar once titulares, conserva el partido pendiente e informa el problema.
  */
 public class MatchSimulator {
     private static final int MATCH_LAST_MINUTE = 90;
@@ -30,7 +31,6 @@ public class MatchSimulator {
         this(new Random());
     }
 
-    // Permite repetir una simulación durante los tests.
     public MatchSimulator(long seed) {
         this(new Random(seed));
     }
@@ -40,10 +40,6 @@ public class MatchSimulator {
         penaltySimulator = new PenaltyShootoutSimulator(random);
     }
 
-    /*
-     * Simula un partido completo. Se mantiene para RunChampionship y tests.
-     * Si el partido ya fue jugado, no vuelve a simular sus 90 minutos.
-     */
     public void simulateMatch(Match match) {
         if (match == null) {
             throw new IllegalArgumentException("Match cannot be null.");
@@ -60,10 +56,6 @@ public class MatchSimulator {
         }
     }
 
-    /*
-     * Simula exclusivamente los 90 minutos. Si hace falta una tanda de penales,
-     * el partido queda jugado pero sin ganador definitivo hasta que el usuario la ejecute.
-     */
     public void simulateRegularTime(Match match) {
         if (match == null) {
             throw new IllegalArgumentException("Match cannot be null.");
@@ -75,66 +67,39 @@ public class MatchSimulator {
 
         Team home = match.getHomeTeam();
         Team away = match.getAwayTeam();
-
         Lineup homeLineup = new Lineup(home, away);
         Lineup awayLineup = new Lineup(away, home);
 
-        match.setFormations(
-                homeLineup.getFormation(),
-                awayLineup.getFormation()
-        );
+        if (!homeLineup.hasCompleteFormation() && !awayLineup.hasCompleteFormation()) {
+            throw new IllegalStateException("Neither team can complete a starting lineup of 11 players.");
+        }
+        if (!homeLineup.hasCompleteFormation() || !awayLineup.hasCompleteFormation()) {
+            match.forfeit(homeLineup.hasCompleteFormation() ? away : home);
+            updatePreviousAbsences(home);
+            updatePreviousAbsences(away);
+            return;
+        }
 
-        match.setStartingLineups(
-                homeLineup.getStarters(),
-                awayLineup.getStarters()
-        );
-
-        List<Player> homePitch =
-                new ArrayList<>(homeLineup.getStarters());
-
-        List<Player> awayPitch =
-                new ArrayList<>(awayLineup.getStarters());
-
-        List<Player> homeSubs =
-                new ArrayList<>(homeLineup.getSubs());
-
-        List<Player> awaySubs =
-                new ArrayList<>(awayLineup.getSubs());
-
+        match.setFormations(homeLineup.getFormation(), awayLineup.getFormation());
+        match.setStartingLineups(homeLineup.getStarters(), awayLineup.getStarters());
+        List<Player> homePitch = new ArrayList<>(homeLineup.getStarters());
+        List<Player> awayPitch = new ArrayList<>(awayLineup.getStarters());
+        List<Player> homeSubs = new ArrayList<>(homeLineup.getSubs());
+        List<Player> awaySubs = new ArrayList<>(awayLineup.getSubs());
         Player[] homeGoalkeeper = {
                 eventSimulator.findActiveGoalkeeper(homePitch)
         };
-
         Player[] awayGoalkeeper = {
                 eventSimulator.findActiveGoalkeeper(awayPitch)
         };
-
-        Map<Player, PlayerParticipation> participations =
-                new HashMap<>();
-
-        registerStartingPlayers(
-                home,
-                homePitch,
-                participations,
-                match
-        );
-
-        registerStartingPlayers(
-                away,
-                awayPitch,
-                participations,
-                match
-        );
-
+        Map<Player, PlayerParticipation> participations = new HashMap<>();
+        registerStartingPlayers(home, homePitch, participations, match);
+        registerStartingPlayers(away, awayPitch, participations, match);
         updatePreviousAbsences(home);
         updatePreviousAbsences(away);
-
-        Set<Player> matchYellows =
-                new HashSet<>();
-
+        Set<Player> matchYellows = new HashSet<>();
         int[] homeSubsCount = {0};
         int[] awaySubsCount = {0};
-
         eventSimulator.simulateMinutesRange(
                 1,
                 MATCH_LAST_MINUTE,
@@ -157,91 +122,43 @@ public class MatchSimulator {
         }
 
         match.setPlayed(true);
-
         registerPlayerStats(match);
     }
 
-    /*
-     * Ejecuta únicamente una tanda pendiente. Los pateadores se obtienen de
-     * quienes terminaron el partido en cancha; si no se pueden reconstruir,
-     * se utilizan los titulares registrados.
-     */
     public void simulatePenaltyShootout(Match match) {
         if (match == null) {
             throw new IllegalArgumentException("Match cannot be null.");
         }
 
         if (!match.isPlayed()) {
-            throw new IllegalStateException(
-                    "Regular time must be played before penalties."
-            );
+            throw new IllegalStateException("Regular time must be played before penalties.");
         }
 
         if (!match.requiresTieBreak()) {
-            throw new IllegalStateException(
-                    "This match does not require a penalty shootout."
-            );
+            throw new IllegalStateException("This match does not require a penalty shootout.");
         }
 
-        List<Player> homePitch =
-                getPlayersAvailableForShootout(
-                        match,
-                        match.getHomeTeam(),
-                        match.getHomeStarters()
-                );
-
-        List<Player> awayPitch =
-                getPlayersAvailableForShootout(
-                        match,
-                        match.getAwayTeam(),
-                        match.getAwayStarters()
-                );
-
-        penaltySimulator.simulate(
-                match,
-                homePitch,
-                awayPitch
-        );
+        List<Player> homePitch = getPlayersAvailableForShootout(match, match.getHomeTeam(), match.getHomeStarters());
+        List<Player> awayPitch = getPlayersAvailableForShootout(match, match.getAwayTeam(), match.getAwayStarters());
+        penaltySimulator.simulate(match, homePitch, awayPitch);
     }
 
-    // Se conserva para los tests específicos de PenaltyShootoutSimulator.
-    public void simulatePenaltyShootout(
-            Match match,
-            List<Player> homePitch,
-            List<Player> awayPitch) {
-
-        penaltySimulator.simulate(
-                match,
-                homePitch,
-                awayPitch
-        );
+    public void simulatePenaltyShootout(Match match, List<Player> homePitch, List<Player> awayPitch) {
+        penaltySimulator.simulate(match, homePitch, awayPitch);
     }
 
-    private List<Player> getPlayersAvailableForShootout(
-            Match match,
-            Team team,
-            List<Player> fallbackPlayers) {
+    private List<Player> getPlayersAvailableForShootout(Match match, Team team, List<Player> fallbackPlayers) {
+        List<Player> players = new ArrayList<>();
 
-        List<Player> players =
-                new ArrayList<>();
-
-        for (PlayerParticipation participation :
-                match.getPlayerParticipations()) {
-
-            if (participation.getTeam() == team
-                    && participation.getExitMinute() >= MATCH_LAST_MINUTE
+        for (PlayerParticipation participation : match.getPlayerParticipations()) {
+            if (participation.getTeam() == team && participation.getExitMinute() >= MATCH_LAST_MINUTE
                     && !players.contains(participation.getPlayer())) {
-
-                players.add(
-                        participation.getPlayer()
-                );
+                players.add(participation.getPlayer());
             }
         }
 
         if (players.isEmpty()) {
-            players.addAll(
-                    fallbackPlayers
-            );
+            players.addAll(fallbackPlayers);
         }
 
         return players;
@@ -252,39 +169,18 @@ public class MatchSimulator {
             List<Player> starters,
             Map<Player, PlayerParticipation> participations,
             Match match) {
-
         for (Player player : starters) {
-            PlayerParticipation participation =
-                    new PlayerParticipation(
-                            player,
-                            team,
-                            0
-                    );
-
-            participations.put(
-                    player,
-                    participation
-            );
-
-            match.addPlayerParticipation(
-                    participation
-            );
+            PlayerParticipation participation = new PlayerParticipation(player, team, 0);
+            participations.put(player, participation);
+            match.addPlayerParticipation(participation);
         }
     }
 
-    // Suma partidos y minutos según la participación real de cada jugador.
     private void registerPlayerStats(Match match) {
-        for (PlayerParticipation participation :
-                match.getPlayerParticipations()) {
-
-            Player player =
-                    participation.getPlayer();
-
+        for (PlayerParticipation participation : match.getPlayerParticipations()) {
+            Player player = participation.getPlayer();
             player.addMatchesPlayed();
-
-            player.addMinutesPlayed(
-                    participation.getMinutesPlayed()
-            );
+            player.addMinutesPlayed(participation.getMinutesPlayed());
         }
     }
 

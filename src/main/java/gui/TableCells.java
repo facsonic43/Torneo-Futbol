@@ -4,9 +4,10 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import model.participant.Player;
 
-/** Cell factories shared by the report and team tables. */
+/**
+ * Proporciona celdas reutilizables para alinear y presentar los valores de las tablas.
+ */
 public final class TableCells {
-
     private TableCells() {
     }
 
@@ -42,8 +43,6 @@ public final class TableCells {
             }
         };
     }
-
-    // Helper para celdas de texto centradas
     public static <T> TableCell<T, String> createCenterStringCell() {
         return new TableCell<>() {
             @Override

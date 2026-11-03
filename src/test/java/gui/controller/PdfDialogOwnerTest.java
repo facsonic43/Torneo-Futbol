@@ -23,6 +23,10 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+/**
+ * Comprueba que la exportación PDF use la ventana principal como propietaria desde cada pantalla,
+ * sin cambiar la vista actual ni abrir diálogos asociados a una ventana incorrecta.
+ */
 class PdfDialogOwnerTest {
     @BeforeAll
     static void startJavaFx() throws Exception {
@@ -108,7 +112,6 @@ class PdfDialogOwnerTest {
     private static final class RecordingTournamentController extends TournamentController {
         private Window lastOwner;
         private int exports;
-
         @Override public void showOverview() { }
         @Override public void showReports() { }
         @Override public void refreshAll() { }

@@ -8,11 +8,10 @@ import model.match.Match;
 import reports.ReportSection;
 
 /**
- * A report that ranks players or teams. The table is drawn by the shared
- * {@link StatisticsReportView}; every subclass only says which report it is.
+ * Comparte la presentación de los reportes que clasifican jugadores o equipos.
+ * Cada subclase define el contenido y sus títulos; la vista estadística construye la tabla.
  */
 public abstract class RankingReportView extends ReportView {
-
     private final StatisticsReportView statisticsReportView;
 
     protected RankingReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
@@ -31,7 +30,6 @@ public abstract class RankingReportView extends ReportView {
     protected void render() throws Exception {
         selectedReportTitle.setText(title());
         selectedReportSubtitle.setText(subtitle());
-
         long played = tournament.getAllMatches().stream().filter(Match::isPlayed).count();
         reportMetricChip.setText(played + " MATCHES PLAYED");
 

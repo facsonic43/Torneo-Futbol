@@ -1,12 +1,17 @@
 package model.match;
 
 import java.util.Optional;
+
 import model.participant.Referee;
 import model.participant.Team;
 
 import java.time.LocalDate;
 
+/**
+ * Partido de ida de una eliminatoria; aporta puntos y goles a la serie sin exigir un ganador.
+ */
 public class FirstLegMatch extends Match {
+    private static final long serialVersionUID = 1690642534697006805L;
 
     public FirstLegMatch(Team homeTeam, Team awayTeam, Referee referee, Stadium stadium, LocalDate matchDate) {
         super(homeTeam, awayTeam, referee, stadium, matchDate);
@@ -14,25 +19,12 @@ public class FirstLegMatch extends Match {
 
     @Override
     public boolean isKnockout() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean requiresTieBreak() {
         return false;
-    }
-
-    @Override
-    public String getResolutionCriteria() {
-        String criteria = "Not Played";
-        if (played) {
-            if (homeGoals == awayGoals) {
-                criteria = "First Leg Draw";
-            } else {
-                criteria = "First Leg Advantage";
-            }
-        }
-        return criteria;
     }
 
     @Override

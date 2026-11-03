@@ -1,12 +1,17 @@
 package model.match;
 
 import java.util.Optional;
+
 import model.participant.Referee;
 import model.participant.Team;
 
 import java.time.LocalDate;
 
+/**
+ * Final a partido único: decide por el marcador o, si hay empate, por una tanda de penales.
+ */
 public class FinalMatch extends Match {
+    private static final long serialVersionUID = -5476613621063167277L;
 
     public FinalMatch(Team homeTeam, Team awayTeam, Referee referee, Stadium stadium, LocalDate matchDate) {
         super(homeTeam, awayTeam, referee, stadium, matchDate);
@@ -19,43 +24,25 @@ public class FinalMatch extends Match {
 
     @Override
     public boolean requiresTieBreak() {
-        boolean tieBreakNeeded = false;
-        if (played && homeGoals == awayGoals) {
-            if (homePenalties == null || awayPenalties == null || homePenalties.equals(awayPenalties)) {
-                tieBreakNeeded = true;
-            }
-        }
-        return tieBreakNeeded;
+        return getResolutionCriterion() == ResolutionCriterion.UNRESOLVED;
     }
 
     @Override
     public Team getWinner() {
-        Team winner = super.getWinner();
-
-        if (winner == null && played && homePenalties != null && awayPenalties != null) {
-            if (homePenalties > awayPenalties) {
-                winner = homeTeam;
-            } else if (awayPenalties > homePenalties) {
-                winner = awayTeam;
-            }
-        }
-
-        return winner;
+        return switch (getResolutionCriterion()) {
+            case REGULAR_TIME, FORFEIT -> super.getWinner();
+            case PENALTIES -> getPenaltyWinner();
+            default -> null;
+        };
     }
 
     @Override
-    public String getResolutionCriteria() {
-        String criteria = "Not Played";
-        if (played) {
-            if (homeGoals != awayGoals) {
-                criteria = "Regular Time (" + homeGoals + " - " + awayGoals + ")";
-            } else if (homePenalties != null && awayPenalties != null) {
-                criteria = "Penalty Shootout (" + homePenalties + " - " + awayPenalties + ")";
-            } else {
-                criteria = "Tied - Pending Penalties";
-            }
+    public ResolutionCriterion getResolutionCriterion() {
+        ResolutionCriterion criterion = super.getResolutionCriterion();
+        if (criterion != ResolutionCriterion.DRAW) {
+            return criterion;
         }
-        return criteria;
+        return getPenaltyWinner() == null ? ResolutionCriterion.UNRESOLVED : ResolutionCriterion.PENALTIES;
     }
 
     @Override

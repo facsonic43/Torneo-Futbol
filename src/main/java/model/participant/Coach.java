@@ -4,6 +4,10 @@ import model.match.Formation;
 
 import java.time.LocalDate;
 
+/**
+ * Representa al entrenador y sus títulos; elige la formación según la diferencia
+ * de potencia entre los equipos y su experiencia.
+ */
 public class Coach extends Person{
     private int titlesObtained;
 
@@ -95,5 +99,4 @@ public class Coach extends Person{
         };
         return balanced[formationIndex % balanced.length];
     }
-
 }

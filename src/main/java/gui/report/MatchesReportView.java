@@ -25,20 +25,20 @@ import java.util.Comparator;
 import java.util.List;
 import static gui.MatchFormat.scoreText;
 
+/**
+ * Lista los partidos jugados y permite filtrarlos por equipo y fase del campeonato.
+ * Muestra el resultado, las formaciones, las incidencias y la definición del encuentro elegido.
+ */
 public class MatchesReportView extends ReportView {
-
     public MatchesReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
             Label selectedReportTitle, Node reportsPane) {
         super(reportContentHost, reportMetricChip, selectedReportSubtitle, selectedReportTitle, reportsPane);
     }
 
-    // --- REPORTE IV: MATCHES SUMMARY & INCIDENCES ---
     @Override
     protected void render() {
         selectedReportTitle.setText("Matches Log & Incidences");
         selectedReportSubtitle.setText("Comprehensive log of played matches, starting lineups, formations and match events");
-
-        // 1. Obtener partidos jugados y ordenarlos por fecha
         List<Match> playedMatches = new ArrayList<>();
         if (tournament.getAllMatches() != null) {
             for (Match m : tournament.getAllMatches()) {
@@ -48,7 +48,6 @@ public class MatchesReportView extends ReportView {
             }
         }
         playedMatches.sort(Comparator.comparing(Match::getMatchDate, Comparator.nullsLast(Comparator.naturalOrder())));
-
         reportMetricChip.setText(playedMatches.size() + " MATCHES PLAYED");
 
         if (playedMatches.isEmpty()) {
@@ -64,13 +63,9 @@ public class MatchesReportView extends ReportView {
         VBox mainLayout = new VBox(12);
         mainLayout.setFillWidth(true);
         VBox.setVgrow(mainLayout, Priority.ALWAYS);
-
-        // --- BARRA DE FILTROS ---
         HBox filterBar = new HBox(12);
         filterBar.setAlignment(Pos.CENTER_LEFT);
         filterBar.getStyleClass().add("info-card");
-
-        // Filtro de Equipos con opción ALL TEAMS
         ComboBox<String> teamFilter = new ComboBox<>();
         teamFilter.getItems().add("ALL TEAMS");
         for (Team t : tournament.getTeams()) {
@@ -78,39 +73,25 @@ public class MatchesReportView extends ReportView {
         }
         teamFilter.setValue("ALL TEAMS");
         teamFilter.setPrefWidth(200);
-
-        // Filtro de Etapas con opción ALL STAGES
         ComboBox<String> stageFilter = new ComboBox<>();
         stageFilter.getItems().addAll("ALL STAGES", "GROUP STAGE", "QUARTER-FINALS", "SEMI-FINALS", "FINAL");
         stageFilter.setValue("ALL STAGES");
         stageFilter.setPrefWidth(180);
-
         Button btnReset = new Button("RESET FILTERS");
         btnReset.getStyleClass().add("secondary-button");
-
         Region filterSpacer = new Region();
         HBox.setHgrow(filterSpacer, Priority.ALWAYS);
 
-        filterBar.getChildren().addAll(
-                new Label("TEAM:"), teamFilter,
-                new Label("STAGE:"), stageFilter,
-                btnReset,
-                filterSpacer
-        );
-
-        // --- CONTENIDO (LISTA + DETALLES) ---
+        filterBar.getChildren().addAll(new Label("TEAM:"), teamFilter, new Label("STAGE:"), stageFilter, btnReset,
+                filterSpacer);
         HBox contentLayout = new HBox(16);
         contentLayout.setFillHeight(true);
         VBox.setVgrow(contentLayout, Priority.ALWAYS);
-
-        // Columna izquierda: Lista de partidos
         VBox leftSide = new VBox(10);
         leftSide.setPrefWidth(300);
-
         ListView<Match> playedList = new ListView<>();
         playedList.getStyleClass().add("dark-list");
         VBox.setVgrow(playedList, Priority.ALWAYS);
-
         ObservableList<Match> masterList = FXCollections.observableArrayList(playedMatches);
         FilteredList<Match> filteredList = new FilteredList<>(masterList, m -> true);
         playedList.setItems(filteredList);
@@ -126,7 +107,6 @@ public class MatchesReportView extends ReportView {
                     VBox card = new VBox(2);
                     Label teams = new Label(m.getHomeTeam().getName() + " vs " + m.getAwayTeam().getName());
                     teams.setStyle("-fx-font-weight: 800; -fx-font-size: 12px;");
-
                     String scoreStr = m.getHomeGoals() + " - " + m.getAwayGoals();
                     if (m.getHomePenalties() != null) {
                         scoreStr += " (" + m.getHomePenalties() + "-" + m.getAwayPenalties() + " pen)";
@@ -134,17 +114,13 @@ public class MatchesReportView extends ReportView {
 
                     Label score = new Label(scoreStr + " · " + (m.getMatchDate() != null ? m.getMatchDate().toString() : "TBD"));
                     score.getStyleClass().add("small-text");
-
                     card.getChildren().addAll(teams, score);
                     setGraphic(card);
                     setText(null);
                 }
             }
         });
-
         leftSide.getChildren().add(playedList);
-
-        // Columna derecha: Detalle del partido seleccionado
         VBox rightSide = new VBox(12);
         rightSide.getStyleClass().add("info-card");
         HBox.setHgrow(rightSide, Priority.ALWAYS);
@@ -154,8 +130,6 @@ public class MatchesReportView extends ReportView {
                 renderMatchDetails(rightSide, selectedMatch);
             }
         });
-
-        // Lógica del filtro reactivo contemplando las opciones "ALL"
         Runnable updateFilters = () -> {
             String tSel = teamFilter.getValue();
             String sSel = stageFilter.getValue();
@@ -170,20 +144,15 @@ public class MatchesReportView extends ReportView {
                 if (!matchStage) {
                     String stageName = getMatchStageName(match).toUpperCase();
                     switch (sSel.toUpperCase()) {
-                        case "FINAL":
-                            matchStage = stageName.equals("FINAL");
+                        case "FINAL": matchStage = stageName.equals("FINAL");
                             break;
-                        case "SEMI-FINALS":
-                            matchStage = stageName.equals("SEMI-FINALS");
+                        case "SEMI-FINALS": matchStage = stageName.equals("SEMI-FINALS");
                             break;
-                        case "QUARTER-FINALS":
-                            matchStage = stageName.equals("QUARTER-FINALS");
+                        case "QUARTER-FINALS": matchStage = stageName.equals("QUARTER-FINALS");
                             break;
-                        case "GROUP STAGE":
-                            matchStage = stageName.equals("GROUP STAGE");
+                        case "GROUP STAGE": matchStage = stageName.equals("GROUP STAGE");
                             break;
-                        default:
-                            matchStage = stageName.contains(sSel.toUpperCase());
+                        default: matchStage = stageName.contains(sSel.toUpperCase());
                             break;
                     }
                 }
@@ -200,7 +169,6 @@ public class MatchesReportView extends ReportView {
                 rightSide.getChildren().add(noResults);
             }
         };
-
         teamFilter.valueProperty().addListener((obs, o, n) -> updateFilters.run());
         stageFilter.valueProperty().addListener((obs, o, n) -> updateFilters.run());
 
@@ -209,33 +177,25 @@ public class MatchesReportView extends ReportView {
             stageFilter.setValue("ALL STAGES");
             updateFilters.run();
         });
-
         updateFilters.run();
-
         contentLayout.getChildren().addAll(leftSide, rightSide);
         mainLayout.getChildren().addAll(filterBar, contentLayout);
-
         reportContentHost.getChildren().add(mainLayout);
     }
 
     private void renderMatchDetails(VBox container, Match match) {
         container.getChildren().clear();
-
-        // 1. Scoreboard Header & Details
         VBox scoreHeader = new VBox(6);
         scoreHeader.setAlignment(Pos.CENTER);
         scoreHeader.setStyle("-fx-background-color: -bg-panel; -fx-padding: 14; -fx-background-radius: 8; -fx-border-color: -border-card; -fx-border-radius: 8;");
-
         Label teamsTitle = new Label(match.getHomeTeam().getName().toUpperCase() + "   VS   " + match.getAwayTeam().getName().toUpperCase());
         teamsTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: -text-main;");
-
         String scoreText = match.getHomeGoals() + "  -  " + match.getAwayGoals();
         if (match.getHomePenalties() != null) {
             scoreText += "  (" + match.getHomePenalties() + " - " + match.getAwayPenalties() + " pen)";
         }
         Label scoreLabel = new Label(scoreText);
         scoreLabel.getStyleClass().add("metric-value");
-
         String stageStr = getMatchStageName(match);
         String infoStr = "Stage: " + stageStr
                 + "  |  Date: " + (match.getMatchDate() != null ? match.getMatchDate().toString() : "TBD")
@@ -244,34 +204,23 @@ public class MatchesReportView extends ReportView {
 
         Label matchInfo = new Label(infoStr);
         matchInfo.getStyleClass().add("small-text");
-
         scoreHeader.getChildren().addAll(teamsTitle, scoreLabel, matchInfo);
-
-        // 2. Buttons to show starting lineups in a modal
         HBox startersButtonsBox = new HBox(12);
         startersButtonsBox.setAlignment(Pos.CENTER);
-
         Button btnHomeStarters = new Button("SHOW " + match.getHomeTeam().getName().toUpperCase() + " STARTERS");
         btnHomeStarters.getStyleClass().add("secondary-button");
         btnHomeStarters.setOnAction(e -> showStartersModal(match.getHomeTeam(), match.getHomeFormation(), match.getHomeStarters()));
-
         Button btnAwayStarters = new Button("SHOW " + match.getAwayTeam().getName().toUpperCase() + " STARTERS");
         btnAwayStarters.getStyleClass().add("secondary-button");
         btnAwayStarters.setOnAction(e -> showStartersModal(match.getAwayTeam(), match.getAwayFormation(), match.getAwayStarters()));
-
         startersButtonsBox.getChildren().addAll(btnHomeStarters, btnAwayStarters);
-
-        // 3. Incidences & Timeline List
         VBox eventsBox = new VBox(6);
         VBox.setVgrow(eventsBox, Priority.ALWAYS);
-
         Label eventsTitle = new Label("MATCH INCIDENCES & TIMELINE");
         eventsTitle.getStyleClass().add("section-caption");
-
         ListView<String> eventsList = new ListView<>();
         eventsList.getStyleClass().add("dark-list");
         VBox.setVgrow(eventsList, Priority.ALWAYS);
-
         List<Event> sortedEvents = new ArrayList<>(match.getEvents());
         sortedEvents.sort(Comparator.comparingInt(Event::getMinute));
 
@@ -284,16 +233,13 @@ public class MatchesReportView extends ReportView {
         }
 
         eventsBox.getChildren().addAll(eventsTitle, eventsList);
-
         container.getChildren().addAll(scoreHeader, startersButtonsBox, eventsBox);
     }
 
-    // Modal dialog to display squad lineup and formation strategy
     private void showStartersModal(Team team, Formation formation, List<Player> starters) {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Starting Lineup - " + team.getName());
         dialog.setHeaderText(null);
-
         DialogPane pane = dialog.getDialogPane();
         pane.getButtonTypes().add(ButtonType.CLOSE);
         pane.setMinWidth(420);
@@ -307,17 +253,13 @@ public class MatchesReportView extends ReportView {
             }
         }
         pane.getStyleClass().add("app-root");
-
         VBox content = new VBox(12);
         content.getStyleClass().add("page-content");
-
         Label heading = new Label(team.getName().toUpperCase());
         heading.getStyleClass().add("section-title");
-
         String formName = (formation != null) ? formation.getLabel() : "Standard Strategy";
         Label formationLabel = new Label("Tactical Formation: " + formName);
         formationLabel.getStyleClass().add("accent-text");
-
         ListView<String> startersList = new ListView<>();
         startersList.getStyleClass().add("dark-list");
         startersList.setPrefHeight(320);
@@ -325,7 +267,6 @@ public class MatchesReportView extends ReportView {
         if (starters == null || starters.isEmpty()) {
             startersList.getItems().add("No starting players recorded.");
         } else {
-            // Sort tactical order: GK -> DEF -> MID -> FWD
             List<Player> sortedStarters = new ArrayList<>(starters);
             sortedStarters.sort(Comparator.comparingInt(p -> getPositionOrder(p.getPosition())));
 
@@ -336,11 +277,9 @@ public class MatchesReportView extends ReportView {
 
         content.getChildren().addAll(heading, formationLabel, startersList);
         pane.setContent(content);
-
         dialog.showAndWait();
     }
 
-    // Tactical hierarchy sorting: 1. Goalkeeper, 2. Defender, 3. Midfielder, 4. Forward
     private int getPositionOrder(Position pos) {
         if (pos == null) return 99;
         String name = pos.name().toUpperCase();
@@ -351,7 +290,6 @@ public class MatchesReportView extends ReportView {
         return 5;
     }
 
-    // Helper method to resolve match stage title
     private String getMatchStageName(Match match) {
         if (match == null) return "Unknown Stage";
 
@@ -359,7 +297,6 @@ public class MatchesReportView extends ReportView {
             case FINAL -> "Final";
             case SEMI_FINALS -> "Semi-Finals";
             case QUARTER_FINALS -> "Quarter-Finals";
-            // Knockout matches that do not belong to any round of this tournament.
             default -> match.isKnockout() ? "Knockout Stage" : "Group Stage";
         };
     }

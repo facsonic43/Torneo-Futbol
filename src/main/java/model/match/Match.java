@@ -1,6 +1,7 @@
 package model.match;
 
 import java.util.Optional;
+
 import model.participant.Player;
 import model.participant.PlayerParticipation;
 import model.participant.Referee;
@@ -10,12 +11,16 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.Serializable;
+
 /*
  * Clase base de todos los partidos del campeonato.
  * Guarda equipos, resultado, árbitro, estadio, formaciones, titulares, incidencias
  * y participaciones de jugadores para que cada tipo de partido resuelva su ganador.
+ * Centraliza los criterios comunes y las derrotas administrativas por 3-0 sin goles individuales.
+ * También reconstruye incidencias, jugadores en cancha y arquero para las tandas de penales.
  */
-public abstract class Match implements Serializable{
+public abstract class Match implements Serializable {
+    private static final long serialVersionUID = -606546183674919432L;
     protected Team homeTeam;
     protected Team awayTeam;
     protected Referee referee;
@@ -31,6 +36,7 @@ public abstract class Match implements Serializable{
 
     protected boolean played = false;
     protected boolean extraTimePlayed = false;
+    private boolean forfeited = false;
     protected List<Event> events = new ArrayList<>();
     protected List<Player> homeStarters = new ArrayList<>();
     protected List<Player> awayStarters = new ArrayList<>();
@@ -48,10 +54,6 @@ public abstract class Match implements Serializable{
 
     public abstract boolean requiresTieBreak();
 
-    /**
-     * Winner decided by the goals of this match alone; {@code null} on a draw or if
-     * it has not been played. Knockout subclasses override it to add their own rules.
-     */
     public Team getWinner() {
         Team winner = null;
 
@@ -66,7 +68,46 @@ public abstract class Match implements Serializable{
         return winner;
     }
 
-    public abstract String getResolutionCriteria();
+    public final String getResolutionCriteria() {
+        return getResolutionCriterion().name();
+    }
+
+    public ResolutionCriterion getResolutionCriterion() {
+        if (!played) {
+            return ResolutionCriterion.NOT_PLAYED;
+        }
+        if (forfeited) {
+            return ResolutionCriterion.FORFEIT;
+        }
+        return homeGoals == awayGoals ? ResolutionCriterion.DRAW : ResolutionCriterion.REGULAR_TIME;
+    }
+
+    protected Team getPenaltyWinner() {
+        if (homePenalties == null || awayPenalties == null || homePenalties < 0 || awayPenalties < 0
+                || homePenalties.equals(awayPenalties)) {
+            return null;
+        }
+        return homePenalties > awayPenalties ? homeTeam : awayTeam;
+    }
+
+    public boolean isForfeited() {
+        return forfeited;
+    }
+
+    public void forfeit(Team losingTeam) {
+        if (played) {
+            throw new IllegalStateException("This match has already been played.");
+        }
+        if (losingTeam != homeTeam && losingTeam != awayTeam) {
+            throw new IllegalArgumentException("The losing team must belong to the match.");
+        }
+        homeGoals = losingTeam == homeTeam ? 0 : 3;
+        awayGoals = losingTeam == awayTeam ? 0 : 3;
+        homePenalties = null;
+        awayPenalties = null;
+        forfeited = true;
+        played = true;
+    }
 
     public void addEvent(Event event) {
         events.add(event);
@@ -113,7 +154,6 @@ public abstract class Match implements Serializable{
         this.homeFormation = homeFormation;
         this.awayFormation = awayFormation;
     }
-
 
     public List<Player> getHomeStarters() {
         return homeStarters;
@@ -179,13 +219,9 @@ public abstract class Match implements Serializable{
         return events;
     }
 
-
-    // Indica si ya se registraron los titulares de al menos un equipo.
     public boolean hasRecordedStartingPlayers() {
         return !homeStarters.isEmpty() || !awayStarters.isEmpty();
     }
-
-    // Typed views: every subclass answers for itself, so nobody has to ask for its class.
 
     public Optional<GroupMatch> asGroupMatch() {
         return Optional.empty();
@@ -202,8 +238,6 @@ public abstract class Match implements Serializable{
     public Optional<FinalMatch> asFinal() {
         return Optional.empty();
     }
-
-    // Incidents by type, collected with a visitor.
 
     public List<Goal> getGoals() {
         return collectEvents().goals;
@@ -248,7 +282,6 @@ public abstract class Match implements Serializable{
         }
     }
 
-    /** Penalty kicks of the shootout taken by the given team. */
     public List<PenaltyTaken> getPenaltyKicks(Team team) {
         List<PenaltyTaken> penalties = new ArrayList<>();
 
@@ -261,7 +294,6 @@ public abstract class Match implements Serializable{
         return penalties;
     }
 
-    /** Players of the team who were still on the pitch when the 90 minutes ended. */
     public List<Player> getPlayersOnPitchAtEnd(Team team) {
         List<Player> players = new ArrayList<>();
 
@@ -271,7 +303,6 @@ public abstract class Match implements Serializable{
             }
         }
 
-        // Fallback for matches without recorded participations: the starting players.
         if (players.isEmpty()) {
             if (team == getHomeTeam()) {
                 players.addAll(getHomeStarters());
@@ -283,10 +314,6 @@ public abstract class Match implements Serializable{
         return players;
     }
 
-    /**
-     * Goalkeeper that finished the match, who defends the shootout. When no goalkeeper is left,
-     * the best-rated player on the pitch goes in goal. Null if nobody is on record.
-     */
     public Player getShootoutGoalkeeper(Team team) {
         List<Player> players = getPlayersOnPitchAtEnd(team);
 

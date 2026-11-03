@@ -5,11 +5,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Outfield player (defender, midfielder or forward). Its overall rating weighs the
- * common skills differently depending on the position it plays.
+ * Representa a un defensor, mediocampista o delantero y calcula su valoración
+ * ponderando las habilidades según la posición que ocupa.
  */
 public class FieldPlayer extends Player {
-
     private static final long serialVersionUID = -2473516079032478862L;
 
     private final Position position;
@@ -47,30 +46,12 @@ public class FieldPlayer extends Player {
     @Override
     public double getOverall() {
         return switch (position) {
-            case DEFENDER -> (dribbling * 0.05)
-                    + (defensiveSkills * 0.35)
-                    + (finishing * 0.05)
-                    + (stamina * 0.10)
-                    + (vision * 0.05)
-                    + (heading * 0.20)
-                    + (speed * 0.10)
-                    + (passing * 0.10);
-            case MIDFIELDER -> (dribbling * 0.15)
-                    + (defensiveSkills * 0.15)
-                    + (finishing * 0.05)
-                    + (stamina * 0.15)
-                    + (vision * 0.20)
-                    + (heading * 0.05)
-                    + (speed * 0.05)
-                    + (passing * 0.20);
-            case FORWARD -> (dribbling * 0.10)
-                    + (defensiveSkills * 0.05)
-                    + (finishing * 0.30)
-                    + (stamina * 0.10)
-                    + (vision * 0.05)
-                    + (heading * 0.15)
-                    + (speed * 0.15)
-                    + (passing * 0.10);
+            case DEFENDER -> (dribbling * 0.05) + (defensiveSkills * 0.35) + (finishing * 0.05) + (stamina * 0.10)
+                    + (vision * 0.05) + (heading * 0.20) + (speed * 0.10) + (passing * 0.10);
+            case MIDFIELDER -> (dribbling * 0.15) + (defensiveSkills * 0.15) + (finishing * 0.05) + (stamina * 0.15)
+                    + (vision * 0.20) + (heading * 0.05) + (speed * 0.05) + (passing * 0.20);
+            case FORWARD -> (dribbling * 0.10) + (defensiveSkills * 0.05) + (finishing * 0.30) + (stamina * 0.10)
+                    + (vision * 0.05) + (heading * 0.15) + (speed * 0.15) + (passing * 0.10);
             case GOALKEEPER -> throw new IllegalStateException("A field player cannot be a goalkeeper");
         };
     }

@@ -3,8 +3,12 @@ package model.match;
 import model.participant.Player;
 import model.participant.Team;
 
+/**
+ * Representa una expulsión e indica si corresponde a roja directa o doble amarilla.
+ * Permite describirla y procesarla como incidencia del partido.
+ */
 public class RedCard extends Event {
-    private boolean directRed; // true = roja directa, false = doble amarilla
+    private boolean directRed;
 
     public RedCard(int minute, Team team, Player player, boolean directRed) {
         super(minute, team, player);

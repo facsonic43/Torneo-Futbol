@@ -2,10 +2,9 @@ package model.participant;
 
 import java.io.Serializable;
 
-/*
- * Guarda la participación real de un jugador dentro de un partido.
- * Permite saber si fue titular, cuándo ingresó, cuándo salió y cuántos minutos jugó,
- * para registrar correctamente las estadísticas aunque haya cambios, lesiones o expulsiones.
+/**
+ * Registra la participación de un futbolista en un equipo durante un partido,
+ * incluidos los minutos de entrada y salida que permiten calcular el tiempo jugado.
  */
 public class PlayerParticipation implements Serializable{
     private Player player;

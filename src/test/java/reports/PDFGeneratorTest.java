@@ -19,6 +19,10 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Comprueba la generación de credenciales PDF con datos personales, fotografías y códigos de barras.
+ * Verifica el contenido exportado y el tratamiento de fotografías disponibles o ausentes.
+ */
 class PDFGeneratorTest {
     @TempDir Path directory;
 
@@ -69,7 +73,6 @@ class PDFGeneratorTest {
         PDFGenerator.generate(data, output, new ReportOptions(null, null, directory));
         try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
             assertEquals(1, countXObjects(pdf, PdfName.Image));
-            // Two-column extraction may interleave the photo label with adjacent personal details.
             assertTrue(text(pdf).contains("unavailable"));
         }
     }
@@ -84,7 +87,6 @@ class PDFGeneratorTest {
         PDFGenerator.generate(fixture(), output, new ReportOptions(null, null, directory));
         try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
             assertEquals(3, countXObjects(pdf, PdfName.Image));
-            // Two coaches and two players have one available photo per role; two cards must have no photo.
             assertEquals(2, text(pdf).split("unavailable", -1).length - 1);
         }
     }

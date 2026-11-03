@@ -2,6 +2,9 @@ package gui;
 
 import javafx.scene.control.*;
 
+/**
+ * Agrupa los datos personales y deportivos de un entrenador para mostrarlos en los reportes.
+ */
 public class CoachReportEntry {
     private final String name;
     private final String teamName;

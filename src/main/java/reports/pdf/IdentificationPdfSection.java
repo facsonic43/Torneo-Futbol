@@ -22,7 +22,11 @@ import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-/** Printable cards with a Code 128 document identifier and a supplied photograph. */
+/**
+ * Construye credenciales imprimibles con datos personales, fotografía y código de barras
+ * Code 128 del documento. Conserva márgenes blancos para la lectura del código y adapta
+ * la fotografía al tamaño final de su celda.
+ */
 final class IdentificationPdfSection {
     private static final float PHOTO_HEIGHT = 120;
 
@@ -91,7 +95,6 @@ final class IdentificationPdfSection {
         barcode.setBarHeight(25);
         barcode.setSize(8);
         barcode.setX(0.8f);
-        // Preserve white quiet zones on each side of the bars for control-point scanners.
         information.add(new Image(barcode.createFormXObject(pdf)).setHorizontalAlignment(HorizontalAlignment.CENTER)
                 .setMarginTop(7).setMarginLeft(10).setMarginRight(10));
         details.addCell(information);
@@ -99,10 +102,8 @@ final class IdentificationPdfSection {
         return card;
     }
 
-    /** Paints to the final cell bounds, including any extra height required by the adjacent text. */
     static final class PhotoCellRenderer extends CellRenderer {
         private final PdfImageXObject image;
-
         PhotoCellRenderer(Cell cell, PdfImageXObject image) {
             super(cell);
             this.image = image;
@@ -127,7 +128,6 @@ final class IdentificationPdfSection {
             canvas.addXObjectFittedIntoRectangle(image, placement);
             canvas.restoreState();
         }
-
     }
 
     static String identifier(Person person) {

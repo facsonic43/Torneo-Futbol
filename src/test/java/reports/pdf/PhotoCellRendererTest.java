@@ -24,6 +24,10 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Comprueba que las fotografías cubran la celda completa de las credenciales PDF
+ * conservando su proporción y el recorte, incluso cuando el texto aumenta la altura de la fila.
+ */
 class PhotoCellRendererTest {
     @TempDir Path directory;
 
@@ -65,7 +69,6 @@ class PhotoCellRendererTest {
         Rectangle clip;
         Rectangle clipAtImage;
         Rectangle image;
-
         @Override
         public void eventOccurred(IEventData data, EventType type) {
             if (type == EventType.CLIP_PATH_CHANGED) {

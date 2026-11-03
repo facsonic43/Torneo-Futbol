@@ -11,6 +11,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Verifica que los reportes calculen estadísticas únicamente con los partidos de la edición.
+ * Comprueba goles, tarjetas, participaciones y minutos, distinguiendo datos completos y faltantes.
+ */
 class ChampionshipStatisticsTest {
     private static final Country COUNTRY = new Country("Argentina");
     private static final LocalDate BIRTH = LocalDate.of(2000, 1, 1);
@@ -25,13 +29,10 @@ class ChampionshipStatisticsTest {
         ReportData data = new ReportData(new TournamentData(List.of(home, away), List.of(referee)));
         Match pending = match(home, away, referee);
         data.getMatchDetails(pending).setStartingPlayers(List.of(historicalScorer), List.of());
-        // Antes: pending.addEvent(new Goal(10, home, historicalScorer, null));
         pending.addEvent(new Goal(10, home, historicalScorer, null, false, false, null));
         pending.setHomeGoals(1);
         data.addMatch(pending);
-
         ChampionshipStatistics stats = new ChampionshipStatistics(data);
-
         assertEquals(0, stats.getPlayedMatchCount());
         assertTrue(stats.getTopScorers().isEmpty());
         assertEquals(0, stats.getPlayerStats(historicalScorer).goals());
@@ -77,16 +78,14 @@ class ChampionshipStatisticsTest {
         match.setAwayGoals(1);
         match.setPlayed(true);
         data.addMatch(match);
-
         ChampionshipStatistics stats = new ChampionshipStatistics(data);
-
         assertEquals(0, stats.getIncompleteMatchCount());
         assertEquals(scorer, stats.getTopScorers().getFirst().player());
         assertEquals(2, stats.getPlayerStats(scorer).goals());
         assertEquals(1, stats.getPlayerStats(scorer).penaltyGoals());
         assertEquals(0, stats.getPlayerStats(scorer).assists());
         assertEquals(1, stats.getPlayerStats(assister).assists());
-        assertEquals(assister, penalty.getAssistPlayer()); // El reporte no modifica el Goal compartido.
+        assertEquals(assister, penalty.getAssistPlayer());
         assertEquals(1, stats.getPlayerStats(opponent).goals());
         assertEquals(1, stats.getPlayerStats(keeperHome).goalsConceded());
         assertEquals(2, stats.getPlayerStats(keeperAway).goalsConceded());
@@ -118,14 +117,12 @@ class ChampionshipStatisticsTest {
         match.setExtraTimePlayed(true);
         match.addEvent(new Substitution(30, home, starter, substitute));
         match.addEvent(new RedCard(75, home, expelled, true));
-        match.addEvent(new Injury(40, home, injured, 1)); // Inserción sin ordenar.
+        match.addEvent(new Injury(40, home, injured, 1));
         match.addEvent(new Substitution(40, home, injured, injurySubstitute));
         match.addEvent(new Substitution(120, home, substitute, lastMinute));
         match.setPlayed(true);
         data.addMatch(match);
-
         ChampionshipStatistics stats = new ChampionshipStatistics(data);
-
         assertEquals(30, stats.getPlayerStats(starter).minutes());
         assertEquals(90, stats.getPlayerStats(substitute).minutes());
         assertEquals(75, stats.getPlayerStats(expelled).minutes());
@@ -156,9 +153,7 @@ class ChampionshipStatisticsTest {
         match.addEvent(new RedCard(50, away, explicit, false));
         match.setPlayed(true);
         data.addMatch(match);
-
         ChampionshipStatistics stats = new ChampionshipStatistics(data);
-
         assertEquals(2, stats.getPlayerStats(legacy).yellowCards());
         assertEquals(2, stats.getPlayerStats(explicit).yellowCards());
         assertEquals(1, stats.getPlayerStats(legacy).redCards());
@@ -181,9 +176,7 @@ class ChampionshipStatisticsTest {
         group.addMatch(match);
         data.addGroup(group);
         data.addMatch(match);
-
         ChampionshipStatistics stats = new ChampionshipStatistics(data);
-
         assertEquals(1, stats.getPlayedMatchCount());
         assertEquals(1, stats.getTeamsAlphabetically().getFirst().played());
         assertEquals(active, stats.getRefereeRanking().getFirst().referee());
@@ -201,7 +194,6 @@ class ChampionshipStatisticsTest {
         home.addPlayer(goalkeeper);
         home.addPlayer(striker);
         ChampionshipStatistics stats = new ChampionshipStatistics(new TournamentData(List.of(home), List.of()));
-
         assertEquals(striker, stats.getPlayers(null, null).getFirst().player());
         assertEquals(List.of(stats.getPlayerStats(goalkeeper)), stats.getPlayers(Position.GOALKEEPER, null));
         assertEquals(List.of(stats.getPlayerStats(striker)), stats.getPlayers(null, striker));
@@ -220,7 +212,6 @@ class ChampionshipStatisticsTest {
         Match match = match(home, away, null);
         match.setPlayed(true);
         data.addMatch(match);
-
         assertEquals(0, initial.getPlayedMatchCount());
         assertEquals(1, new ChampionshipStatistics(data).getPlayedMatchCount());
     }
@@ -239,7 +230,6 @@ class ChampionshipStatisticsTest {
         match.setHomeGoals(1);
         match.setPlayed(true);
         data.addMatch(match);
-
         ChampionshipStatistics incomplete = new ChampionshipStatistics(data);
         assertEquals(1, incomplete.getIncompleteMatchCount());
         assertFalse(incomplete.hasCompleteStartingLineups());
@@ -247,12 +237,10 @@ class ChampionshipStatisticsTest {
         assertEquals(0, incomplete.getPlayerStats(scorer).minutes());
         assertEquals(0, incomplete.getPlayerStats(scorer).penaltyGoals());
         assertEquals(0, incomplete.getPlayerStats(goalkeeper).goalsConceded());
-
         ReportMatchDetails details = data.getMatchDetails(match);
         details.setStartingPlayers(List.of(scorer), List.of(goalkeeper));
         details.setGoalDetails(goal, true, false, goalkeeper);
         ChampionshipStatistics complete = new ChampionshipStatistics(data);
-
         assertEquals(0, complete.getIncompleteMatchCount());
         assertTrue(complete.hasCompleteStartingLineups());
         assertTrue(complete.hasCompleteGoalInformation());
@@ -269,9 +257,7 @@ class ChampionshipStatisticsTest {
         Referee unknown = referee("Sin metadata", 10);
         ReportData data = new ReportData(new TournamentData(List.of(), List.of(known, unknown)));
         data.setRefereeExperience(known, 20);
-
         ChampionshipStatistics stats = new ChampionshipStatistics(data);
-
         assertEquals(20.0, stats.getAverageRefereeExperience());
         assertEquals(1, stats.getRefereesWithKnownExperienceCount());
         assertNull(stats.getRefereeRanking().getLast().yearsOfExperience());
@@ -288,7 +274,6 @@ class ChampionshipStatisticsTest {
         details.setStartingPlayers(original, List.of());
         original.clear();
         match.addEvent(new Injury(40, home, injured, 1));
-
         assertEquals(List.of(injured), details.getHomeStarters());
         assertEquals(90, details.getPlayerMinutes(match).get(injured));
         assertThrows(UnsupportedOperationException.class, () -> details.getHomeStarters().clear());
@@ -307,9 +292,7 @@ class ChampionshipStatisticsTest {
         match.setHomeGoals(2);
         match.setPlayed(true);
         data.addMatch(match);
-
         ChampionshipStatistics stats = new ChampionshipStatistics(data);
-
         assertEquals(1, stats.getIncompleteMatchCount());
         assertEquals(2, stats.getTeamsAlphabetically().getFirst().goalsFor());
         assertTrue(stats.getTopScorers().isEmpty());
@@ -321,14 +304,12 @@ class ChampionshipStatisticsTest {
     }
 
     private static Player player(String name, Position position) {
-        // Datos históricos deliberadamente altos para descubrir su mezcla con el torneo.
         return new FieldPlayer(name, 1, "DNI", BIRTH, COUNTRY, 100, 9000, 20, 5, 50, 25,
                 position, 70, 70, 70, 70, 70, 70, 70, 70);
     }
 
     private static Player keeper(String name) {
-        return new Goalkeeper(name, 1, "DNI", BIRTH, COUNTRY, 100, 9000, 20, 5, 0, 25,
-                70, 70, 70, 70, 70, 70);
+        return new Goalkeeper(name, 1, "DNI", BIRTH, COUNTRY, 100, 9000, 20, 5, 0, 25, 70, 70, 70, 70, 70, 70);
     }
 
     private static Referee referee(String name, int years) {

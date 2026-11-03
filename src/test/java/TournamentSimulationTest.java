@@ -21,353 +21,114 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/*
- * Comprueba el funcionamiento integral del campeonato.
- * Verifica las 37 fechas, las eliminatorias, árbitros, estadios,
- * incidencias, campeón y estadísticas de goles.
+/**
+ * Comprueba la simulación completa del campeonato, sus 37 partidos y el campeón.
+ * Verifica árbitros, estadios, incidencias, estadísticas y los criterios de las eliminatorias.
  */
 public class TournamentSimulationTest {
-
     @Test
     void fullTournamentShouldFinishCorrectly() {
-
-        TournamentDataLoader loader =
-                new TournamentDataLoader();
-
-        TournamentData data =
-                loader.load("torneo.json");
-
-        int initialGoals =
-                countPlayerGoals(
-                        data.getTeams()
-                );
-
-        Tournament tournament =
-                new Tournament(
-                        data.getTeams(),
-                        data.getReferees()
-                );
-
-        List<Group> groups =
-                tournament.drawGroups();
-
-        List<Stadium> stadiums =
-                createTestStadiums();
-
-        tournament.generateGroupMatches(
-                stadiums
-        );
-
-        // La semilla hace que este test repita siempre la misma simulación.
-        MatchSimulator simulator =
-                new MatchSimulator(
-                        20260920L
-                );
-
-        tournament.simulateGroupStage(
-                simulator
-        );
-
-        tournament.generateQuarterFinals(
-                stadiums
-        );
-
-        tournament.simulateQuarterFinals(
-                simulator
-        );
-
+        TournamentDataLoader loader = new TournamentDataLoader();
+        TournamentData data = loader.load("torneo.json");
+        int initialGoals = countPlayerGoals(data.getTeams());
+        Tournament tournament = new Tournament(data.getTeams(), data.getReferees());
+        List<Group> groups = tournament.drawGroups();
+        List<Stadium> stadiums = createTestStadiums();
+        tournament.generateGroupMatches(stadiums);
+        MatchSimulator simulator = new MatchSimulator(20260920L);
+        tournament.simulateGroupStage(simulator);
+        tournament.generateQuarterFinals(stadiums);
+        tournament.simulateQuarterFinals(simulator);
         tournament.generateSemiFinals();
-
-        tournament.simulateSemiFinals(
-                simulator
-        );
-
+        tournament.simulateSemiFinals(simulator);
         tournament.generateFinal();
-
-        tournament.simulateFinal(
-                simulator
-        );
-
-        List<Match> allMatches =
-                tournament.getAllMatches();
-
-        assertEquals(
-                4,
-                groups.size()
-        );
-
-        assertEquals(
-                24,
-                countGroupMatches(groups)
-        );
-
-        assertEquals(
-                4,
-                tournament
-                        .getQuarterFinalFirstLegs()
-                        .size()
-        );
-
-        assertEquals(
-                4,
-                tournament
-                        .getQuarterFinalSecondLegs()
-                        .size()
-        );
-
-        assertEquals(
-                2,
-                tournament
-                        .getSemiFinalFirstLegs()
-                        .size()
-        );
-
-        assertEquals(
-                2,
-                tournament
-                        .getSemiFinalSecondLegs()
-                        .size()
-        );
-
-        assertNotNull(
-                tournament.getFinalMatch()
-        );
-
-        assertEquals(
-                37,
-                allMatches.size()
-        );
-
-        assertNotNull(
-                tournament.getChampion()
-        );
-
-        validateAllMatchesPlayed(
-                allMatches
-        );
-
-        validateReferees(
-                allMatches
-        );
-
-        validateEventMinutes(
-                allMatches
-        );
-
-        validateGoalsHaveGoalkeeper(
-                allMatches
-        );
-
-        validateKnockoutWinners(
-                tournament
-        );
-
-        validateKnockoutStadiums(
-                allMatches
-        );
-
-        int matchGoals =
-                countScorerGoalsFromEvents(
-                        allMatches
-                );
-
-        int finalPlayerGoals =
-                countPlayerGoals(
-                        tournament.getTeams()
-                );
-
-        assertEquals(
-                initialGoals + matchGoals,
-                finalPlayerGoals
-        );
+        tournament.simulateFinal(simulator);
+        List<Match> allMatches = tournament.getAllMatches();
+        assertEquals(4, groups.size());
+        assertEquals(24, countGroupMatches(groups));
+        assertEquals(4, tournament.getQuarterFinalFirstLegs().size());
+        assertEquals(4, tournament.getQuarterFinalSecondLegs().size());
+        assertEquals(2, tournament.getSemiFinalFirstLegs().size());
+        assertEquals(2, tournament.getSemiFinalSecondLegs().size());
+        assertNotNull(tournament.getFinalMatch());
+        assertEquals(37, allMatches.size());
+        assertNotNull(tournament.getChampion());
+        validateAllMatchesPlayed(allMatches);
+        validateReferees(allMatches);
+        validateEventMinutes(allMatches);
+        validateGoalsHaveGoalkeeper(allMatches);
+        validateKnockoutWinners(tournament);
+        validateKnockoutStadiums(allMatches);
+        int matchGoals = countScorerGoalsFromEvents(allMatches);
+        int finalPlayerGoals = countPlayerGoals(tournament.getTeams());
+        assertEquals(initialGoals + matchGoals, finalPlayerGoals);
     }
 
-    // Comprueba directamente que una tanda de penales no sume goles a los jugadores.
     @Test
     void penaltyShootoutShouldNotIncreasePlayerGoals() {
-
-        TournamentDataLoader loader =
-                new TournamentDataLoader();
-
-        TournamentData data =
-                loader.load("torneo.json");
-
-        Team home =
-                data.getTeams().get(0);
-
-        Team away =
-                data.getTeams().get(1);
-
-        FinalMatch match =
-                new FinalMatch(
+        TournamentDataLoader loader = new TournamentDataLoader();
+        TournamentData data = loader.load("torneo.json");
+        Team home = data.getTeams().get(0);
+        Team away = data.getTeams().get(1);
+        FinalMatch match = new FinalMatch(
                         home,
                         away,
                         data.getReferees().get(0),
-                        new Stadium(
-                                "Penalty Test Stadium",
-                                1
-                        ),
+                        new Stadium("Penalty Test Stadium", 1),
                         java.time.LocalDate.now()
                 );
 
-        List<Player> homePlayers =
-                new ArrayList<>(
-                        home.getSquad()
-                                .subList(0, 11)
-                );
-
-        List<Player> awayPlayers =
-                new ArrayList<>(
-                        away.getSquad()
-                                .subList(0, 11)
-                );
-
-        int goalsBefore =
-                countPlayerGoals(
-                        data.getTeams()
-                );
-
-        MatchSimulator simulator =
-                new MatchSimulator(
-                        12345L
-                );
-
-        simulator.simulatePenaltyShootout(
-                match,
-                homePlayers,
-                awayPlayers
-        );
-
-        int goalsAfter =
-                countPlayerGoals(
-                        data.getTeams()
-                );
-
-        assertEquals(
-                goalsBefore,
-                goalsAfter
-        );
-
-        assertNotNull(
-                match.getHomePenalties()
-        );
-
-        assertNotNull(
-                match.getAwayPenalties()
-        );
-
-        assertNotEquals(
-                match.getHomePenalties(),
-                match.getAwayPenalties()
-        );
-
-        boolean penaltyEventFound =
-                false;
+        List<Player> homePlayers = new ArrayList<>(home.getSquad().subList(0, 11));
+        List<Player> awayPlayers = new ArrayList<>(away.getSquad().subList(0, 11));
+        int goalsBefore = countPlayerGoals(data.getTeams());
+        MatchSimulator simulator = new MatchSimulator(12345L);
+        simulator.simulatePenaltyShootout(match, homePlayers, awayPlayers);
+        int goalsAfter = countPlayerGoals(data.getTeams());
+        assertEquals(goalsBefore, goalsAfter);
+        assertNotNull(match.getHomePenalties());
+        assertNotNull(match.getAwayPenalties());
+        assertNotEquals(match.getHomePenalties(), match.getAwayPenalties());
+        boolean penaltyEventFound = false;
 
         if (!match.getPenaltyKicks().isEmpty()) {
-
-            penaltyEventFound =
-                    true;
+            penaltyEventFound = true;
         }
 
-        assertTrue(
-                penaltyEventFound
-        );
+        assertTrue(penaltyEventFound);
     }
 
     @Test
     void tiedFinalShouldCompletePenaltyShootout() {
+        TournamentData data = new TournamentDataLoader().load("torneo.json");
+        Team home = data.getTeams().get(0);
+        Team away = data.getTeams().get(1);
+        boolean tiedFinalFound = false;
 
-        TournamentData data =
-                new TournamentDataLoader()
-                        .load("torneo.json");
+        for (long seed = 0; seed < 100 && !tiedFinalFound; seed++) {
+            FinalMatch match = new FinalMatch(home, away, null, null, LocalDate.now());
+            new MatchSimulator(seed).simulateMatch(match);
 
-        Team home =
-                data.getTeams().get(0);
-
-        Team away =
-                data.getTeams().get(1);
-
-        boolean tiedFinalFound =
-                false;
-
-        for (long seed = 0;
-             seed < 100 && !tiedFinalFound;
-             seed++) {
-
-            FinalMatch match =
-                    new FinalMatch(
-                            home,
-                            away,
-                            null,
-                            null,
-                            LocalDate.now()
-                    );
-
-            new MatchSimulator(seed)
-                    .simulateMatch(match);
-
-            if (match.getHomeGoals()
-                    == match.getAwayGoals()) {
-
-                assertNotNull(
-                        match.getHomePenalties()
-                );
-
-                assertNotNull(
-                        match.getAwayPenalties()
-                );
-
-                assertNotEquals(
-                        match.getHomePenalties(),
-                        match.getAwayPenalties()
-                );
-
-                assertNotNull(
-                        match.getWinner()
-                );
-
-                tiedFinalFound =
-                        true;
+            if (match.getHomeGoals() == match.getAwayGoals()) {
+                assertNotNull(match.getHomePenalties());
+                assertNotNull(match.getAwayPenalties());
+                assertNotEquals(match.getHomePenalties(), match.getAwayPenalties());
+                assertNotNull(match.getWinner());
+                tiedFinalFound = true;
             }
         }
 
-        assertTrue(
-                tiedFinalFound,
-                "Expected to find a tied final within the deterministic seed range."
-        );
+        assertTrue(tiedFinalFound, "Expected to find a tied final within the deterministic seed range.");
     }
 
-    // Comprueba específicamente el criterio de goles de visitante ponderados.
     @Test
     void secondLegShouldUseWeightedGoalDifference() {
-
-        TournamentDataLoader loader =
-                new TournamentDataLoader();
-
-        TournamentData data =
-                loader.load("torneo.json");
-
-        Team teamA =
-                data.getTeams().get(0);
-
-        Team teamB =
-                data.getTeams().get(1);
-
-        Stadium firstStadium =
-                new Stadium(
-                        "First Leg Stadium",
-                        1
-                );
-
-        Stadium secondStadium =
-                new Stadium(
-                        "Second Leg Stadium",
-                        2
-                );
-
-        model.match.FirstLegMatch firstLeg =
-                new model.match.FirstLegMatch(
+        TournamentDataLoader loader = new TournamentDataLoader();
+        TournamentData data = loader.load("torneo.json");
+        Team teamA = data.getTeams().get(0);
+        Team teamB = data.getTeams().get(1);
+        Stadium firstStadium = new Stadium("First Leg Stadium", 1);
+        Stadium secondStadium = new Stadium("Second Leg Stadium", 2);
+        model.match.FirstLegMatch firstLeg = new model.match.FirstLegMatch(
                         teamA,
                         teamB,
                         data.getReferees().get(0),
@@ -378,252 +139,108 @@ public class TournamentSimulationTest {
         firstLeg.setHomeGoals(1);
         firstLeg.setAwayGoals(0);
         firstLeg.setPlayed(true);
-
-        SecondLegMatch secondLeg =
-                new SecondLegMatch(
+        SecondLegMatch secondLeg = new SecondLegMatch(
                         teamB,
                         teamA,
                         data.getReferees().get(1),
                         secondStadium,
-                        java.time.LocalDate.now()
-                                .plusDays(7),
+                        java.time.LocalDate.now().plusDays(7),
                         firstLeg
                 );
 
         secondLeg.setHomeGoals(2);
         secondLeg.setAwayGoals(1);
         secondLeg.setPlayed(true);
-
-        /*
-         * Ida:
-         * A 1 - 0 B
-         *
-         * Vuelta:
-         * B 2 - 1 A
-         *
-         * Cada equipo obtiene 3 puntos.
-         *
-         * Goles ponderados:
-         * A = 1 de local + 1 visitante x 2 = 3
-         * B = 0 visitante + 2 de local = 2
-         *
-         * Clasifica A.
-         */
-
-        assertEquals(
-                3,
-                secondLeg.getSeriesPoints(
-                        teamA
-                )
-        );
-
-        assertEquals(
-                3,
-                secondLeg.getSeriesPoints(
-                        teamB
-                )
-        );
-
-        assertTrue(
-                secondLeg
-                        .getWeightedGoalDifference(
-                                teamA
-                        ) > 0
-        );
-
-        assertEquals(
-                teamA,
-                secondLeg.getWinner()
-        );
-
-        assertEquals(
-                "WEIGHTED_GOAL_DIFFERENCE",
-                secondLeg
-                        .getResolutionCriteria()
-        );
+        assertEquals(3, secondLeg.getSeriesPoints( teamA ));
+        assertEquals(3, secondLeg.getSeriesPoints( teamB ));
+        assertTrue(secondLeg.getWeightedGoalDifference( teamA ) > 0);
+        assertEquals(teamA, secondLeg.getWinner());
+        assertEquals("WEIGHTED_GOAL_DIFFERENCE", secondLeg.getResolutionCriteria());
     }
 
     private List<Stadium> createTestStadiums() {
+        List<Stadium> stadiums = new ArrayList<>();
 
-        List<Stadium> stadiums =
-                new ArrayList<>();
-
-        for (int i = 1;
-             i <= 16;
-             i++) {
-
-            stadiums.add(
-                    new Stadium(
-                            "Test Stadium "
-                                    + i,
-                            i
-                    )
-            );
+        for (int i = 1; i <= 16; i++) {
+            stadiums.add(new Stadium( "Test Stadium " + i, i ));
         }
 
         return stadiums;
     }
 
-    private int countGroupMatches(
-            List<Group> groups) {
-
+    private int countGroupMatches(List<Group> groups) {
         int total = 0;
 
-        for (Group group :
-                groups) {
-
-            total +=
-                    group.getMatches()
-                            .size();
+        for (Group group : groups) {
+            total += group.getMatches().size();
         }
 
         return total;
     }
 
-    private void validateAllMatchesPlayed(
-            List<Match> matches) {
-
-        for (Match match :
-                matches) {
-
-            assertTrue(
-                    match.isPlayed()
-            );
+    private void validateAllMatchesPlayed(List<Match> matches) {
+        for (Match match : matches) {
+            assertTrue(match.isPlayed());
         }
     }
 
-    private void validateReferees(
-            List<Match> matches) {
-
-        for (Match match :
-                matches) {
-
-            assertNotNull(
-                    match.getReferee()
-            );
-
-            assertTrue(
-                    match.getReferee()
-                            .canOfficiate(
-                                    match.getHomeTeam(),
-                                    match.getAwayTeam()
-                            )
-            );
+    private void validateReferees(List<Match> matches) {
+        for (Match match : matches) {
+            assertNotNull(match.getReferee());
+            assertTrue(match.getReferee().canOfficiate( match.getHomeTeam(), match.getAwayTeam() ));
         }
     }
 
-    private void validateEventMinutes(
-            List<Match> matches) {
-
-        for (Match match :
-                matches) {
-
-            for (Event event :
-                    match.getEvents()) {
-
-                assertTrue(
-                        event.getMinute() <= 90
-                );
-
-                assertTrue(
-                        event.getMinute() >= 1
-                );
+    private void validateEventMinutes(List<Match> matches) {
+        for (Match match : matches) {
+            for (Event event : match.getEvents()) {
+                assertTrue(event.getMinute() <= 90);
+                assertTrue(event.getMinute() >= 1);
             }
         }
     }
 
-    private void validateGoalsHaveGoalkeeper(
-            List<Match> matches) {
-
-        for (Match match :
-                matches) {
-
-            for (Goal goal :
-                    match.getGoals()) {
-
-                assertNotNull(
-                        goal.getGoalkeeperConceded()
-                );
+    private void validateGoalsHaveGoalkeeper(List<Match> matches) {
+        for (Match match : matches) {
+            for (Goal goal : match.getGoals()) {
+                assertNotNull(goal.getGoalkeeperConceded());
             }
         }
     }
 
-    private void validateKnockoutWinners(
-            Tournament tournament) {
-
-        for (SecondLegMatch match :
-                tournament
-                        .getQuarterFinalSecondLegs()) {
-
-            assertNotNull(
-                    match.getWinner()
-            );
+    private void validateKnockoutWinners(Tournament tournament) {
+        for (SecondLegMatch match : tournament.getQuarterFinalSecondLegs()) {
+            assertNotNull(match.getWinner());
         }
 
-        for (SecondLegMatch match :
-                tournament
-                        .getSemiFinalSecondLegs()) {
-
-            assertNotNull(
-                    match.getWinner()
-            );
+        for (SecondLegMatch match : tournament.getSemiFinalSecondLegs()) {
+            assertNotNull(match.getWinner());
         }
 
-        assertNotNull(
-                tournament
-                        .getFinalMatch()
-                        .getWinner()
-        );
+        assertNotNull(tournament.getFinalMatch().getWinner());
     }
 
-    private void validateKnockoutStadiums(
-            List<Match> matches) {
-
-        Set<String> stadiumNames =
-                new HashSet<>();
-
+    private void validateKnockoutStadiums(List<Match> matches) {
+        Set<String> stadiumNames = new HashSet<>();
         int knockoutMatches = 0;
 
-        for (Match match :
-                matches) {
-
+        for (Match match : matches) {
             if (match.isKnockout()) {
-
                 knockoutMatches++;
-
-                assertNotNull(
-                        match.getStadium()
-                );
-
-                stadiumNames.add(
-                        match.getStadium()
-                                .getName()
-                );
+                assertNotNull(match.getStadium());
+                stadiumNames.add(match.getStadium().getName());
             }
         }
 
-        assertEquals(
-                13,
-                knockoutMatches
-        );
-
-        assertEquals(
-                13,
-                stadiumNames.size()
-        );
+        assertEquals(13, knockoutMatches);
+        assertEquals(13, stadiumNames.size());
     }
 
-    private int countScorerGoalsFromEvents(
-            List<Match> matches) {
-
+    private int countScorerGoalsFromEvents(List<Match> matches) {
         int goals = 0;
 
-        for (Match match :
-                matches) {
-
-            for (Goal goal :
-                    match.getGoals()) {
-
+        for (Match match : matches) {
+            for (Goal goal : match.getGoals()) {
                 if (!goal.isOwnGoal()) {
                     goals++;
                 }
@@ -633,19 +250,12 @@ public class TournamentSimulationTest {
         return goals;
     }
 
-    private int countPlayerGoals(
-            List<Team> teams) {
-
+    private int countPlayerGoals(List<Team> teams) {
         int goals = 0;
 
-        for (Team team :
-                teams) {
-
-            for (Player player :
-                    team.getSquad()) {
-
-                goals +=
-                        player.getGoals();
+        for (Team team : teams) {
+            for (Player player : team.getSquad()) {
+                goals += player.getGoals();
             }
         }
 

@@ -3,10 +3,10 @@ package model.participant;
 import java.time.LocalDate;
 import java.util.Map;
 
-/*
- * Representa los datos y estadísticas comunes de todos los jugadores del torneo.
- * También administra tarjetas, suspensiones, lesiones y goles de penal para poder
- * construir correctamente los reportes y controlar la disponibilidad entre partidos.
+/**
+ * Reúne los datos y estadísticas comunes de los futbolistas y controla su disponibilidad
+ * por lesiones y suspensiones. Cada especialidad define su posición y valoración;
+ * los goles recibidos se registran únicamente en los arqueros.
  */
 public abstract class Player extends Person {
     protected int matchesPlayed;
@@ -35,19 +35,15 @@ public abstract class Player extends Person {
 
     public abstract Position getPosition();
 
-    /** Only goalkeepers are goalkeepers: used instead of checking the concrete class. */
     public boolean isGoalkeeper() {
         return false;
     }
 
-    /** Goals conceded while playing in goal; always 0 for field players. */
     public int getGoalsConceded() {
         return 0;
     }
 
-    /** Registers a goal against this player's side; only goalkeepers keep that record. */
     public void addGoalConceded() {
-        // Field players do not track goals conceded.
     }
 
     public boolean isAvailable() {

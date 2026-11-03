@@ -14,8 +14,11 @@ import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import service.TournamentSessionService;
 
+/**
+ * Gestiona el inicio de un campeonato, la continuación de partidas y el tema del menú.
+ * Abre la ventana principal con la sesión elegida y permite cerrar la aplicación.
+ */
 public class MainMenuController {
-
     @FXML
     private ImageView menuLogo;
 
@@ -83,12 +86,9 @@ public class MainMenuController {
     private void handleNewGame() {
         try {
             if (session.saveExists()) {
-                Alert alert = new Alert(
-                        Alert.AlertType.CONFIRMATION,
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
                         "Starting a new game will overwrite your previous save data. Do you want to continue?",
-                        ButtonType.YES,
-                        ButtonType.NO
-                );
+                        ButtonType.YES, ButtonType.NO);
                 alert.setTitle("New Game Confirmation");
                 alert.setHeaderText(null);
 
@@ -99,7 +99,6 @@ public class MainMenuController {
 
             session.createNewTournament();
             launchMainApp();
-
         } catch (Exception ex) {
             showError("Error creating new game", ex);
         }
@@ -112,21 +111,15 @@ public class MainMenuController {
 
     private void launchMainApp() throws Exception {
         Stage stage = (Stage) continueButton.getScene().getWindow();
-
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/main-view.fxml"));
         Parent root = loader.load();
-
         MainController controller = loader.getController();
         controller.setSession(session);
-
         Scene scene = new Scene(root, stage.getScene().getWidth(), stage.getScene().getHeight());
-
         java.net.URL cssUrl = getClass().getResource("/css/main.css");
         if (cssUrl != null) {
             scene.getStylesheets().add(cssUrl.toExternalForm());
         }
-
-        // Si el menú tenía el modo claro activo, se propaga a la vista principal
         if (continueButton.getScene().getRoot().getStyleClass().contains("light-theme")) {
             root.getStyleClass().add("light-theme");
         }

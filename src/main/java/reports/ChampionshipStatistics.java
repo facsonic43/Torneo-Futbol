@@ -7,9 +7,14 @@ import model.participant.*;
 import java.util.*;
 
 /**
- * Fotografía estadística del campeonato al crear este servicio. Se utilizan
- * únicamente los partidos jugados; los acumulados históricos del JSON no se
- * mezclan con los rankings de esta edición.
+ * Construye una fotografía de las estadísticas de esta edición a partir de los partidos jugados,
+ * sin repetir encuentros ni mezclar los acumulados históricos del JSON con los rankings actuales.
+ * Los resultados administrativos cuentan para los equipos, sin sumar actividad a jugadores o árbitros.
+ * Reconstruye participaciones e incidencias y señala los partidos con formaciones o goles incompletos.
+ * Los eventos permiten identificar participantes sin formación, aunque no reconstruir sus minutos.
+ * Incluye eficiencia por puntos, juego limpio (una amarilla vale uno y una roja tres) y experiencia
+ * arbitral conocida. Los penales de desempate no suman goles y se contemplan registros antiguos
+ * de segunda amarilla. Los filtros de posición o jugador nulos incluyen todos los participantes.
  */
 public class ChampionshipStatistics {
     public record PlayerStats(Player player, Team team, int matches, int minutes,
@@ -24,10 +29,8 @@ public class ChampionshipStatistics {
                             int goalsFor, int goalsAgainst, int yellowCards, int redCards) {
         public int points() { return 3 * won + drawn; }
 
-        /** Porcentaje de puntos obtenidos sobre los posibles (tandas excluidas). */
         public double efficiency() { return played == 0 ? 0.0 : points() * 100.0 / (3 * played); }
 
-        /** Criterio del reporte: una amarilla = 1, una roja = 3; menor es mejor. */
         public int fairPlayScore() { return yellowCards + 3 * redCards; }
 
         public double averageAge() {
@@ -59,7 +62,6 @@ public class ChampionshipStatistics {
         }
         data.getReferees().forEach(referee -> refereeTotals.put(referee, 0));
 
-        // El set evita duplicar un encuentro registrado en más de un lugar.
         Set<Match> matches = new LinkedHashSet<>(data.getMatches());
         data.getGroups().forEach(group -> matches.addAll(group.getMatches()));
         int played = 0;
@@ -73,6 +75,7 @@ public class ChampionshipStatistics {
             registerTeam(match.getAwayTeam(), teamTotals, playerTotals);
             teamTotals.get(match.getHomeTeam()).addResult(match.getHomeGoals(), match.getAwayGoals());
             teamTotals.get(match.getAwayTeam()).addResult(match.getAwayGoals(), match.getHomeGoals());
+            if (match.isForfeited()) continue;
             if (match.getReferee() != null) refereeTotals.merge(match.getReferee(), 1, Integer::sum);
             ReportMatchDetails details = data.getMatchDetails(match);
             addPlayerParticipations(match, details, playerTotals);
@@ -97,13 +100,10 @@ public class ChampionshipStatistics {
 
     public int getPlayedMatchCount() { return playedMatchCount; }
 
-    /** Encuentros cuyos datos no permiten reconstruir todas las estadísticas. */
     public int getIncompleteMatchCount() { return incompleteMatchCount; }
 
-    /** True when every completed match includes its starting lineups. */
     public boolean hasCompleteStartingLineups() { return completeStartingLineups; }
 
-    /** True when every completed match has reconciled scores and goal details. */
     public boolean hasCompleteGoalInformation() { return completeGoalInformation; }
 
     public List<PlayerStats> getTopScorers() {
@@ -135,7 +135,6 @@ public class ChampionshipStatistics {
                 .thenComparing(stats -> stats.referee().getName(), String.CASE_INSENSITIVE_ORDER)).toList();
     }
 
-    /** Promedio de años de experiencia de los árbitros con ese dato disponible. */
     public double getAverageRefereeExperience() {
         return referees.stream().filter(stats -> stats.yearsOfExperience() != null)
                 .mapToInt(RefereeStats::yearsOfExperience).average().orElse(0.0);
@@ -145,7 +144,6 @@ public class ChampionshipStatistics {
         return (int) referees.stream().filter(stats -> stats.yearsOfExperience() != null).count();
     }
 
-    /** Un filtro null significa todas las posiciones o todos los jugadores. */
     public List<PlayerStats> getPlayers(Position position, Player selectedPlayer) {
         return players.stream().filter(stats -> position == null || stats.player().getPosition() == position)
                 .filter(stats -> selectedPlayer == null || stats.player() == selectedPlayer)
@@ -171,8 +169,6 @@ public class ChampionshipStatistics {
                                                 Map<Player, PlayerAccumulator> totals) {
         Map<Player, Integer> minutes = details.getPlayerMinutes(match);
         Set<Player> participants = new LinkedHashSet<>(minutes.keySet());
-        // Los eventos también prueban participación si se cargó un partido sin formación.
-        // En ese caso no permiten reconstruir los minutos de un titular desconocido.
         for (Event event : match.getEvents()) {
             participants.add(event.getPlayer());
             event.accept(new EventVisitor() {
@@ -205,7 +201,6 @@ public class ChampionshipStatistics {
         return new EventProcessor(match, details, teams, players).process();
     }
 
-    /** Adds every incident of a match to the accumulators, one visit method per kind of incident. */
     private static final class EventProcessor implements EventVisitor {
         private final Match match;
         private final ReportMatchDetails details;
@@ -215,7 +210,6 @@ public class ChampionshipStatistics {
         private final List<YellowCard> yellowCards;
         private final Map<Team, Set<Player>> onPitch = new HashMap<>();
         private boolean incomplete;
-        // Accumulators of the incident that is being visited.
         private PlayerAccumulator player;
         private TeamAccumulator team;
 
@@ -278,8 +272,6 @@ public class ChampionshipStatistics {
         public void visit(RedCard redCard) {
             if (player != null) player.redCards++;
             if (team != null) team.redCards++;
-            // Compatibilidad con partidos previos: la segunda amarilla podía
-            // representarse únicamente por una RedCard(false).
             boolean secondYellowRecorded = yellowCards.stream().anyMatch(candidate ->
                     candidate.getPlayer() == redCard.getPlayer()
                             && candidate.getMinute() == redCard.getMinute());
@@ -297,7 +289,6 @@ public class ChampionshipStatistics {
                 onPitch.get(substitution.getTeam()).add(substitution.getPlayerIn());
             }
         }
-        // Injuries and the kicks of a shootout do not add goals, assists, cards or goals conceded.
     }
 
     private static class PlayerAccumulator {

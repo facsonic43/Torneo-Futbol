@@ -6,11 +6,10 @@ import javafx.scene.layout.StackPane;
 import model.tournament.Tournament;
 
 /**
- * A report of the Reports screen. Each subclass draws one report into the shared panel;
- * the screen only chooses which view to show.
+ * Define la base de los reportes que se muestran en el panel compartido del campeonato.
+ * Gestiona el torneo actual, los títulos y el contenido que dibuja cada subclase.
  */
 public abstract class ReportView {
-
     protected final StackPane reportContentHost;
     protected final Label reportMetricChip;
     protected final Label selectedReportSubtitle;
@@ -27,12 +26,10 @@ public abstract class ReportView {
         this.reportsPane = reportsPane;
     }
 
-    /** Shows this report for the given tournament. */
     public final void show(Tournament tournament) throws Exception {
         this.tournament = tournament;
         render();
     }
 
-    /** Fills title, subtitle, metric chip and content of the report panel. */
     protected abstract void render() throws Exception;
 }
