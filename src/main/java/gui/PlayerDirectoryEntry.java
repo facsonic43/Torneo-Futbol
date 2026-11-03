@@ -4,6 +4,9 @@ import model.participant.Player;
 import model.participant.Position;
 import model.participant.Team;
 
+// Relaciona un jugador con su equipo y prepara sus datos para el directorio y los reportes.
+// Los goles recibidos solo se informan para los arqueros.
+
 public class PlayerDirectoryEntry {
     private final Player player;
     private final Team team;
@@ -23,7 +26,6 @@ public class PlayerDirectoryEntry {
     public int getGoals() { return player.getGoals(); }
 
     public Integer getGoalsConceded() {
-        // Null indica que no es arquero para formatear con '-'
         return player.isGoalkeeper() ? player.getGoalsConceded() : null;
     }
 }

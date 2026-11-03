@@ -1,17 +1,14 @@
 package model.tournament;
 
-/*
- * Representa la etapa en la que se encuentra actualmente el campeonato.
- * Se utiliza principalmente para saber desde dónde continuar después
- * de cargar una partida guardada.
- */
+// Define las etapas del campeonato y el nombre que se muestra para cada una en la interfaz.
+
 public enum TournamentStage {
-    NOT_STARTED("NOT STARTED"), //sin grupos
-    GROUP_STAGE("GROUP STAGE"), //grupos creados
-    QUARTER_FINALS("QUARTER-FINALS"), // cuartos creados
-    SEMI_FINALS("SEMI-FINALS"), // semis creadas
-    FINAL("FINAL"), // final creada
-    FINISHED("FINISHED"); // campeon existente
+    NOT_STARTED("NOT STARTED"),
+    GROUP_STAGE("GROUP STAGE"),
+    QUARTER_FINALS("QUARTER-FINALS"),
+    SEMI_FINALS("SEMI-FINALS"),
+    FINAL("FINAL"),
+    FINISHED("FINISHED");
 
     private final String label;
 
@@ -19,7 +16,6 @@ public enum TournamentStage {
         this.label = label;
     }
 
-    /** Name of the stage as shown to the user. */
     public String getLabel() {
         return label;
     }

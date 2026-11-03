@@ -1,36 +1,25 @@
 package model.match;
 
-import java.util.Optional;
 import model.participant.Referee;
 import model.participant.Team;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
-/*
- * Representa el partido de vuelta de una serie eliminatoria.
- * Primero compara los puntos obtenidos en los dos partidos y, si existe igualdad,
- * utiliza la diferencia de gol ponderando doble los goles convertidos como visitante.
- * Si la igualdad continúa, la serie se define mediante penales.
- */
+// Resuelve una serie una vez jugadas la ida y la vuelta, incluidos los resultados administrativos.
+// Compara primero los puntos y luego los goles ponderados, contando doble los de visitante.
+// Distingue si el ganador ya tenía ventaja global, si desempató por goles visitantes
+// o si la ponderación revirtió la ventaja global, sin cambiar la regla de clasificación.
+// Sólo una igualdad en ambos criterios requiere penales; una tanda incompleta no define ganador.
+// Si la vuelta se pierde sin jugar y la serie sigue empatada, queda pendiente de resolución.
+
 public class SecondLegMatch extends Match {
+    private static final long serialVersionUID = 3746140207111491617L;
     private FirstLegMatch firstLeg;
 
-    public SecondLegMatch(
-            Team homeTeam,
-            Team awayTeam,
-            Referee referee,
-            Stadium stadium,
-            LocalDate matchDate,
+    public SecondLegMatch(Team homeTeam, Team awayTeam, Referee referee, Stadium stadium, LocalDate matchDate,
             FirstLegMatch firstLeg) {
-
-        super(
-                homeTeam,
-                awayTeam,
-                referee,
-                stadium,
-                matchDate
-        );
-
+        super(homeTeam, awayTeam, referee, stadium, matchDate);
         this.firstLeg = firstLeg;
     }
 
@@ -45,212 +34,96 @@ public class SecondLegMatch extends Match {
 
     @Override
     public boolean requiresTieBreak() {
-        return getSeriesPoints(homeTeam)
-                == getSeriesPoints(awayTeam)
-
-                && getWeightedGoalDifference(
-                homeTeam
-        ) == 0
-
-                && homePenalties == null
-                && awayPenalties == null;
+        return !isForfeited() && getResolutionCriterion() == ResolutionCriterion.UNRESOLVED;
     }
 
     @Override
     public Team getWinner() {
-        if (!isPlayed()) {
-            return null;
-        }
-
-        int homePoints =
-                getSeriesPoints(
-                        homeTeam
-                );
-
-        int awayPoints =
-                getSeriesPoints(
-                        awayTeam
-                );
-
-        if (homePoints > awayPoints) {
-            return homeTeam;
-        }
-
-        if (awayPoints > homePoints) {
-            return awayTeam;
-        }
-
-        int weightedDifference =
-                getWeightedGoalDifference(
-                        homeTeam
-                );
-
-        if (weightedDifference > 0) {
-            return homeTeam;
-        }
-
-        if (weightedDifference < 0) {
-            return awayTeam;
-        }
-
-        if (homePenalties != null
-                && awayPenalties != null) {
-
-            if (homePenalties
-                    > awayPenalties) {
-
-                return homeTeam;
-            }
-
-            if (awayPenalties
-                    > homePenalties) {
-
-                return awayTeam;
-            }
-        }
-
-        return null;
+        return switch (getResolutionCriterion()) {
+            case SERIES_POINTS -> getSeriesPoints(homeTeam) > getSeriesPoints(awayTeam) ? homeTeam : awayTeam;
+            case AGGREGATE_GOALS, AWAY_GOALS, WEIGHTED_GOAL_DIFFERENCE ->
+                    getWeightedGoalDifference(homeTeam) > 0 ? homeTeam : awayTeam;
+            case PENALTIES -> getPenaltyWinner();
+            default -> null;
+        };
     }
 
     @Override
-    public String getResolutionCriteria() {
-        if (!isPlayed()) {
-            return "NOT_PLAYED";
+    public ResolutionCriterion getResolutionCriterion() {
+        if (!played || !firstLeg.isPlayed()) {
+            return ResolutionCriterion.NOT_PLAYED;
         }
-
-        if (homePenalties != null
-                && awayPenalties != null) {
-
-            return "PENALTIES";
+        if (getSeriesPoints(homeTeam) != getSeriesPoints(awayTeam)) {
+            return ResolutionCriterion.SERIES_POINTS;
         }
-
-        if (getSeriesPoints(homeTeam)
-                != getSeriesPoints(awayTeam)) {
-
-            return "SERIES_POINTS";
+        int weightedDifference = getWeightedGoalDifference(homeTeam);
+        if (weightedDifference != 0) {
+            int aggregateDifference = getAggregateGoals(homeTeam) - getAggregateGoals(awayTeam);
+            if (aggregateDifference == 0) {
+                return ResolutionCriterion.AWAY_GOALS;
+            }
+            if (Integer.signum(aggregateDifference) == Integer.signum(weightedDifference)) {
+                return ResolutionCriterion.AGGREGATE_GOALS;
+            }
+            return ResolutionCriterion.WEIGHTED_GOAL_DIFFERENCE;
         }
-
-        if (getWeightedGoalDifference(
-                homeTeam
-        ) != 0) {
-
-            return "WEIGHTED_GOAL_DIFFERENCE";
-        }
-
-        return "UNRESOLVED";
+        return getPenaltyWinner() == null ? ResolutionCriterion.UNRESOLVED : ResolutionCriterion.PENALTIES;
     }
 
-    // Calcula los puntos obtenidos por un equipo entre la ida y la vuelta.
-    public int getSeriesPoints(
-            Team team) {
-
-        return getMatchPoints(
-                firstLeg,
-                team
-        ) + getMatchPoints(
-                this,
-                team
-        );
+    public int getSeriesPoints(Team team) {
+        return getMatchPoints(firstLeg, team) + getMatchPoints(this, team);
     }
 
-    // Calcula los goles ponderados, contando doble los goles de visitante.
-    public int getWeightedGoals(
-            Team team) {
+    public int getAggregateGoals(Team team) {
+        return getGoals(firstLeg, team) + getGoals(this, team);
+    }
 
+    private int getGoals(Match match, Team team) {
+        if (!match.isPlayed()) {
+            return 0;
+        }
+        if (match.getHomeTeam() == team) {
+            return match.getHomeGoals();
+        }
+        return match.getAwayTeam() == team ? match.getAwayGoals() : 0;
+    }
+
+    public int getWeightedGoals(Team team) {
         int weightedGoals = 0;
-
-        if (firstLeg.getHomeTeam()
-                == team) {
-
-            weightedGoals +=
-                    firstLeg.getHomeGoals();
-
-        } else if (firstLeg.getAwayTeam()
-                == team) {
-
-            weightedGoals +=
-                    firstLeg.getAwayGoals()
-                            * 2;
+        if (firstLeg.isPlayed()) {
+            if (firstLeg.getHomeTeam() == team) {
+                weightedGoals += firstLeg.getHomeGoals();
+            } else if (firstLeg.getAwayTeam() == team) {
+                weightedGoals += firstLeg.getAwayGoals() * 2;
+            }
         }
-
-        if (homeTeam == team) {
-
-            weightedGoals +=
-                    homeGoals;
-
-        } else if (awayTeam == team) {
-
-            weightedGoals +=
-                    awayGoals * 2;
+        if (played) {
+            if (homeTeam == team) {
+                weightedGoals += homeGoals;
+            } else if (awayTeam == team) {
+                weightedGoals += awayGoals * 2;
+            }
         }
-
         return weightedGoals;
     }
 
-    // Obtiene la diferencia entre los goles ponderados propios y los del rival.
-    public int getWeightedGoalDifference(
-            Team team) {
-
-        Team opponent;
-
+    public int getWeightedGoalDifference(Team team) {
         if (team == homeTeam) {
-
-            opponent =
-                    awayTeam;
-
-        } else if (team == awayTeam) {
-
-            opponent =
-                    homeTeam;
-
-        } else {
-
-            return 0;
+            return getWeightedGoals(homeTeam) - getWeightedGoals(awayTeam);
         }
-
-        return getWeightedGoals(team)
-                - getWeightedGoals(opponent);
+        if (team == awayTeam) {
+            return getWeightedGoals(awayTeam) - getWeightedGoals(homeTeam);
+        }
+        return 0;
     }
 
-    private int getMatchPoints(
-            Match match,
-            Team team) {
-
-        int teamGoals;
-        int opponentGoals;
-
-        if (match.getHomeTeam()
-                == team) {
-
-            teamGoals =
-                    match.getHomeGoals();
-
-            opponentGoals =
-                    match.getAwayGoals();
-
-        } else if (match.getAwayTeam()
-                == team) {
-
-            teamGoals =
-                    match.getAwayGoals();
-
-            opponentGoals =
-                    match.getHomeGoals();
-
-        } else {
-
+    private int getMatchPoints(Match match, Team team) {
+        if (!match.isPlayed() || (team != match.getHomeTeam() && team != match.getAwayTeam())) {
             return 0;
         }
-
-        if (teamGoals > opponentGoals) {
-            return 3;
-        }
-
-        if (teamGoals == opponentGoals) {
-            return 1;
-        }
-
-        return 0;
+        int teamGoals = team == match.getHomeTeam() ? match.getHomeGoals() : match.getAwayGoals();
+        int opponentGoals = team == match.getHomeTeam() ? match.getAwayGoals() : match.getHomeGoals();
+        return teamGoals > opponentGoals ? 3 : teamGoals == opponentGoals ? 1 : 0;
     }
 
     @Override

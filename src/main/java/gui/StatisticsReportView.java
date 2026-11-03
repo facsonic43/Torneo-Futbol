@@ -28,7 +28,9 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
-/** Native report controls using the same tournament snapshot and calculations as the PDF. */
+// Genera las tablas estadísticas y el cuadro del campeonato a partir de una copia del torneo.
+// Calcula el contenido en segundo plano y cancela las tareas que dejan de ser necesarias.
+
 public final class StatisticsReportView extends VBox {
     private Task<Content> currentTask;
 
@@ -55,13 +57,11 @@ public final class StatisticsReportView extends VBox {
         loading.setAlignment(Pos.CENTER);
         VBox.setVgrow(loading, Priority.ALWAYS);
         getChildren().setAll(loading);
-
         Task<Content> task = new Task<>() {
             @Override
             protected Content call() throws Exception {
                 ReportData data = readSnapshot(snapshot);
-                return section == ReportSection.BRACKET
-                        ? new Content(null, new BracketReport(data))
+                return section == ReportSection.BRACKET ? new Content(null, new BracketReport(data))
                         : new Content(new ChampionshipStatistics(data), null);
             }
         };
@@ -81,8 +81,7 @@ public final class StatisticsReportView extends VBox {
             if (currentTask != task) return;
             currentTask = null;
             String detail = task.getException().getMessage();
-            getChildren().setAll(note("Could not display this report."
-                    + (detail == null ? "" : "\n" + detail)));
+            getChildren().setAll(note("Could not display this report." + (detail == null ? "" : "\n" + detail)));
         });
         Thread worker = new Thread(task, "statistics-report");
         worker.setDaemon(true);
@@ -96,16 +95,14 @@ public final class StatisticsReportView extends VBox {
         table.getColumns().add(column("PLAYER", 220, row -> row.value().player().getName(), "player-name-cell"));
         table.getColumns().add(column("TEAM", 180, row -> row.value().team().getName(), null));
         table.getColumns().add(column("GOALS", 80, row -> row.value().goals(), "report-highlight-cell"));
-        table.getColumns().add(column("OF WHICH PENALTIES", 130,
-                row -> statistics.hasCompleteGoalInformation() ? row.value().penaltyGoals() : "Not available", "table-stat-cell"));
+        table.getColumns().add(column("OF WHICH PENALTIES", 130, row -> statistics.hasCompleteGoalInformation()
+                ? row.value().penaltyGoals() : "Not available", "table-stat-cell"));
         table.getColumns().add(column("G/MATCH", 90, row -> {
             int matches = row.value().matches();
             double avg = matches > 0 ? (double) row.value().goals() / matches : 0.0;
             return String.format("%.2f", avg);
         }, "table-stat-cell"));
         table.getColumns().add(column("AST", 60, row -> row.value().assists(), "table-stat-cell"));
-
-
         addTable(table);
     }
 
@@ -126,8 +123,8 @@ public final class StatisticsReportView extends VBox {
         getChildren().add(note("Participation includes starters and substitutes. Minutes end at substitution, dismissal or the final whistle."));
         boolean complete = statistics.hasCompleteStartingLineups();
         TableView<Ranked<PlayerStats>> table = rankedTable(complete ? statistics.getMinutesRanking() : List.of(),
-                PlayerStats::minutes, complete ? "No players registered."
-                        : "Not available: starting lineups were not supplied for one or more completed matches.");
+                PlayerStats::minutes, complete
+                ? "No players registered." : "Not available: starting lineups were not supplied for one or more completed matches.");
         table.getColumns().add(column("PLAYER", 280, row -> row.value().player().getName(), "player-name-cell"));
         table.getColumns().add(column("TEAM", 260, row -> row.value().team().getName(), null));
         table.getColumns().add(column("MATCHES", 110, row -> row.value().matches(), "table-stat-cell"));
@@ -141,8 +138,8 @@ public final class StatisticsReportView extends VBox {
                 + "An unresolved tie remains pending. Zone numbers follow the registered group order."));
         TableView<BracketReport.GroupQualification> qualifiers = table("No groups registered.");
         qualifiers.getItems().setAll(report.getQualifiers());
-        qualifiers.getColumns().add(column("ZONE / GROUP", 155,
-                row -> (report.getQualifiers().indexOf(row) + 1) + " / " + row.groupName(), "player-name-cell"));
+        qualifiers.getColumns().add(column("ZONE / GROUP", 155, row -> (report.getQualifiers().indexOf(row) + 1) + " / "
+                + row.groupName(), "player-name-cell"));
         qualifiers.getColumns().add(column("FIRST PLACE", 200, row -> BracketReport.name(row.first()), null));
         qualifiers.getColumns().add(column("SECOND PLACE", 200, row -> BracketReport.name(row.second()), null));
         qualifiers.getColumns().add(column("PLAYED", 80, row -> row.playedMatches() + "/" + row.requiredMatches(), "table-stat-cell"));
@@ -159,7 +156,7 @@ public final class StatisticsReportView extends VBox {
         champion.getStyleClass().add("info-card");
         content.getChildren().addAll(champion, label("MATCH DETAILS", "section-caption"),
                 note("Two-leg ties are decided by points across both matches, then goal difference "
-                        + "with away goals counting double, then penalties. Both legs must be completed."));
+                + "with away goals counting double, then penalties. Both legs must be completed."));
         for (BracketNode node : report.getNodes()) content.getChildren().add(matchDetails(node));
         if (!report.getUnassignedMatches().isEmpty()) {
             content.getChildren().add(label("Registered knockout matches awaiting confirmed bracket placement", "section-caption"));
@@ -189,16 +186,16 @@ public final class StatisticsReportView extends VBox {
         List<VBox> cards = new ArrayList<>();
         for (int index = 0; index < report.getNodes().size(); index++) {
             BracketNode node = report.getNodes().get(index);
-            VBox card = new VBox(7, label(node.round() + " " + node.id(), "card-caption"),
-                    label(node.homeSource() + ": " + BracketReport.name(node.homeTeam()), "card-value"),
-                    label(node.awaySource() + ": " + BracketReport.name(node.awayTeam()), "card-value"));
+            VBox card = new VBox(7, label(node.round() + " " + node.id(), "card-caption"), label(node.homeSource()
+                    + ": " + BracketReport.name(node.homeTeam()), "card-value"), label(node.awaySource() + ": "
+                    + BracketReport.name(node.awayTeam()), "card-value"));
             if (index < 6) {
                 card.getChildren().add(label("Leg 1: " + score(node.firstLeg(), node) + "  |  Leg 2: " + score(node.secondLeg(), node), "small-text"));
             } else {
                 card.getChildren().add(label("Score: " + score(node.finalMatch(), node), "small-text"));
             }
-            card.getChildren().addAll(label(node.status(), "muted-text"),
-                    label("Winner: " + BracketReport.name(node.winner()), "report-winner"));
+            card.getChildren().addAll(label(node.status(), "muted-text"), label("Winner: "
+                    + BracketReport.name(node.winner()), "report-winner"));
             card.getStyleClass().add("bracket-card");
             card.setMinHeight(Region.USE_PREF_SIZE);
             card.setMaxHeight(Region.USE_PREF_SIZE);
@@ -290,8 +287,8 @@ public final class StatisticsReportView extends VBox {
             @Override protected void updateItem(Integer value, boolean emptyCell) {
                 super.updateItem(value, emptyCell);
                 setText(null);
-                setGraphic(emptyCell || value == null ? null : badge(value.toString(),
-                        "rank-badge", value == 1 ? "rank-gold" : value == 2 ? "rank-silver" : value == 3 ? "rank-bronze" : "rank-normal"));
+                setGraphic(emptyCell || value == null ? null : badge(value.toString(), "rank-badge", value == 1
+                        ? "rank-gold" : value == 2 ? "rank-silver" : value == 3 ? "rank-bronze" : "rank-normal"));
                 setAlignment(Pos.CENTER);
             }
         });
@@ -383,8 +380,8 @@ public final class StatisticsReportView extends VBox {
         snapshot.getAllMatches().forEach(match -> {
             data.addMatch(match);
             for (Goal goal : match.getGoals()) {
-                data.getMatchDetails(match).setGoalDetails(goal,
-                        goal.isPenalty(), goal.isOwnGoal(), goal.getGoalkeeperConceded());
+                data.getMatchDetails(match).setGoalDetails(goal, goal.isPenalty(), goal.isOwnGoal(),
+                        goal.getGoalkeeperConceded());
             }
         });
         return data;

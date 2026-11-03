@@ -1,11 +1,9 @@
 package model.match;
 
-/**
- * Visits a match incident according to its concrete type, without asking for its class.
- * Every method does nothing by default, so implementations override only the incidents they need.
- */
-public interface EventVisitor {
+// Procesa las incidencias mediante una operación específica para cada tipo.
+// Las operaciones predeterminadas no realizan acciones y cada visitante implementa las que necesita.
 
+public interface EventVisitor {
     default void visit(Goal goal) {
     }
 

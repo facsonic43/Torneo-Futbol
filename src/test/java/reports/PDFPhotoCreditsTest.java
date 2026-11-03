@@ -13,6 +13,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+// Comprueba que los créditos fotográficos se incluyan como archivo adjunto en el PDF
+// y no agreguen páginas visibles a las credenciales.
+
 class PDFPhotoCreditsTest {
     @TempDir Path directory;
 
@@ -23,9 +26,8 @@ class PDFPhotoCreditsTest {
         byte[] expected = credits.getBytes(StandardCharsets.UTF_8);
         Files.write(directory.resolve("PHOTO-CREDITS.md"), expected);
         Path output = directory.resolve("report.pdf");
-        PDFGenerator.generate(new TournamentData(List.of(), List.of()), output,
-                new ReportOptions(null, null, directory));
-
+        PDFGenerator.generate(new TournamentData(List.of(), List.of()), output, new ReportOptions(null, null,
+                directory));
         try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
             var attachments = pdf.getCatalog().getNameTree(PdfName.EmbeddedFiles).getNames();
             assertEquals(1, attachments.size());
@@ -41,9 +43,8 @@ class PDFPhotoCreditsTest {
     @Test
     void exportsNormallyWhenNoPhotoCreditsFileExists() throws Exception {
         Path output = directory.resolve("report.pdf");
-        PDFGenerator.generate(new TournamentData(List.of(), List.of()), output,
-                new ReportOptions(null, null, directory));
-
+        PDFGenerator.generate(new TournamentData(List.of(), List.of()), output, new ReportOptions(null, null,
+                directory));
         try (PdfDocument pdf = new PdfDocument(new PdfReader(output.toString()))) {
             assertTrue(pdf.getCatalog().getNameTree(PdfName.EmbeddedFiles).getNames().isEmpty());
             assertEquals(1, pdf.getNumberOfPages());

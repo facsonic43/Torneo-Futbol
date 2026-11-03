@@ -12,6 +12,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+// Verifica la búsqueda de fotografías por tipo y número de documento.
+// Comprueba extensiones admitidas y evita utilizar imágenes de otros participantes o directorios.
+
 class DocumentPhotographsTest {
     @TempDir Path directory;
 
@@ -21,7 +24,6 @@ class DocumentPhotographsTest {
         Coach second = coach("Second", "DU", 102);
         Path firstPhoto = Files.createFile(directory.resolve("DU-101.jpg"));
         Path secondPhoto = Files.createFile(directory.resolve("DU-102.png"));
-
         for (int lookup = 0; lookup < 3; lookup++) {
             assertEquals(secondPhoto, IdentificationPdfSection.findPhotograph(second, directory));
             assertEquals(firstPhoto, IdentificationPdfSection.findPhotograph(first, directory));
@@ -32,7 +34,6 @@ class DocumentPhotographsTest {
     void includesDocumentTypeSoEqualNumbersDoNotShareAPhotograph() throws Exception {
         Path du = Files.createFile(directory.resolve("DU-101.jpg"));
         Path passport = Files.createFile(directory.resolve("PAS-101.jpg"));
-
         assertEquals(du, IdentificationPdfSection.findPhotograph(coach("First", " du ", 101), directory));
         assertEquals(passport, IdentificationPdfSection.findPhotograph(coach("Second", "PAS", 101), directory));
     }
@@ -54,7 +55,6 @@ class DocumentPhotographsTest {
         Files.createFile(directory.resolve("unassigned-photo.jpg"));
         Files.createFile(directory.resolve("DU-101.txt"));
         Files.createDirectory(directory.resolve("DU-101.png"));
-
         assertNull(IdentificationPdfSection.findPhotograph(coach("Missing", "DU", 101), directory));
     }
 
@@ -71,7 +71,6 @@ class DocumentPhotographsTest {
         Path players = Files.createDirectory(directory.resolve("Players"));
         Coach person = coach("Coach", "DU", 101);
         Files.createFile(players.resolve("DU-101.jpg"));
-
         assertNull(IdentificationPdfSection.findPhotograph(person, coaches));
     }
 

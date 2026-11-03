@@ -15,9 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/** Datos exclusivos de los reportes, sin modificar los modelos del equipo. */
+// Conserva los datos adicionales de los reportes, como titulares y detalles de goles,
+// sin modificar el modelo del partido. Reconstruye los minutos a partir de titulares, cambios
+// y expulsiones; la ausencia de información se conserva como dato desconocido.
+
 public class ReportMatchDetails {
-    /** El equipo del Goal es el beneficiado, también para un gol en contra. */
     public record GoalDetails(boolean penalty, boolean ownGoal, Player receivingGoalkeeper) { }
 
     private List<Player> homeStarters = List.of();
@@ -45,15 +47,8 @@ public class ReportMatchDetails {
         goals.put(goal, new GoalDetails(penalty, ownGoal, receivingGoalkeeper));
     }
 
-    /** null significa que el modelo no aporta esta información; no equivale a false. */
     public GoalDetails getGoalDetails(Goal goal) { return goals.get(goal); }
 
-    /**
-     * Calcula minutos a partir de la formación conservada, cambios y expulsiones.
-     * Una entrada en el minuto 90 cuenta como participación con cero minutos.
-     * Sin titulares registrados sólo se conocen los minutos de los suplentes.
-     * Una lesión no acredita por sí sola una salida en el modelo existente.
-     */
     public Map<Player, Integer> getPlayerMinutes(Match match) {
         Map<Player, Integer> minutes = new LinkedHashMap<>();
         Map<Player, Integer> entered = new LinkedHashMap<>();
@@ -61,7 +56,6 @@ public class ReportMatchDetails {
         awayStarters.forEach(player -> entered.put(player, 0));
         entered.keySet().forEach(player -> minutes.put(player, 0));
         int duration = match.isExtraTimePlayed() ? 120 : 90;
-
         for (Event event : match.getEvents().stream().sorted(Comparator.comparingInt(Event::getMinute)).toList()) {
             int minute = Math.max(0, Math.min(duration, event.getMinute()));
             event.accept(new EventVisitor() {
@@ -71,7 +65,6 @@ public class ReportMatchDetails {
                     entered.put(substitution.getPlayerIn(), minute);
                     minutes.putIfAbsent(substitution.getPlayerIn(), 0);
                 }
-
                 @Override
                 public void visit(RedCard redCard) {
                     finishParticipation(redCard.getPlayer(), minute, entered, minutes);
@@ -82,8 +75,8 @@ public class ReportMatchDetails {
         return Map.copyOf(minutes);
     }
 
-    private static void finishParticipation(Player player, int minute,
-                                            Map<Player, Integer> entered, Map<Player, Integer> minutes) {
+    private static void finishParticipation(Player player, int minute, Map<Player, Integer> entered, Map<Player,
+            Integer> minutes) {
         Integer start = entered.remove(player);
         if (start != null) minutes.merge(player, minute - start, Integer::sum);
     }

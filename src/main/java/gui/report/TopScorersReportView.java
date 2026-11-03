@@ -6,10 +6,11 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import reports.ReportSection;
 
-public class TopScorersReportView extends RankingReportView {
+// Configura el reporte de goleadores del campeonato a partir de los goles de cada jugador.
 
+public class TopScorersReportView extends RankingReportView {
     public TopScorersReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
-                                Label selectedReportTitle, Node reportsPane, StatisticsReportView statisticsReportView) {
+            Label selectedReportTitle, Node reportsPane, StatisticsReportView statisticsReportView) {
         super(reportContentHost, reportMetricChip, selectedReportSubtitle, selectedReportTitle, reportsPane,
                 statisticsReportView);
     }

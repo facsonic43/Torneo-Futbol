@@ -27,10 +27,12 @@ import static gui.TableCells.createIntegerCenterCell;
 import static gui.TableCells.createCenterStringCell;
 import static gui.TableCells.createBoldCell;
 
-public class PlayersReportView extends ReportView {
+// Muestra los jugadores del campeonato con filtros, estadísticas y datos de identificación.
+// Permite consultar el detalle de sus atributos deportivos desde la valoración general.
 
+public class PlayersReportView extends ReportView {
     public PlayersReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
-                             Label selectedReportTitle, Node reportsPane) {
+            Label selectedReportTitle, Node reportsPane) {
         super(reportContentHost, reportMetricChip, selectedReportSubtitle, selectedReportTitle, reportsPane);
     }
 
@@ -38,15 +40,12 @@ public class PlayersReportView extends ReportView {
     protected void render() {
         selectedReportTitle.setText("Tournament Players Directory");
         selectedReportSubtitle.setText("Master database of registered athletes with disciplinary records, ratings and performance metrics");
-
         VBox layout = new VBox(12);
         layout.setFillWidth(true);
         VBox.setVgrow(layout, Priority.ALWAYS);
-
         HBox filterBar = new HBox(12);
         filterBar.setAlignment(Pos.CENTER_LEFT);
         filterBar.getStyleClass().add("info-card");
-
         ComboBox<String> posFilter = new ComboBox<>();
         posFilter.getItems().add("ALL POSITIONS");
         for (Position p : Position.values()) {
@@ -54,7 +53,6 @@ public class PlayersReportView extends ReportView {
         }
         posFilter.setValue("ALL POSITIONS");
         posFilter.setPrefWidth(160);
-
         ComboBox<String> teamFilter = new ComboBox<>();
         teamFilter.getItems().add("ALL TEAMS");
         for (Team t : tournament.getTeams()) {
@@ -62,30 +60,20 @@ public class PlayersReportView extends ReportView {
         }
         teamFilter.setValue("ALL TEAMS");
         teamFilter.setPrefWidth(200);
-
         Button btnReset = new Button("RESET FILTERS");
         btnReset.getStyleClass().add("secondary-button");
-
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        filterBar.getChildren().addAll(
-                new Label("POSITION:"), posFilter,
-                new Label("TEAM:"), teamFilter,
-                btnReset,
-                spacer
-        );
-
+        filterBar.getChildren().addAll(new Label("POSITION:"), posFilter, new Label("TEAM:"), teamFilter, btnReset,
+                spacer);
         TableView<PlayerDirectoryEntry> table = new TableView<>();
         table.getStyleClass().add("dark-table");
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         VBox.setVgrow(table, Priority.ALWAYS);
-
         TableColumn<PlayerDirectoryEntry, String> playerCol = new TableColumn<>("NAME");
         playerCol.setPrefWidth(160);
         playerCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPlayerName()));
         playerCol.setCellFactory(col -> createBoldCell());
-
         TableColumn<PlayerDirectoryEntry, String> posCol = new TableColumn<>("POSITION");
         posCol.setPrefWidth(70);
         posCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getPosition().toString()));
@@ -107,12 +95,9 @@ public class PlayersReportView extends ReportView {
                 }
             }
         });
-
         TableColumn<PlayerDirectoryEntry, String> teamCol = new TableColumn<>("TEAM");
         teamCol.setPrefWidth(140);
         teamCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getTeamName()));
-
-        // --- COLUMNA OVERALL CON DISPARADOR DE DIÁLOGO MODAL ---
         TableColumn<PlayerDirectoryEntry, Integer> ovrCol = new TableColumn<>("OVERALL");
         ovrCol.setPrefWidth(55);
         ovrCol.setCellValueFactory(cell -> new SimpleObjectProperty<>((int) Math.round(cell.getValue().getPlayer().getOverall())));
@@ -127,13 +112,10 @@ public class PlayersReportView extends ReportView {
                 } else {
                     Label badge = new Label(String.valueOf(val));
                     badge.getStyleClass().add("ovr-badge");
-                    badge.setStyle("-fx-cursor: hand;"); // Cambia el cursor a manito
-
+                    badge.setStyle("-fx-cursor: hand;");
                     setGraphic(badge);
                     setText(null);
                     setAlignment(Pos.CENTER);
-
-                    // Al hacer clic sobre la insignia OVR, abre la ventana emergente
                     setOnMouseClicked(event -> {
                         if (getItem() != null) {
                             PlayerDirectoryEntry entry = getTableView().getItems().get(getIndex());
@@ -143,22 +125,18 @@ public class PlayersReportView extends ReportView {
                 }
             }
         });
-
         TableColumn<PlayerDirectoryEntry, Integer> matchesCol = new TableColumn<>("PLAYED");
         matchesCol.setPrefWidth(50);
         matchesCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getMatchesPlayed()));
         matchesCol.setCellFactory(col -> createIntegerCenterCell());
-
         TableColumn<PlayerDirectoryEntry, Integer> minCol = new TableColumn<>("MINUTES");
         minCol.setPrefWidth(55);
         minCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getMinutesPlayed()));
         minCol.setCellFactory(col -> createIntegerCenterCell());
-
         TableColumn<PlayerDirectoryEntry, Integer> goalsCol = new TableColumn<>("SCORED");
         goalsCol.setPrefWidth(50);
         goalsCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getGoals()));
         goalsCol.setCellFactory(col -> createIntegerCenterCell());
-
         TableColumn<PlayerDirectoryEntry, Integer> yellowCol = new TableColumn<>("YELLOW CARDS");
         yellowCol.setPrefWidth(50);
         yellowCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getPlayer().getYellowCards()));
@@ -174,7 +152,6 @@ public class PlayersReportView extends ReportView {
                 }
             }
         });
-
         TableColumn<PlayerDirectoryEntry, Integer> redCol = new TableColumn<>("RED CARDS");
         redCol.setPrefWidth(50);
         redCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getPlayer().getRedCards()));
@@ -190,7 +167,6 @@ public class PlayersReportView extends ReportView {
                 }
             }
         });
-
         TableColumn<PlayerDirectoryEntry, String> availCol = new TableColumn<>("AVAILABLE");
         availCol.setPrefWidth(90);
         availCol.setCellValueFactory(cell -> {
@@ -216,12 +192,10 @@ public class PlayersReportView extends ReportView {
                 }
             }
         });
-
         TableColumn<PlayerDirectoryEntry, Integer> concededCol = new TableColumn<>("CONCEDED");
         concededCol.setPrefWidth(50);
         concededCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getGoalsConceded()));
         concededCol.setCellFactory(col -> createIntegerCenterCell());
-
         TableColumn<PlayerDirectoryEntry, String> gkAvgCol = new TableColumn<>("CONC./MATCH");
         gkAvgCol.setPrefWidth(85);
         gkAvgCol.setCellValueFactory(cell -> {
@@ -234,21 +208,17 @@ public class PlayersReportView extends ReportView {
             return new SimpleStringProperty("-");
         });
         gkAvgCol.setCellFactory(col -> createCenterStringCell());
-
         table.getColumns().addAll(playerCol, posCol, teamCol, ovrCol, matchesCol, minCol, goalsCol, yellowCol, redCol, availCol, concededCol, gkAvgCol);
-
         ObservableList<PlayerDirectoryEntry> masterList = FXCollections.observableArrayList();
         for (Team t : tournament.getTeams()) {
             for (Player p : t.getSquad()) {
                 masterList.add(new PlayerDirectoryEntry(p, t));
             }
         }
-
         FilteredList<PlayerDirectoryEntry> filteredList = new FilteredList<>(masterList, p -> true);
         SortedList<PlayerDirectoryEntry> sortedList = new SortedList<>(filteredList);
         sortedList.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(sortedList);
-
         Runnable updateFilter = () -> {
             String pSel = posFilter.getValue();
             String tSel = teamFilter.getValue();
@@ -259,18 +229,14 @@ public class PlayersReportView extends ReportView {
             });
             reportMetricChip.setText(filteredList.size() + " PLAYERS");
         };
-
         posFilter.valueProperty().addListener((obs, o, n) -> updateFilter.run());
         teamFilter.valueProperty().addListener((obs, o, n) -> updateFilter.run());
-
         btnReset.setOnAction(e -> {
             posFilter.setValue("ALL POSITIONS");
             teamFilter.setValue("ALL TEAMS");
             updateFilter.run();
         });
-
         updateFilter.run();
-
         layout.getChildren().addAll(filterBar, table);
         reportContentHost.getChildren().add(layout);
     }
@@ -278,54 +244,37 @@ public class PlayersReportView extends ReportView {
     private void showPlayerAttributesDialog(Player player) {
         Dialog<Void> dialog = new Dialog<>();
         DialogPane dialogPane = dialog.getDialogPane();
-
         if (reportsPane != null && reportsPane.getScene() != null) {
             dialogPane.getStylesheets().addAll(reportsPane.getScene().getStylesheets());
-
             Node rootNode = reportsPane.getScene().getRoot();
             dialogPane.getStyleClass().addAll(rootNode.getStyleClass());
         }
-
         dialogPane.getStyleClass().add("panel");
-
         VBox contentContainer = new VBox(12);
         contentContainer.setPadding(new Insets(10));
-
-        // Encabezado usando las clases de tu CSS
         VBox headerBox = new VBox(2);
         Label nameLabel = new Label(player.getName().toUpperCase());
         nameLabel.getStyleClass().add("section-title-large");
-
         Label posLabel = new Label(player.getPosition().toString());
         posLabel.getStyleClass().add("muted-text");
-
         headerBox.getChildren().addAll(nameLabel, posLabel);
-
-        // Grilla con las estadísticas
         GridPane grid = new GridPane();
         grid.setHgap(20);
         grid.setVgap(10);
-
         Map<String, Integer> attributes = player.getTechnicalAttributes();
-
         int row = 0;
         for (Map.Entry<String, Integer> entry : attributes.entrySet()) {
             Label nameLbl = new Label(entry.getKey().toUpperCase() + ":");
-            nameLbl.getStyleClass().add("small-label"); // Usa -text-muted según el tema
-
+            nameLbl.getStyleClass().add("small-label");
             Label valLbl = new Label(String.valueOf(entry.getValue()));
-            valLbl.getStyleClass().add("ovr-badge"); // Badge verde lima
-
+            valLbl.getStyleClass().add("ovr-badge");
             grid.add(nameLbl, 0, row);
             grid.add(valLbl, 1, row);
             row++;
         }
-
         contentContainer.getChildren().addAll(headerBox, new Separator(), grid);
-
         dialogPane.setContent(contentContainer);
         dialogPane.getButtonTypes().add(ButtonType.CLOSE);
-
         dialog.showAndWait();
     }
 }

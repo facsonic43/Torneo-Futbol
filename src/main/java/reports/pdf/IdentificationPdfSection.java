@@ -22,7 +22,10 @@ import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-/** Printable cards with a Code 128 document identifier and a supplied photograph. */
+// Construye credenciales imprimibles con datos personales, fotografía y código de barras
+// Code 128 del documento. Conserva márgenes blancos para la lectura del código y adapta
+// la fotografía al tamaño final de su celda.
+
 final class IdentificationPdfSection {
     private static final float PHOTO_HEIGHT = 120;
 
@@ -33,8 +36,8 @@ final class IdentificationPdfSection {
         Table cards = new Table(UnitValue.createPercentArray(2)).useAllAvailableWidth();
         int count = 0;
         for (Referee referee : data.getReferees()) {
-            cards.addCell(card(document.getPdfDocument(), referee, "Referee", null,
-                    findPhotograph(referee, photosDirectory.resolve("Referees"))));
+            cards.addCell(card(document.getPdfDocument(), referee, "Referee", null, findPhotograph(referee,
+                    photosDirectory.resolve("Referees"))));
             count++;
         }
         for (Team team : data.getTeams()) {
@@ -44,9 +47,8 @@ final class IdentificationPdfSection {
                 count++;
             }
             for (Player player : team.getSquad()) {
-                cards.addCell(card(document.getPdfDocument(), player,
-                        "Player / " + player.getPosition().getLabel(), team,
-                        findPhotograph(player, photosDirectory.resolve("Players"))));
+                cards.addCell(card(document.getPdfDocument(), player, "Player / " + player.getPosition().getLabel(),
+                        team, findPhotograph(player, photosDirectory.resolve("Players"))));
                 count++;
             }
         }
@@ -60,8 +62,8 @@ final class IdentificationPdfSection {
 
     private Cell card(PdfDocument pdf, Person person, String role, Team team, Path photograph) throws IOException {
         Cell card = new Cell().setPadding(9).setKeepTogether(true);
-        card.add(new Paragraph("CONTINENTAL CUP | " + role).setFontSize(8).simulateBold()
-                .setFontColor(PdfReportStyle.NAVY).setMargin(0));
+        card.add(new Paragraph("CONTINENTAL CUP | "
+                + role).setFontSize(8).simulateBold().setFontColor(PdfReportStyle.NAVY).setMargin(0));
         card.add(new Paragraph(person.getName()).simulateBold().setFontSize(11).setMarginTop(4).setMarginBottom(5));
         Table details = new Table(UnitValue.createPercentArray(new float[]{1, 2.2f})).useAllAvailableWidth();
         Cell photo = new Cell().setBorder(Border.NO_BORDER).setPadding(0)
@@ -91,18 +93,14 @@ final class IdentificationPdfSection {
         barcode.setBarHeight(25);
         barcode.setSize(8);
         barcode.setX(0.8f);
-        // Preserve white quiet zones on each side of the bars for control-point scanners.
-        information.add(new Image(barcode.createFormXObject(pdf)).setHorizontalAlignment(HorizontalAlignment.CENTER)
-                .setMarginTop(7).setMarginLeft(10).setMarginRight(10));
+        information.add(new Image(barcode.createFormXObject(pdf)).setHorizontalAlignment(HorizontalAlignment.CENTER) .setMarginTop(7).setMarginLeft(10).setMarginRight(10));
         details.addCell(information);
         card.add(details);
         return card;
     }
 
-    /** Paints to the final cell bounds, including any extra height required by the adjacent text. */
     static final class PhotoCellRenderer extends CellRenderer {
         private final PdfImageXObject image;
-
         PhotoCellRenderer(Cell cell, PdfImageXObject image) {
             super(cell);
             this.image = image;
@@ -120,14 +118,13 @@ final class IdentificationPdfSection {
             float scale = Math.max(frame.getWidth() / image.getWidth(), frame.getHeight() / image.getHeight());
             float width = image.getWidth() * scale;
             float height = image.getHeight() * scale;
-            Rectangle placement = new Rectangle(frame.getX() + (frame.getWidth() - width) / 2,
-                    frame.getY() + (frame.getHeight() - height) / 2, width, height);
+            Rectangle placement = new Rectangle(frame.getX() + (frame.getWidth() - width) / 2, frame.getY()
+                    + (frame.getHeight() - height) / 2, width, height);
             PdfCanvas canvas = context.getCanvas();
             canvas.saveState().rectangle(frame).clip().endPath();
             canvas.addXObjectFittedIntoRectangle(image, placement);
             canvas.restoreState();
         }
-
     }
 
     static String identifier(Person person) {

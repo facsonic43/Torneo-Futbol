@@ -2,6 +2,8 @@ package gui;
 
 import javafx.scene.control.*;
 
+// Agrupa los datos de identificación, experiencia y partidos dirigidos de un árbitro.
+
 public class RefereeReportEntry {
     private final String name;
     private final String nationality;
@@ -11,8 +13,8 @@ public class RefereeReportEntry {
     private final int yearsOfficiated;
     private final int matchesOfficiated;
 
-    public RefereeReportEntry(String name, String nationality, java.time.LocalDate birthDate,
-                              String idType, int idNumber, int yearsOfficiated, int matchesOfficiated) {
+    public RefereeReportEntry(String name, String nationality, java.time.LocalDate birthDate, String idType,
+            int idNumber, int yearsOfficiated, int matchesOfficiated) {
         this.name = name;
         this.nationality = nationality;
         this.birthDate = birthDate;

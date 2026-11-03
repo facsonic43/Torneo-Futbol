@@ -9,6 +9,8 @@ import model.participant.Person;
 
 import java.util.Locale;
 
+// Reúne colores, tablas y formatos de texto comunes a las secciones del reporte PDF.
+
 final class PdfReportStyle {
     static final DeviceRgb NAVY = new DeviceRgb(25, 48, 75);
     static final DeviceRgb LIGHT = new DeviceRgb(240, 244, 248);
@@ -22,8 +24,7 @@ final class PdfReportStyle {
     static Table table(float[] widths, String... headings) {
         Table table = new Table(UnitValue.createPercentArray(widths)).useAllAvailableWidth().setFontSize(9);
         for (String heading : headings) {
-            table.addHeaderCell(new Cell().add(new Paragraph(heading).setMargin(0))
-                    .setPadding(5).setBackgroundColor(NAVY).setFontColor(ColorConstants.WHITE).simulateBold());
+            table.addHeaderCell(new Cell().add(new Paragraph(heading).setMargin(0)) .setPadding(5).setBackgroundColor(NAVY).setFontColor(ColorConstants.WHITE).simulateBold());
         }
         return table;
     }

@@ -19,8 +19,10 @@ import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
 import java.util.List;
 
-public class BracketView extends StackPane {
+// Dibuja el cuadro eliminatorio con las tarjetas de cada ronda y sus conexiones.
+// Ajusta la distribución al tamaño disponible y resalta la ronda activa y el camino del campeón.
 
+public class BracketView extends StackPane {
     public static final String CHAMPION_PATH = "championPath";
 
     private static final int BODY_ROWS = 8;
@@ -38,24 +40,20 @@ public class BracketView extends StackPane {
     private boolean redrawPending;
 
     public BracketView() {
-        grid.setHgap(56); // espacio donde se dibujan las líneas
+        grid.setHgap(56);
         grid.setVgap(8);
         grid.setAlignment(Pos.CENTER);
-
         for (int i = 0; i < 3; i++) {
             ColumnConstraints col = new ColumnConstraints();
             col.setPercentWidth(100.0 / 3);
             col.setHgrow(Priority.ALWAYS);
             grid.getColumnConstraints().add(col);
         }
-
-        // Fila 0: títulos de ronda. Filas 1..8: cuerpo del bracket (todas iguales).
         RowConstraints header = new RowConstraints();
         header.setMinHeight(28);
         header.setPrefHeight(28);
         header.setMaxHeight(28);
         grid.getRowConstraints().add(header);
-
         for (int i = 0; i < BODY_ROWS; i++) {
             RowConstraints row = new RowConstraints();
             row.setMinHeight(ROW_HEIGHT);
@@ -63,17 +61,13 @@ public class BracketView extends StackPane {
             row.setVgrow(Priority.ALWAYS);
             grid.getRowConstraints().add(row);
         }
-
         linesLayer.setMouseTransparent(true);
         linesLayer.setPickOnBounds(false);
         getChildren().addAll(grid, linesLayer);
-
-        // Redibujar los conectores cuando cambia el tamaño disponible.
         widthProperty().addListener((obs, oldValue, newValue) -> requestRedraw());
         heightProperty().addListener((obs, oldValue, newValue) -> requestRedraw());
     }
 
-    /* Reemplaza el contenido del bracket y lo redibuja. */
     public void setMatches(List<? extends Region> quarters, List<? extends Region> semis, Region finalMatch) {
         this.quarters = List.copyOf(quarters);
         this.semis = List.copyOf(semis);
@@ -81,7 +75,6 @@ public class BracketView extends StackPane {
         rebuild();
     }
 
-    /* Resalta el título de la ronda en juego: 0 cuartos, 1 semis, 2 final, -1 ninguna. */
     public void setActiveRound(int round) {
         this.activeRound = round;
         applyActiveRound();
@@ -101,18 +94,15 @@ public class BracketView extends StackPane {
 
     private void rebuild() {
         grid.getChildren().clear();
-
         for (int i = 0; i < HEADER_TITLES.length; i++) {
             addHeader(i);
         }
         applyActiveRound();
-
         place(quarters, 0, 2);
         place(semis, 1, 4);
         if (finalMatch != null) {
             place(List.of(finalMatch), 2, 8);
         }
-
         requestRedraw();
     }
 
@@ -124,22 +114,17 @@ public class BracketView extends StackPane {
         grid.add(label, column, 0);
     }
 
-    /* Coloca los nodos en una columna; cada uno ocupa 'span' filas, centrado. */
     private void place(List<? extends Region> cards, int column, int span) {
         for (int i = 0; i < cards.size(); i++) {
             Region card = cards.get(i);
             card.setMaxWidth(Double.MAX_VALUE);
-
-            // Fijamos un alto máximo idéntico para todas las tarjetas (el tamaño estándar de cuartos)
             card.setMaxHeight(125);
             card.setPrefHeight(125);
-
             grid.add(card, column, 1 + i * span, 1, span);
             GridPane.setValignment(card, VPos.CENTER);
         }
     }
 
-    /* Agrupa varios pedidos de redibujo en uno solo, después del layout. */
     private void requestRedraw() {
         if (redrawPending) {
             return;
@@ -155,53 +140,33 @@ public class BracketView extends StackPane {
 
     private void drawLines() {
         linesLayer.getChildren().clear();
-
         if (quarters.size() != 4 || semis.size() != 2 || finalMatch == null) {
             return;
         }
-
         connect(quarters.get(0), quarters.get(1), semis.get(0));
         connect(quarters.get(2), quarters.get(3), semis.get(1));
         connect(semis.get(0), semis.get(1), finalMatch);
     }
 
-    /*
-     * Conector en codo: [a] y [b] salen hacia una línea vertical que llega a [target].
-     * Si alguno de los dos es parte del camino del campeón, ese tramo se repinta en dorado.
-     */
     private void connect(Node a, Node b, Node target) {
         Bounds ba = toLayer(a);
         Bounds bb = toLayer(b);
         Bounds bt = toLayer(target);
-
         double midX = (ba.getMaxX() + bt.getMinX()) / 2;
         double targetY = bt.getCenterY();
-
-        Path base = new Path(
-                new MoveTo(ba.getMaxX(), ba.getCenterY()),
-                new LineTo(midX, ba.getCenterY()),
-                new LineTo(midX, bb.getCenterY()),
-                new LineTo(bb.getMaxX(), bb.getCenterY()),
-                new MoveTo(midX, targetY),
+        Path base = new Path(new MoveTo(ba.getMaxX(), ba.getCenterY()), new LineTo(midX, ba.getCenterY()),
+                new LineTo(midX, bb.getCenterY()), new LineTo(bb.getMaxX(), bb.getCenterY()), new MoveTo(midX, targetY),
                 new LineTo(bt.getMinX(), targetY));
-
         base.setFill(Color.TRANSPARENT);
         base.getStyleClass().add("bracket-line");
         linesLayer.getChildren().add(base);
-
         for (Node feeder : new Node[]{a, b}) {
             if (!isChampionPath(feeder)) {
                 continue;
             }
-
             Bounds bf = toLayer(feeder);
-
-            Path gold = new Path(
-                    new MoveTo(bf.getMaxX(), bf.getCenterY()),
-                    new LineTo(midX, bf.getCenterY()),
-                    new LineTo(midX, targetY),
-                    new LineTo(bt.getMinX(), targetY));
-
+            Path gold = new Path(new MoveTo(bf.getMaxX(), bf.getCenterY()), new LineTo(midX, bf.getCenterY()),
+                    new LineTo(midX, targetY), new LineTo(bt.getMinX(), targetY));
             gold.setFill(Color.TRANSPARENT);
             gold.getStyleClass().add("bracket-line-champion");
             linesLayer.getChildren().add(gold);

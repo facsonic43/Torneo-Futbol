@@ -2,12 +2,14 @@ package gui;
 
 import javafx.scene.control.*;
 import model.match.Match;
+import model.match.ResolutionCriterion;
 import model.match.FirstLegMatch;
 import model.match.SecondLegMatch;
 
-/** Text formatting of a match, shared by the bracket and the reports. */
-public final class MatchFormat {
+// Centraliza los textos de resultados, fechas, sedes, árbitros y contexto de penales.
+// Comparte el mismo formato entre las pantallas de partidos y los reportes.
 
+public final class MatchFormat {
     private MatchFormat() {
     }
 
@@ -15,13 +17,10 @@ public final class MatchFormat {
         if (!match.isPlayed()) {
             return "Pending";
         }
-
         String result = match.getHomeGoals() + " - " + match.getAwayGoals();
-
-        if (match.getHomePenalties() != null) {
+        if (match.getResolutionCriterion() == ResolutionCriterion.PENALTIES) {
             result += " (" + match.getHomePenalties() + " - " + match.getAwayPenalties() + " pens)";
         }
-
         return result;
     }
 
@@ -37,56 +36,17 @@ public final class MatchFormat {
         return match.getReferee() == null ? "TBD" : match.getReferee().getName();
     }
 
-    /*
-     * Texto breve que explica por qué se llegó a los penales.
-     */
-    public static String penaltyContext(
-            Match match) {
-
-        SecondLegMatch secondLeg =
-                match.asSecondLeg().orElse(null);
-
+    public static String penaltyContext(Match match) {
+        SecondLegMatch secondLeg = match.asSecondLeg().orElse(null);
         if (secondLeg != null) {
-
-            FirstLegMatch firstLeg =
-                    secondLeg.getFirstLeg();
-
-            return "First leg: "
-                    + firstLeg
-                    .getHomeTeam()
-                    .getName()
-                    + " "
-                    + firstLeg.getHomeGoals()
-                    + " - "
-                    + firstLeg.getAwayGoals()
-                    + " "
-                    + firstLeg
-                    .getAwayTeam()
-                    .getName()
-                    + "   ·   Second leg: "
-                    + secondLeg
-                    .getHomeTeam()
-                    .getName()
-                    + " "
-                    + secondLeg.getHomeGoals()
-                    + " - "
-                    + secondLeg.getAwayGoals()
-                    + " "
-                    + secondLeg
-                    .getAwayTeam()
-                    .getName()
+            FirstLegMatch firstLeg = secondLeg.getFirstLeg();
+            return "First leg: " + firstLeg.getHomeTeam().getName() + " " + firstLeg.getHomeGoals() + " - "
+                    + firstLeg.getAwayGoals() + " " + firstLeg.getAwayTeam().getName() + "   ·   Second leg: "
+                    + secondLeg.getHomeTeam().getName() + " " + secondLeg.getHomeGoals() + " - "
+                    + secondLeg.getAwayGoals() + " " + secondLeg.getAwayTeam().getName()
                     + "   ·   Series remains tied after tournament criteria.";
         }
-
-        return match.getHomeTeam()
-                .getName()
-                + " "
-                + match.getHomeGoals()
-                + " - "
-                + match.getAwayGoals()
-                + " "
-                + match.getAwayTeam()
-                .getName()
-                + "   ·   The final is level after 90 minutes.";
+        return match.getHomeTeam().getName() + " " + match.getHomeGoals() + " - " + match.getAwayGoals() + " "
+                + match.getAwayTeam().getName() + "   ·   The final is level after 90 minutes.";
     }
 }

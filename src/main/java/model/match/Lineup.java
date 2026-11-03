@@ -6,62 +6,51 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+// Selecciona once titulares por posición y ordena los suplentes según su valoración.
+// Busca una formación alternativa y, si hace falta, utiliza lesionados o un arquero de emergencia.
+// Los suspendidos quedan excluidos y una formación incompleta permite resolver la derrota administrativa.
+
 public class Lineup {
     private List<Player> starters = new ArrayList<>();
     private List<Player> subs = new ArrayList<>();
     private final Formation formation;
 
-    public Lineup(Team team, Team opponent){
+    public Lineup(Team team, Team opponent) {
         List<Player> availablePlayers = new ArrayList<>();
         List<Player> injuredPlayers = new ArrayList<>();
-
-        for(Player p : team.getSquad()){
-            if(p.isAvailable()){
+        for (Player p : team.getSquad()) {
+            if (p.isAvailable()) {
                 availablePlayers.add(p);
-            }else if(p.isInjured() && !p.isSuspended()){
+            } else if (p.isInjured() && !p.isSuspended()) {
                 injuredPlayers.add(p);
             }
         }
-
-        // Injured players are only called up when the squad could not field any formation
-        // without them. Suspended players never play (a sent-off player misses the next match).
-        if(!canCompleteAnyFormation(availablePlayers)){
+        if (!canCompleteAnyFormation(availablePlayers)) {
             availablePlayers.addAll(injuredPlayers);
         }
-
         availablePlayers.sort(Comparator.comparing(Player::getOverall).reversed());
-
         Formation preferredFormation = team.getCoach().chooseFormation(team, opponent);
         this.formation = findCompatibleFormation(preferredFormation, availablePlayers);
-
-        int g=0,d=0,m=0,f=0;
-        for(Player p : availablePlayers){
-            if(p.getPosition()==Position.GOALKEEPER && g<1){
+        int g = 0, d = 0, m = 0, f = 0;
+        for (Player p : availablePlayers) {
+            if (p.getPosition() == Position.GOALKEEPER && g < 1) {
                 starters.add(p);
                 g++;
-            }else if(p.getPosition()==Position.DEFENDER && d<formation.getDefenders()){
+            } else if (p.getPosition() == Position.DEFENDER && d < formation.getDefenders()) {
                 starters.add(p);
                 d++;
-            }else if(p.getPosition()==Position.MIDFIELDER && m<formation.getMidfielders()){
+            } else if (p.getPosition() == Position.MIDFIELDER && m < formation.getMidfielders()) {
                 starters.add(p);
                 m++;
-            }else if(p.getPosition()==Position.FORWARD && f<formation.getForwards()){
+            } else if (p.getPosition() == Position.FORWARD && f < formation.getForwards()) {
                 starters.add(p);
                 f++;
-            }else{
+            } else {
                 subs.add(p);
             }
         }
-
         if (g == 0 && !subs.isEmpty()) {
-            // No goalkeeper available: the best remaining field player goes in goal.
             starters.add(subs.remove(0));
-        }
-
-        if (starters.size() < 11) {
-            throw new IllegalStateException(
-                    "No hay jugadores disponibles para completar la formación "
-                            + formation.getLabel() + " de " + team.getName());
         }
     }
 
@@ -69,14 +58,12 @@ public class Lineup {
         if (canComplete(preferredFormation, availablePlayers)) {
             return preferredFormation;
         }
-
         for (Formation alternative : Formation.values()) {
             if (canComplete(alternative, availablePlayers)) {
                 return alternative;
             }
         }
-
-        throw new IllegalStateException("El plantel no puede completar ninguna formación disponible.");
+        return preferredFormation;
     }
 
     private boolean canCompleteAnyFormation(List<Player> availablePlayers) {
@@ -85,7 +72,6 @@ public class Lineup {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -94,7 +80,6 @@ public class Lineup {
         int defenders = 0;
         int midfielders = 0;
         int forwards = 0;
-
         for (Player player : availablePlayers) {
             switch (player.getPosition()) {
                 case GOALKEEPER -> goalkeepers++;
@@ -103,24 +88,23 @@ public class Lineup {
                 case FORWARD -> forwards++;
             }
         }
-
         int outfieldNeeded = formation.getDefenders()
                 + formation.getMidfielders()
                 + formation.getForwards();
-
         boolean outfieldCovered = defenders >= formation.getDefenders()
                 && midfielders >= formation.getMidfielders()
                 && forwards >= formation.getForwards();
-
-        // Without any goalkeeper, one extra field player has to play in goal.
         boolean goalCovered = goalkeepers >= 1
                 || defenders + midfielders + forwards > outfieldNeeded;
-
         return outfieldCovered && goalCovered;
     }
 
     public List<Player> getStarters() {
         return starters;
+    }
+
+    public boolean hasCompleteFormation() {
+        return starters.size() == 11;
     }
 
     public List<Player> getSubs() {

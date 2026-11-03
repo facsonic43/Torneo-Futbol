@@ -2,8 +2,9 @@ package model.match;
 
 import java.io.Serializable;
 
-public class Stadium implements Serializable{
+// Representa un estadio y su ciudad para asignarlo a los partidos y administrarlo en la base de datos.
 
+public class Stadium implements Serializable{
     private int id;
     private String name;
     private int cityId;

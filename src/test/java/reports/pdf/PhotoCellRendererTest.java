@@ -24,14 +24,16 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+// Comprueba que las fotografías cubran la celda completa de las credenciales PDF
+// conservando su proporción y el recorte, incluso cuando el texto aumenta la altura de la fila.
+
 class PhotoCellRendererTest {
     @TempDir Path directory;
 
     @Test
     void photosCoverTheEntireCellEvenWhenAdjacentTextMakesItTaller() throws Exception {
         for (String photo : List.of("Coaches/DU-10000019.jpg", "Players/DU-10000001.jpg")) {
-            PdfImageXObject image = new PdfImageXObject(ImageDataFactory.create(
-                    Files.readAllBytes(Path.of("Images/Person").resolve(photo))));
+            PdfImageXObject image = new PdfImageXObject(ImageDataFactory.create( Files.readAllBytes(Path.of("Images/Person").resolve(photo))));
             Cell cell = new Cell().setPadding(0).setBorder(Border.NO_BORDER).setMinHeight(78);
             var renderer = new IdentificationPdfSection.PhotoCellRenderer(cell, image);
             cell.setNextRenderer(renderer);
@@ -65,16 +67,14 @@ class PhotoCellRendererTest {
         Rectangle clip;
         Rectangle clipAtImage;
         Rectangle image;
-
         @Override
         public void eventOccurred(IEventData data, EventType type) {
             if (type == EventType.CLIP_PATH_CHANGED) {
-                clip = Rectangle.calculateBBox(((ClippingPathInfo) data).getClippingPath().getSubpaths().stream()
-                        .flatMap(path -> path.getPiecewiseLinearApproximation().stream()).toList());
+                clip = Rectangle.calculateBBox(((ClippingPathInfo) data).getClippingPath().getSubpaths().stream() .flatMap(path -> path.getPiecewiseLinearApproximation().stream()).toList());
             } else if (type == EventType.RENDER_IMAGE) {
                 Matrix matrix = ((ImageRenderInfo) data).getImageCtm();
-                image = new Rectangle(matrix.get(Matrix.I31), matrix.get(Matrix.I32),
-                        matrix.get(Matrix.I11), matrix.get(Matrix.I22));
+                image = new Rectangle(matrix.get(Matrix.I31), matrix.get(Matrix.I32), matrix.get(Matrix.I11),
+                        matrix.get(Matrix.I22));
                 clipAtImage = clip;
             }
         }

@@ -7,9 +7,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
 import model.participant.Team;
 
-/** The championship bracket shown inside the Reports screen. */
-public class BracketReportView extends ReportView {
+// Muestra el cuadro eliminatorio del campeonato dentro de la pantalla de reportes.
 
+public class BracketReportView extends ReportView {
     private final BracketSection bracketSection;
 
     public BracketReportView(StackPane reportContentHost, Label reportMetricChip, Label selectedReportSubtitle,
@@ -22,13 +22,10 @@ public class BracketReportView extends ReportView {
     protected void render() {
         selectedReportTitle.setText("Championship Bracket");
         selectedReportSubtitle.setText("Knockout stage roadmap and match results");
-
         Team champion = bracketSection.load(tournament);
-
         ScrollPane scrollPane = new ScrollPane(bracketSection.getView());
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
-
         reportMetricChip.setText(champion != null ? "CHAMPION: " + champion.getName().toUpperCase() : "IN PROGRESS");
         reportContentHost.getChildren().add(scrollPane);
     }

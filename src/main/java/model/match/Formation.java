@@ -1,5 +1,8 @@
 package model.match;
 
+// Define los esquemas tácticos disponibles y la cantidad de defensores, mediocampistas
+// y delanteros necesaria para completar cada formación junto con el arquero.
+
 public enum Formation {
     FOUR_FOUR_TWO("4-4-2", 4, 4, 2),
     FOUR_THREE_THREE("4-3-3", 4, 3, 3),
@@ -18,7 +21,6 @@ public enum Formation {
     FIVE_TWO_THREE("5-2-3", 5, 2, 3),
     THREE_FOUR_ONE_TWO("3-4-1-2", 3, 5, 2),
     FOUR_TWO_FOUR("4-2-4", 4, 2, 4);
-
 
     private final String label;
     private final int defenders;

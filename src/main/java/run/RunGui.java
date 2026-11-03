@@ -3,18 +3,10 @@ package run;
 import gui.MainApplication;
 import javafx.application.Application;
 
-/*
- * Punto de entrada de la interfaz gráfica.
- * Se mantiene separado de MainApplication para facilitar
- * la ejecución de JavaFX desde IntelliJ.
- */
+// Inicia la aplicación JavaFX del campeonato desde el punto de entrada del programa.
+
 public class RunGui {
-
     public static void main(String[] args) {
-
-        Application.launch(
-                MainApplication.class,
-                args
-        );
+        Application.launch(MainApplication.class, args);
     }
 }
