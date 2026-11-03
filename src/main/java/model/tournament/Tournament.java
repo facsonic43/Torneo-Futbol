@@ -14,15 +14,16 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /*
  * Representa el campeonato completo y conserva el estado de todas sus etapas.
- * Se encarga del sorteo de grupos, generación de partidos, cruces eliminatorios,
- * selección de árbitros y estadios y avance hasta obtener al campeón.
+ * Conserva equipos, etapas y campeón; coordina el avance del torneo.
+ * TournamentFixtureBuilder construye partidos y cruces sin duplicar este estado.
  */
 public class Tournament implements Serializable {
+    // Mantiene la compatibilidad con partidas serializadas por la versión vf311.
+    private static final long serialVersionUID = -3149784396393458075L;
     private List<Team> teams = new ArrayList<>();
     private List<Referee> referees = new ArrayList<>();
     private List<Group> groups = new ArrayList<>();
@@ -48,126 +49,30 @@ public class Tournament implements Serializable {
         this.referees = new ArrayList<>(referees);
     }
 
-    // Sortea cuatro grupos tomando un equipo de cada bombo.
+    // Mantiene el estado del sorteo; el cálculo queda en el generador de fixture.
     public List<Group> drawGroups() {
-        if (teams.size() != 16) {
-            throw new IllegalStateException(
-                    "The tournament must contain exactly 16 teams."
-            );
-        }
-
-        List<Team> orderedTeams = new ArrayList<>(teams);
-
-        orderedTeams.sort(
-                Comparator.comparingInt(Team::getRanking)
-        );
-
-        // Pots of 4 by ranking; each group gets one team from every pot.
-        List<List<Team>> pots = new ArrayList<>();
-
-        for (int pot = 0; pot < 4; pot++) {
-            List<Team> potTeams =
-                    new ArrayList<>(
-                            orderedTeams.subList(pot * 4, pot * 4 + 4)
-                    );
-
-            Collections.shuffle(potTeams);
-            pots.add(potTeams);
-        }
-
-        groups = new ArrayList<>();
-
-        for (int g = 0; g < 4; g++) {
-            List<Team> groupTeams = new ArrayList<>();
-
-            for (List<Team> potTeams : pots) {
-                groupTeams.add(potTeams.get(g));
-            }
-
-            groups.add(
-                    new Group(
-                            "Group " + (char) ('A' + g),
-                            groupTeams
-                    )
-            );
-        }
-
+        groups = new TournamentFixtureBuilder(this).drawGroups();
         return groups;
     }
 
+    // Genera partidos de fase de grupos sin mezclar la lógica con el estado.
     public void generateGroupMatches(List<Stadium> stadiums) {
+        new TournamentFixtureBuilder(this).generateGroupMatches(stadiums);
+    }
 
-        int stadiumIndex = 0;
+    // Prepara los cuatro cruces de cuartos de final.
+    public void generateQuarterFinals(List<Stadium> stadiums) {
+        new TournamentFixtureBuilder(this).generateQuarterFinals(stadiums);
+    }
 
-        LocalDate firstMatchDate = LocalDate.now();
+    // Prepara las dos series de semifinales.
+    public void generateSemiFinals() {
+        new TournamentFixtureBuilder(this).generateSemiFinals();
+    }
 
-        int[][] pairingsByRound = {
-                {0, 1, 2, 3},
-                {0, 2, 1, 3},
-                {0, 3, 1, 2}
-        };
-
-        for (Group group : groups) {
-            List<Team> groupTeams = group.getTeams();
-
-            for (int round = 0;
-                 round < pairingsByRound.length;
-                 round++) {
-
-                int[] pairings = pairingsByRound[round];
-
-                for (int pairing = 0;
-                     pairing < pairings.length;
-                     pairing += 2) {
-
-                    Team home =
-                            groupTeams.get(
-                                    pairings[pairing]
-                            );
-
-                    Team away =
-                            groupTeams.get(
-                                    pairings[pairing + 1]
-                            );
-
-                    Referee referee =
-                            selectReferee(
-                                    home,
-                                    away
-                            );
-
-                    Stadium stadium;
-
-                    if (stadiums.isEmpty()) {
-                        stadium =
-                                new Stadium(
-                                        "Stadium of "
-                                                + home.getName(),
-                                        1
-                                );
-                    } else {
-                        stadium =
-                                stadiums.get(
-                                        stadiumIndex
-                                                % stadiums.size()
-                                );
-
-                        stadiumIndex++;
-                    }
-
-                    GroupMatch match =
-                            new GroupMatch(
-                                    home,
-                                    away,
-                                    referee,
-                                    stadium,
-                                    firstMatchDate.plusDays(round)
-                            );
-
-                    group.addMatch(match);
-                }
-            }
-        }
+    // Crea la final a partir de los ganadores de semifinales.
+    public void generateFinal() {
+        finalMatch = new TournamentFixtureBuilder(this).generateFinal();
     }
 
     public void simulateGroupStage(
@@ -177,288 +82,33 @@ public class Tournament implements Serializable {
             for (GroupMatch match :
                     group.getMatches()) {
 
-                simulator.simulateMatch(
-                        match
-                );
+                simulator.simulateMatch( match );
             }
         }
-    }
-
-    // Genera los cruces exactos de cuartos.
-    public void generateQuarterFinals(
-            List<Stadium> stadiums) {
-
-        if (groups.size() != 4) {
-            throw new IllegalStateException(
-                    "The four groups must exist before generating quarter-finals."
-            );
-        }
-
-        prepareKnockoutStadiums(
-                stadiums
-        );
-
-        quarterFinalFirstLegs.clear();
-        quarterFinalSecondLegs.clear();
-
-        Team a1 =
-                groups.get(0)
-                        .getQualifiedTeams()
-                        .get(0);
-
-        Team a2 =
-                groups.get(0)
-                        .getQualifiedTeams()
-                        .get(1);
-
-        Team b1 =
-                groups.get(1)
-                        .getQualifiedTeams()
-                        .get(0);
-
-        Team b2 =
-                groups.get(1)
-                        .getQualifiedTeams()
-                        .get(1);
-
-        Team c1 =
-                groups.get(2)
-                        .getQualifiedTeams()
-                        .get(0);
-
-        Team c2 =
-                groups.get(2)
-                        .getQualifiedTeams()
-                        .get(1);
-
-        Team d1 =
-                groups.get(3)
-                        .getQualifiedTeams()
-                        .get(0);
-
-        Team d2 =
-                groups.get(3)
-                        .getQualifiedTeams()
-                        .get(1);
-
-        LocalDate firstLegDate =
-                getLastGroupDate()
-                        .plusDays(7);
-
-        LocalDate secondLegDate =
-                firstLegDate
-                        .plusDays(7);
-
-        addTwoLegSeries(
-                a1,
-                d2,
-                firstLegDate,
-                secondLegDate,
-                quarterFinalFirstLegs,
-                quarterFinalSecondLegs
-        );
-
-        addTwoLegSeries(
-                b1,
-                c2,
-                firstLegDate,
-                secondLegDate,
-                quarterFinalFirstLegs,
-                quarterFinalSecondLegs
-        );
-
-        addTwoLegSeries(
-                c1,
-                a2,
-                firstLegDate,
-                secondLegDate,
-                quarterFinalFirstLegs,
-                quarterFinalSecondLegs
-        );
-
-        addTwoLegSeries(
-                d1,
-                b2,
-                firstLegDate,
-                secondLegDate,
-                quarterFinalFirstLegs,
-                quarterFinalSecondLegs
-        );
     }
 
     public void simulateQuarterFinals(
             MatchSimulator simulator) {
 
-        simulateTwoLegRound(
-                quarterFinalFirstLegs,
-                quarterFinalSecondLegs,
-                simulator
-        );
-    }
-
-    // Genera semifinales con Ganador I vs II y Ganador III vs IV.
-    public void generateSemiFinals() {
-        if (quarterFinalSecondLegs.size() != 4) {
-            throw new IllegalStateException(
-                    "Quarter-finals must be generated first."
-            );
-        }
-
-        Team winner1 =
-                requireWinner(
-                        quarterFinalSecondLegs.get(0)
-                );
-
-        Team winner2 =
-                requireWinner(
-                        quarterFinalSecondLegs.get(1)
-                );
-
-        Team winner3 =
-                requireWinner(
-                        quarterFinalSecondLegs.get(2)
-                );
-
-        Team winner4 =
-                requireWinner(
-                        quarterFinalSecondLegs.get(3)
-                );
-
-        semiFinalFirstLegs.clear();
-        semiFinalSecondLegs.clear();
-
-        LocalDate firstLegDate =
-                quarterFinalSecondLegs
-                        .get(0)
-                        .getMatchDate()
-                        .plusDays(7);
-
-        LocalDate secondLegDate =
-                firstLegDate
-                        .plusDays(7);
-
-        addTwoLegSeries(
-                winner1,
-                winner2,
-                firstLegDate,
-                secondLegDate,
-                semiFinalFirstLegs,
-                semiFinalSecondLegs
-        );
-
-        addTwoLegSeries(
-                winner3,
-                winner4,
-                firstLegDate,
-                secondLegDate,
-                semiFinalFirstLegs,
-                semiFinalSecondLegs
-        );
+        simulateTwoLegRound( quarterFinalFirstLegs, quarterFinalSecondLegs, simulator );
     }
 
     public void simulateSemiFinals(
             MatchSimulator simulator) {
 
-        simulateTwoLegRound(
-                semiFinalFirstLegs,
-                semiFinalSecondLegs,
-                simulator
-        );
-    }
-
-    public void generateFinal() {
-        if (semiFinalSecondLegs.size() != 2) {
-            throw new IllegalStateException(
-                    "Semi-finals must be generated first."
-            );
-        }
-
-        Team finalist1 =
-                requireWinner(
-                        semiFinalSecondLegs.get(0)
-                );
-
-        Team finalist2 =
-                requireWinner(
-                        semiFinalSecondLegs.get(1)
-                );
-
-        LocalDate finalDate =
-                semiFinalSecondLegs
-                        .get(0)
-                        .getMatchDate()
-                        .plusDays(7);
-
-        finalMatch =
-                new FinalMatch(
-                        finalist1,
-                        finalist2,
-                        selectReferee(
-                                finalist1,
-                                finalist2
-                        ),
-                        nextKnockoutStadium(),
-                        finalDate
-                );
+        simulateTwoLegRound( semiFinalFirstLegs, semiFinalSecondLegs, simulator );
     }
 
     public void simulateFinal(
             MatchSimulator simulator) {
 
         if (finalMatch == null) {
-            throw new IllegalStateException(
-                    "The final must be generated first."
-            );
+            throw new IllegalStateException( "The final must be generated first." );
         }
 
-        simulator.simulateMatch(
-                finalMatch
-        );
+        simulator.simulateMatch( finalMatch );
 
-        champion =
-                finalMatch.getWinner();
-    }
-
-    private void addTwoLegSeries(
-            Team firstLegHome,
-            Team firstLegAway,
-            LocalDate firstLegDate,
-            LocalDate secondLegDate,
-            List<FirstLegMatch> firstLegMatches,
-            List<SecondLegMatch> secondLegMatches) {
-
-        FirstLegMatch firstLeg =
-                new FirstLegMatch(
-                        firstLegHome,
-                        firstLegAway,
-                        selectReferee(
-                                firstLegHome,
-                                firstLegAway
-                        ),
-                        nextKnockoutStadium(),
-                        firstLegDate
-                );
-
-        SecondLegMatch secondLeg =
-                new SecondLegMatch(
-                        firstLegAway,
-                        firstLegHome,
-                        selectReferee(
-                                firstLegAway,
-                                firstLegHome
-                        ),
-                        nextKnockoutStadium(),
-                        secondLegDate,
-                        firstLeg
-                );
-
-        firstLegMatches.add(
-                firstLeg
-        );
-
-        secondLegMatches.add(
-                secondLeg
-        );
+        champion = finalMatch.getWinner();
     }
 
     private void simulateTwoLegRound(
@@ -469,47 +119,36 @@ public class Tournament implements Serializable {
         if (firstLegMatches.size()
                 != secondLegMatches.size()) {
 
-            throw new IllegalStateException(
-                    "Invalid two-leg round configuration."
-            );
+            throw new IllegalStateException( "Invalid two-leg round configuration." );
         }
 
         for (int i = 0;
              i < firstLegMatches.size();
              i++) {
 
-            simulator.simulateMatch(
-                    firstLegMatches.get(i)
-            );
+            simulator.simulateMatch( firstLegMatches.get(i) );
 
-            simulator.simulateMatch(
-                    secondLegMatches.get(i)
-            );
+            simulator.simulateMatch( secondLegMatches.get(i) );
         }
     }
 
     // Selecciona únicamente árbitros habilitados para dirigir el partido.
-    private Referee selectReferee(
+    Referee selectReferee(
             Team home,
             Team away) {
 
         if (referees.isEmpty()) {
-            throw new IllegalStateException(
-                    "No referees are available."
-            );
+            throw new IllegalStateException( "No referees are available." );
         }
 
-        List<Referee> eligibleReferees =
-                new ArrayList<>();
+        List<Referee> eligibleReferees = new ArrayList<>();
 
         for (Referee referee : referees) {
             if (referee.canOfficiate(
                     home,
                     away)) {
 
-                eligibleReferees.add(
-                        referee
-                );
+                eligibleReferees.add( referee );
             }
         }
 
@@ -522,11 +161,7 @@ public class Tournament implements Serializable {
             );
         }
 
-        Referee selected =
-                eligibleReferees.get(
-                        refereeIndex
-                                % eligibleReferees.size()
-                );
+        Referee selected = eligibleReferees.get( refereeIndex % eligibleReferees.size() );
 
         refereeIndex++;
 
@@ -534,7 +169,7 @@ public class Tournament implements Serializable {
     }
 
     // Reserva estadios diferentes para todos los partidos eliminatorios.
-    private void prepareKnockoutStadiums(
+    void prepareKnockoutStadiums(
             List<Stadium> stadiums) {
 
         if (stadiums == null
@@ -545,95 +180,41 @@ public class Tournament implements Serializable {
             );
         }
 
-        knockoutStadiums =
-                new ArrayList<>(stadiums);
+        knockoutStadiums = new ArrayList<>(stadiums);
 
-        Collections.shuffle(
-                knockoutStadiums
-        );
+        Collections.shuffle( knockoutStadiums );
 
         knockoutStadiumIndex = 0;
     }
 
-    private Stadium nextKnockoutStadium() {
+    Stadium nextKnockoutStadium() {
         if (knockoutStadiumIndex
                 >= knockoutStadiums.size()) {
 
-            throw new IllegalStateException(
-                    "There are no unused stadiums available."
-            );
+            throw new IllegalStateException( "There are no unused stadiums available." );
         }
 
-        Stadium stadium =
-                knockoutStadiums.get(
-                        knockoutStadiumIndex
-                );
+        Stadium stadium = knockoutStadiums.get( knockoutStadiumIndex );
 
         knockoutStadiumIndex++;
 
         return stadium;
     }
 
-    private LocalDate getLastGroupDate() {
-        LocalDate lastDate =
-                LocalDate.now();
-
-        for (Group group : groups) {
-            for (GroupMatch match :
-                    group.getMatches()) {
-
-                if (match.getMatchDate()
-                        .isAfter(lastDate)) {
-
-                    lastDate =
-                            match.getMatchDate();
-                }
-            }
-        }
-
-        return lastDate;
-    }
-
-    private Team requireWinner(
-            SecondLegMatch match) {
-
-        Team winner =
-                match.getWinner();
-
-        if (winner == null) {
-            throw new IllegalStateException(
-                    "The knockout series does not have a winner yet."
-            );
-        }
-
-        return winner;
-    }
-
     public List<Match> getAllMatches() {
-        List<Match> allMatches =
-                new ArrayList<>();
+        List<Match> allMatches = new ArrayList<>();
 
         for (Group group : groups) {
-            allMatches.addAll(
-                    group.getMatches()
-            );
+            allMatches.addAll( group.getMatches() );
         }
 
-        allMatches.addAll(
-                quarterFinalFirstLegs
-        );
+        allMatches.addAll( quarterFinalFirstLegs );
 
-        allMatches.addAll(
-                quarterFinalSecondLegs
-        );
+        allMatches.addAll( quarterFinalSecondLegs );
 
-        allMatches.addAll(
-                semiFinalFirstLegs
-        );
+        allMatches.addAll( semiFinalFirstLegs );
 
-        allMatches.addAll(
-                semiFinalSecondLegs
-        );
+        allMatches.addAll( semiFinalSecondLegs );
 
         if (finalMatch != null) {
             allMatches.add(finalMatch);
@@ -678,7 +259,7 @@ public class Tournament implements Serializable {
         return champion;
     }
 
-    /** Stage in which the match is played: group stage unless it belongs to a knockout round. */
+    /** Devuelve la etapa a la que pertenece un partido. */
     public TournamentStage getStageOf(Match match) {
         if (match == getFinalMatch()) {
             return TournamentStage.FINAL;
