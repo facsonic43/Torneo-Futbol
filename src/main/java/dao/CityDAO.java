@@ -19,7 +19,7 @@ public class CityDAO {
             throw new DuplicateLocationException("A city with this name already exists.");
         }
 
-        String sql = "INSERT INTO ciudad (nombre, pais) VALUES (?, ?)";
+        String sql = "INSERT INTO city (name, country) VALUES (?, ?)";
         try (PreparedStatement ps = DatabaseConnection.getConnection()
                 .prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, city.getName());
@@ -38,9 +38,9 @@ public class CityDAO {
                 new ArrayList<>();
 
         String sql =
-                "SELECT id_ciudad, nombre, pais "
-                        + "FROM ciudad "
-                        + "ORDER BY nombre";
+                "SELECT id_city, name, country "
+                        + "FROM city "
+                        + "ORDER BY name";
 
         try (Statement statement =
                      DatabaseConnection
@@ -57,13 +57,13 @@ public class CityDAO {
                 City city =
                         new City(
                                 result.getInt(
-                                        "id_ciudad"
+                                        "id_city"
                                 ),
                                 result.getString(
-                                        "nombre"
+                                        "name"
                                 ),
                                 result.getString(
-                                        "pais"
+                                        "country"
                                 )
                         );
 
@@ -80,7 +80,7 @@ public class CityDAO {
             throw new DuplicateLocationException("A city with this name already exists.");
         }
 
-        String sql = "UPDATE ciudad SET nombre = ?, pais = ? WHERE id_ciudad = ?";
+        String sql = "UPDATE ciudad SET name = ?, country = ? WHERE id_city = ?";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql)) {
             ps.setString(1, city.getName());
             ps.setString(2, city.getCountry());
@@ -90,7 +90,7 @@ public class CityDAO {
     }
 
     public void delete(int id) throws SQLException {
-        String sql = "DELETE FROM ciudad WHERE id_ciudad = ?";
+        String sql = "DELETE FROM city WHERE id_city = ?";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
@@ -117,8 +117,8 @@ public class CityDAO {
 
     private boolean exists(String name, int excludedId) throws SQLException {
         String sql = "SELECT 1 FROM ciudad "
-                + "WHERE LOWER(TRIM(nombre)) = LOWER(TRIM(?)) "
-                + "AND id_ciudad <> ? LIMIT 1";
+                + "WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) "
+                + "AND id_city <> ? LIMIT 1";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql)) {
             ps.setString(1, name);
             ps.setInt(2, excludedId);
