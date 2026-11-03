@@ -37,9 +37,9 @@ public class StadiumDAO {
                 new ArrayList<>();
 
         String sql =
-                "SELECT id_estadio, nombre, id_ciudad "
-                        + "FROM estadio "
-                        + "ORDER BY nombre";
+                "SELECT id_stadium, name, id_city "
+                        + "FROM stadium "
+                        + "ORDER BY name";
 
         try (Statement statement =
                      DatabaseConnection
@@ -56,13 +56,13 @@ public class StadiumDAO {
                 Stadium stadium =
                         new Stadium(
                                 result.getInt(
-                                        "id_estadio"
+                                        "id_stadium"
                                 ),
                                 result.getString(
-                                        "nombre"
+                                        "name"
                                 ),
                                 result.getInt(
-                                        "id_ciudad"
+                                        "id_city"
                                 )
                         );
 
@@ -80,8 +80,8 @@ public class StadiumDAO {
             throws SQLException {
 
         String sql =
-                "DELETE FROM estadio "
-                        + "WHERE id_estadio = ?";
+                "DELETE FROM stadium "
+                        + "WHERE id_stadium = ?";
 
         try (PreparedStatement statement =
                      DatabaseConnection
@@ -104,7 +104,7 @@ public class StadiumDAO {
             throw new DuplicateLocationException("A stadium with this name already exists.");
         }
 
-        String sql = "UPDATE estadio SET nombre = ?, id_ciudad = ? WHERE id_estadio = ?";
+        String sql = "UPDATE stadium SET name = ?, id_city = ? WHERE id_stadium = ?";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql)) {
             ps.setString(1, stadium.getName());
             ps.setInt(2, stadium.getCityId());
@@ -114,9 +114,9 @@ public class StadiumDAO {
     }
 
     private boolean exists(String name, int excludedId) throws SQLException {
-        String sql = "SELECT 1 FROM estadio "
-                + "WHERE LOWER(TRIM(nombre)) = LOWER(TRIM(?)) "
-                + "AND id_estadio <> ? LIMIT 1";
+        String sql = "SELECT 1 FROM stadium "
+                + "WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) "
+                + "AND id_stadium <> ? LIMIT 1";
         try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql)) {
             ps.setString(1, name);
             ps.setInt(2, excludedId);
@@ -126,3 +126,4 @@ public class StadiumDAO {
         }
     }
 }
+
