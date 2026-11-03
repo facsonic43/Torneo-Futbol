@@ -26,8 +26,8 @@ public class CoachesReportView extends ReportView {
 
     @Override
     protected void render() {
-        selectedReportTitle.setText("Head Coaches Directory");
-        selectedReportSubtitle.setText("Technical directors, nationalities, titles won and club assignments");
+        getSelectedReportTitle().setText("Head Coaches Directory");
+        getSelectedReportSubtitle().setText("Technical directors, nationalities, titles won and club assignments");
         VBox layout = new VBox(12);
         layout.setFillWidth(true);
         VBox.setVgrow(layout, Priority.ALWAYS);
@@ -51,7 +51,7 @@ public class CoachesReportView extends ReportView {
         titlesCol.setCellFactory(col -> createHighlightStatCell());
         table.getColumns().addAll(nameCol, teamCol, natCol, titlesCol);
         List<CoachReportEntry> list = new ArrayList<>();
-        for (Team team : tournament.getTeams()) {
+        for (Team team : getTournament().getTeams()) {
             if (team.getCoach() != null) {
                 var coach = team.getCoach();
                 String nat = coach.getNationality() != null ? coach.getNationality().getName() : "-";
@@ -62,7 +62,7 @@ public class CoachesReportView extends ReportView {
         list.sort(Comparator.comparingInt(CoachReportEntry::getTitlesWon).reversed());
         table.getItems().setAll(list);
         layout.getChildren().add(table);
-        reportMetricChip.setText(list.size() + " COACHES");
-        reportContentHost.getChildren().add(layout);
+        getReportMetricChip().setText(list.size() + " COACHES");
+        getReportContentHost().getChildren().add(layout);
     }
 }

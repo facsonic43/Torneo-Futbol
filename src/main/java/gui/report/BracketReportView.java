@@ -20,13 +20,13 @@ public class BracketReportView extends ReportView {
 
     @Override
     protected void render() {
-        selectedReportTitle.setText("Championship Bracket");
-        selectedReportSubtitle.setText("Knockout stage roadmap and match results");
-        Team champion = bracketSection.load(tournament);
+        getSelectedReportTitle().setText("Championship Bracket");
+        getSelectedReportSubtitle().setText("Knockout stage roadmap and match results");
+        Team champion = bracketSection.load(getTournament());
         ScrollPane scrollPane = new ScrollPane(bracketSection.getView());
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
-        reportMetricChip.setText(champion != null ? "CHAMPION: " + champion.getName().toUpperCase() : "IN PROGRESS");
-        reportContentHost.getChildren().add(scrollPane);
+        getReportMetricChip().setText(champion != null ? "CHAMPION: " + champion.getName().toUpperCase() : "IN PROGRESS");
+        getReportContentHost().getChildren().add(scrollPane);
     }
 }

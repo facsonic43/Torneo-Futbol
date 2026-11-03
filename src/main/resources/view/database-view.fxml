@@ -47,6 +47,8 @@
           VBox.vgrow="ALWAYS">
 
         <VBox spacing="10"
+              minWidth="0"
+              prefWidth="0"
               HBox.hgrow="ALWAYS"
               styleClass="panel">
 
@@ -95,6 +97,8 @@
 
 
         <VBox spacing="10"
+              minWidth="0"
+              prefWidth="0"
               HBox.hgrow="ALWAYS"
               styleClass="panel">
 

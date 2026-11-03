@@ -11,7 +11,7 @@ a management and simulation system for the *Copa Internacional de Clubes*.
 ## Setup
 
 1. **Database.** Create a PostgreSQL database named `copa_clubes` and run
-   `database/schema.sql` (tables `ciudad` and `estadio`). The knockout stage needs at
+   `database/schema.sql` (tables `city` and `stadium`). The knockout stage needs at
    least 13 stadiums, so load that many from the application's *Database* screen or with SQL.
 2. **Credentials.** Create `src/main/resources/database.properties` (it is git-ignored):
 

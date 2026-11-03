@@ -20,7 +20,7 @@ public class PenaltyTaken extends Event {
 
     @Override
     public String getDescription() {
-        return minute + "' Penalty [" + team.getName() + "]: " + player.getName() + " -> " + (scored ? "SCORED" : "MISSED");
+        return getMinute() + "' Penalty [" + getTeam().getName() + "]: " + getPlayer().getName() + " -> " + (scored ? "SCORED" : "MISSED");
     }
 
     @Override

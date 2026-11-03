@@ -20,26 +20,26 @@ import java.io.Serializable;
 
 public abstract class Match implements Serializable {
     private static final long serialVersionUID = -606546183674919432L;
-    protected Team homeTeam;
-    protected Team awayTeam;
-    protected Referee referee;
-    protected Stadium stadium;
-    protected LocalDate matchDate;
-    protected Formation homeFormation;
-    protected Formation awayFormation;
+    private Team homeTeam;
+    private Team awayTeam;
+    private Referee referee;
+    private Stadium stadium;
+    private LocalDate matchDate;
+    private Formation homeFormation;
+    private Formation awayFormation;
 
-    protected int homeGoals = 0;
-    protected int awayGoals = 0;
-    protected Integer homePenalties = null;
-    protected Integer awayPenalties = null;
+    private int homeGoals = 0;
+    private int awayGoals = 0;
+    private Integer homePenalties = null;
+    private Integer awayPenalties = null;
 
-    protected boolean played = false;
-    protected boolean extraTimePlayed = false;
+    private boolean played = false;
+    private boolean extraTimePlayed = false;
     private boolean forfeited = false;
-    protected List<Event> events = new ArrayList<>();
-    protected List<Player> homeStarters = new ArrayList<>();
-    protected List<Player> awayStarters = new ArrayList<>();
-    protected List<PlayerParticipation> playerParticipations = new ArrayList<>();
+    private List<Event> events = new ArrayList<>();
+    private List<Player> homeStarters = new ArrayList<>();
+    private List<Player> awayStarters = new ArrayList<>();
+    private List<PlayerParticipation> playerParticipations = new ArrayList<>();
 
     public Match(Team homeTeam, Team awayTeam, Referee referee, Stadium stadium, LocalDate matchDate) {
         this.homeTeam = homeTeam;

@@ -1,6 +1,7 @@
 package service;
 
 import dao.StadiumDAO;
+import exceptions.InsufficientStadiumsException;
 import main.loader.TournamentData;
 import main.loader.TournamentDataLoader;
 import model.match.Stadium;
@@ -43,7 +44,7 @@ public class TournamentSessionService {
         StadiumDAO stadiumDAO = new StadiumDAO();
         stadiums = stadiumDAO.findAll();
         if (stadiums.size() < 13) {
-            throw new IllegalStateException("At least 13 stadiums are required for the knockout stage.");
+            throw new InsufficientStadiumsException(13, stadiums.size());
         }
     }
 

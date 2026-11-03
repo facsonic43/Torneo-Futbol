@@ -21,7 +21,7 @@ public class RedCard extends Event {
     @Override
     public String getDescription() {
         String motive = directRed ? "Straight Red card" : "Double Yellow Card / Red Card";
-        return minute + "' Red Card (" + motive + ") - " + player.getName() + " [" + team.getName() + "]";
+        return getMinute() + "' Red Card (" + motive + ") - " + getPlayer().getName() + " [" + getTeam().getName() + "]";
     }
 
     @Override
