@@ -35,6 +35,7 @@ public class TournamentSessionService {
         Tournament newTournament = new Tournament(data.getTeams(), data.getReferees());
         newTournament.drawGroups();
         newTournament.generateGroupMatches(stadiums);
+        persistenceService.deleteSave(saveFile);
         this.tournament = newTournament;
         this.loadedFromSave = false;
         return newTournament;
