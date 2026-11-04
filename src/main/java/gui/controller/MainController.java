@@ -189,6 +189,12 @@ public class MainController {
         try {
             session.save();
             statusLabel.setText("Tournament saved successfully.");
+            Alert alert = new Alert(Alert.AlertType.INFORMATION,
+                    "Your tournament progress has been saved successfully.", ButtonType.OK);
+            alert.initOwner(contentHost.getScene().getWindow());
+            alert.setTitle("Progress Saved");
+            alert.setHeaderText(null);
+            alert.showAndWait();
         } catch (Exception exception) {
             showError("Error saving tournament", exception);
         }

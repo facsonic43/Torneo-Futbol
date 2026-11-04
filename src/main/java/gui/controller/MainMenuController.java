@@ -85,7 +85,7 @@ public class MainMenuController {
         try {
             if (session.saveExists()) {
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-                        "Starting a new game will overwrite your previous save data. Do you want to continue?",
+                        "Starting a new game will delete your previous save data. Do you want to continue?",
                         ButtonType.YES, ButtonType.NO);
                 alert.setTitle("New Game Confirmation");
                 alert.setHeaderText(null);
