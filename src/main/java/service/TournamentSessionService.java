@@ -55,7 +55,7 @@ public class TournamentSessionService {
     public Tournament createNewTournament() throws Exception {
         refreshStadiums();
         TournamentDataLoader loader = new TournamentDataLoader();
-        TournamentData data = loader.load("torneo.json");
+        TournamentData data = loader.load("tournament.json");
         Tournament newTournament = new Tournament(data.getTeams(), data.getReferees());
         newTournament.drawGroups();
         newTournament.generateGroupMatches(stadiums);

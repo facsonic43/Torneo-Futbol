@@ -21,7 +21,7 @@ public class GroupStageSimulationTest {
     @Test
     void groupStageShouldGenerateAndSimulateMatches() {
         TournamentDataLoader loader = new TournamentDataLoader();
-        TournamentData data = loader.load("torneo.json");
+        TournamentData data = loader.load("tournament.json");
         Tournament tournament = new Tournament(data.getTeams(), data.getReferees());
         List<Group> groups = tournament.drawGroups();
         assertEquals(4, groups.size());
@@ -52,7 +52,7 @@ public class GroupStageSimulationTest {
     @Test
     void simulatedMatchesShouldNotBeMarkedAsIncompleteForMissingReportMetadata() {
         TournamentDataLoader loader = new TournamentDataLoader();
-        TournamentData data = loader.load("torneo.json");
+        TournamentData data = loader.load("tournament.json");
         Tournament tournament = new Tournament(data.getTeams(), data.getReferees());
         List<Group> groups = tournament.drawGroups();
         List<Stadium> stadiums = createTestStadiums();

@@ -29,7 +29,7 @@ public class RunChampionship {
     public static void main(String[] args) {
         TournamentDataLoader loader = new TournamentDataLoader();
         try {
-            TournamentData data = loader.load("torneo.json");
+            TournamentData data = loader.load("tournament.json");
             CityDAO cityDAO = new CityDAO();
             StadiumDAO stadiumDAO = new StadiumDAO();
             List<City> cities = cityDAO.findAll();

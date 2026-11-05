@@ -28,7 +28,7 @@ public class TournamentSimulationTest {
     @Test
     void fullTournamentShouldFinishCorrectly() {
         TournamentDataLoader loader = new TournamentDataLoader();
-        TournamentData data = loader.load("torneo.json");
+        TournamentData data = loader.load("tournament.json");
         int initialGoals = countPlayerGoals(data.getTeams());
         Tournament tournament = new Tournament(data.getTeams(), data.getReferees());
         List<Group> groups = tournament.drawGroups();
@@ -66,7 +66,7 @@ public class TournamentSimulationTest {
     @Test
     void penaltyShootoutShouldNotIncreasePlayerGoals() {
         TournamentDataLoader loader = new TournamentDataLoader();
-        TournamentData data = loader.load("torneo.json");
+        TournamentData data = loader.load("tournament.json");
         Team home = data.getTeams().get(0);
         Team away = data.getTeams().get(1);
         FinalMatch match = new FinalMatch(home, away, data.getReferees().get(0), new Stadium("Penalty Test Stadium", 1),
@@ -90,7 +90,7 @@ public class TournamentSimulationTest {
 
     @Test
     void tiedFinalShouldCompletePenaltyShootout() {
-        TournamentData data = new TournamentDataLoader().load("torneo.json");
+        TournamentData data = new TournamentDataLoader().load("tournament.json");
         Team home = data.getTeams().get(0);
         Team away = data.getTeams().get(1);
         boolean tiedFinalFound = false;
@@ -111,7 +111,7 @@ public class TournamentSimulationTest {
     @Test
     void secondLegShouldUseWeightedGoalDifference() {
         TournamentDataLoader loader = new TournamentDataLoader();
-        TournamentData data = loader.load("torneo.json");
+        TournamentData data = loader.load("tournament.json");
         Team teamA = data.getTeams().get(0);
         Team teamB = data.getTeams().get(1);
         Stadium firstStadium = new Stadium("First Leg Stadium", 1);

@@ -325,7 +325,7 @@ public class DatabaseController {
         }
         pane.getStyleClass().add("app-root");
         Button closeButton = (Button) pane.lookupButton(ButtonType.CLOSE);
-        closeButton.setText("Cerrar");
+        closeButton.setText("Close");
         closeButton.getStyleClass().add("utility-button");
         Label errorType = new Label("DATABASE ERROR");
         errorType.getStyleClass().add("blocked-chip");

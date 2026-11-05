@@ -68,7 +68,7 @@ public final class ReportData {
 
     public static ReportData fromInitialData(TournamentData participants) {
         ReportData reports = new ReportData(participants);
-        reports.loadInitialProfiles("torneo.json");
+        reports.loadInitialProfiles("tournament.json");
         return reports;
     }
 
@@ -92,16 +92,16 @@ public final class ReportData {
         try (InputStream stream = getClass().getClassLoader().getResourceAsStream(resourceName)) {
             if (stream == null) return;
             JsonObject root = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
-            JsonObject tournament = root.getAsJsonObject("torneo");
+            JsonObject tournament = root.getAsJsonObject("tournament");
             if (tournament == null) return;
-            JsonObject referees = tournament.getAsJsonObject("arbitros");
-            if (referees != null && referees.has("arbitro")) {
-                for (JsonElement entry : referees.getAsJsonArray("arbitro")) {
+            JsonObject referees = tournament.getAsJsonObject("referees");
+            if (referees != null && referees.has("referee")) {
+                for (JsonElement entry : referees.getAsJsonArray("referee")) {
                     JsonObject referee = entry.getAsJsonObject();
                     if (referee.has("yearsOfficiated")) {
                         int years = referee.get("yearsOfficiated").getAsInt();
                         if (years < 0) throw new IllegalArgumentException("Experience cannot be negative");
-                        refereeExperience.put(key(referee.getAsJsonObject("persona")), years);
+                        refereeExperience.put(key(referee.getAsJsonObject("person")), years);
                     }
                 }
             }

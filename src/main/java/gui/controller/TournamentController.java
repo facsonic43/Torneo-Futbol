@@ -649,11 +649,11 @@ public class TournamentController {
                     Label badge = new Label(item);
                     badge.getStyleClass().add("pos-badge");
                     String posUpper = item.toUpperCase();
-                    if (posUpper.contains("GOALKEEPER") || posUpper.contains("GK") || posUpper.contains("ARQUERO")) {
+                    if (posUpper.contains("GOALKEEPER") || posUpper.contains("GK")) {
                         badge.getStyleClass().add("pos-gk");
-                    } else if (posUpper.contains("DEFENDER") || posUpper.contains("DEF") || posUpper.contains("DEFENSA")) {
+                    } else if (posUpper.contains("DEFENDER") || posUpper.contains("DEF")) {
                         badge.getStyleClass().add("pos-def");
-                    } else if (posUpper.contains("MIDFIELDER") || posUpper.contains("MID") || posUpper.contains("MEDIO")) {
+                    } else if (posUpper.contains("MIDFIELDER") || posUpper.contains("MID")) {
                         badge.getStyleClass().add("pos-mid");
                     } else {
                         badge.getStyleClass().add("pos-fwd");

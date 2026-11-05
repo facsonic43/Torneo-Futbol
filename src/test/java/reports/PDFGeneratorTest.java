@@ -27,7 +27,7 @@ class PDFGeneratorTest {
 
     @Test
     void exportsOnlyIdentificationCardsForEveryParticipantDespiteProfileFilters() throws Exception {
-        TournamentData participants = new TournamentDataLoader().load("torneo.json");
+        TournamentData participants = new TournamentDataLoader().load("tournament.json");
         ReportData data = ReportData.fromInitialData(participants);
         Player selected = data.getTeams().getFirst().getSquad().getFirst();
         Path output = directory.resolve("complete.pdf");
