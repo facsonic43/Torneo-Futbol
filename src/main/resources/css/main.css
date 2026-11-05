@@ -588,18 +588,6 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 8, 0, 0, 2);
 }
 
-.card-caption {
-    -fx-text-fill: -accent-text;
-    -fx-font-size: 10px;
-    -fx-font-weight: 800;
-}
-
-.card-value {
-    -fx-text-fill: -text-main;
-    -fx-font-size: 14px;
-    -fx-font-weight: 700;
-}
-
 .bracket-container {
     -fx-background-color: -bg-input;
     -fx-background-radius: 10;
@@ -1099,21 +1087,6 @@
     -fx-text-fill: -accent-text;
     -fx-font-weight: 800;
     -fx-alignment: CENTER;
-}
-
-.statistics-report .report-detail {
-    -fx-text-fill: -text-main;
-}
-
-.statistics-report .report-winner {
-    -fx-text-fill: -accent-text;
-    -fx-font-weight: 700;
-}
-
-.statistics-report .report-bracket-arrow {
-    -fx-stroke: -accent-primary;
-    -fx-stroke-width: 1.5;
-    -fx-fill: transparent;
 }
 
 .statistics-report .statistics-table .column-header .label {

@@ -187,7 +187,7 @@ public class TournamentExecutionService {
         return "GROUP STAGE";
     }
 
-    public Match playMatch(Tournament tournament, Match match, List<Stadium> stadiums) {
+    public void playMatch(Tournament tournament, Match match, List<Stadium> stadiums) {
         validateTournamentAndMatch(tournament, match);
         if (match.isPlayed()) {
             throw new IllegalStateException("This match has already been played.");
@@ -200,10 +200,9 @@ public class TournamentExecutionService {
             tournament.simulateFinal(simulator);
         }
         synchronizeTournament(tournament, stadiums);
-        return match;
     }
 
-    public Match simulatePenalties(Tournament tournament, Match match, List<Stadium> stadiums) {
+    public void simulatePenalties(Tournament tournament, Match match, List<Stadium> stadiums) {
         validateTournamentAndMatch(tournament, match);
         if (!requiresPenalties(match)) {
             throw new IllegalStateException("This match does not have a pending penalty shootout.");
@@ -213,7 +212,6 @@ public class TournamentExecutionService {
             tournament.simulateFinal(simulator);
         }
         synchronizeTournament(tournament, stadiums);
-        return match;
     }
 
     public boolean requiresPenalties(Match match) {
@@ -221,7 +219,7 @@ public class TournamentExecutionService {
     }
 
     public int simulateCurrentMatchday(Tournament tournament, List<Stadium> stadiums) {
-        List<Match> playableMatches = new ArrayList<>(getCurrentPlayableMatches(tournament));
+        List<Match> playableMatches = getCurrentPlayableMatches(tournament);
         for (Match match : playableMatches) {
             playMatch(tournament, match, stadiums);
         }
@@ -232,8 +230,7 @@ public class TournamentExecutionService {
         if (getCurrentStage(tournament) == TournamentStage.FINISHED) {
             return 0;
         }
-        List<Match> phaseMatches = new ArrayList<>(getCurrentPhaseMatches(tournament));
-        phaseMatches.sort(Comparator.comparing(Match::getMatchDate));
+        List<Match> phaseMatches = getCurrentPhaseMatches(tournament);
         int simulated = 0;
         for (Match match : phaseMatches) {
             if (!match.isPlayed()) {
@@ -245,9 +242,6 @@ public class TournamentExecutionService {
     }
 
     private void synchronizeTournament(Tournament tournament, List<Stadium> stadiums) {
-        if (tournament == null) {
-            return;
-        }
         if (allGroupMatchesPlayed(tournament) && tournament.getQuarterFinalFirstLegs().isEmpty()) {
             tournament.generateQuarterFinals(stadiums);
             return;
@@ -313,21 +307,6 @@ public class TournamentExecutionService {
     }
 
     private String formatStage(TournamentStage stage) {
-        if (stage == TournamentStage.GROUP_STAGE) {
-            return "GROUP STAGE";
-        }
-        if (stage == TournamentStage.QUARTER_FINALS) {
-            return "QUARTER-FINALS";
-        }
-        if (stage == TournamentStage.SEMI_FINALS) {
-            return "SEMI-FINALS";
-        }
-        if (stage == TournamentStage.FINAL) {
-            return "FINAL";
-        }
-        if (stage == TournamentStage.FINISHED) {
-            return "FINISHED";
-        }
-        return "NOT STARTED";
+        return stage.getLabel();
     }
 }

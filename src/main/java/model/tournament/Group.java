@@ -14,7 +14,7 @@ import java.io.Serializable;
 
 public class Group implements Serializable{
     private String name;
-    private List<Team> teams = new ArrayList<>();
+    private List<Team> teams;
     private List<GroupMatch> matches = new ArrayList<>();
 
     public Group(String name, List<Team> teams) {

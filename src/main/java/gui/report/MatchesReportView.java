@@ -14,16 +14,12 @@ import javafx.scene.layout.VBox;
 import model.match.Event;
 import model.match.Formation;
 import model.match.Match;
-import model.participant.Goalkeeper;
 import model.participant.Player;
 import model.participant.Position;
-import model.participant.Referee;
 import model.participant.Team;
-import model.tournament.Group;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import static gui.MatchFormat.scoreText;
 
 // Lista los partidos jugados y permite filtrarlos por equipo y fase del campeonato.
 // Muestra el resultado, las formaciones, las incidencias y la definición del encuentro elegido.

@@ -1,7 +1,5 @@
 package model.match;
 
-import java.util.Optional;
-
 import model.participant.Referee;
 import model.participant.Team;
 
@@ -26,8 +24,4 @@ public class GroupMatch extends Match {
         return false;
     }
 
-    @Override
-    public Optional<GroupMatch> asGroupMatch() {
-        return Optional.of(this);
-    }
 }

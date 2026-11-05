@@ -70,7 +70,7 @@ public class CityDAO {
             ps.executeUpdate();
         } catch (SQLException exception) {
             if (isCityReferencedByStadium(exception)) {
-                throw new CityHasStadiumsException(id);
+                throw new CityHasStadiumsException();
             }
             throw exception;
         }

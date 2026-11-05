@@ -201,8 +201,7 @@ public class PlayersReportView extends ReportView {
         gkAvgCol.setCellValueFactory(cell -> {
             Player p = cell.getValue().getPlayer();
             if (p.isGoalkeeper()) {
-                Player gk = p;
-                double avg = gk.getMatchesPlayed() > 0 ? (double) gk.getGoalsConceded() / gk.getMatchesPlayed() : 0.0;
+                double avg = p.getMatchesPlayed() > 0 ? (double) p.getGoalsConceded() / p.getMatchesPlayed() : 0.0;
                 return new SimpleStringProperty(String.format("%.2f", avg));
             }
             return new SimpleStringProperty("-");

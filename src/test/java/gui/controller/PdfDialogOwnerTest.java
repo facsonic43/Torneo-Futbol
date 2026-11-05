@@ -1,7 +1,6 @@
 package gui.controller;
 
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -114,7 +113,6 @@ class PdfDialogOwnerTest {
         @Override public void showOverview() { }
         @Override public void showReports() { }
         @Override public void refreshAll() { }
-        @Override public void handleShowReportsPane(ActionEvent event) { }
 
         @Override public void handleGeneratePdf(Window owner) {
             lastOwner = owner;

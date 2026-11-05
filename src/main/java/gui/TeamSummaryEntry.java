@@ -1,6 +1,5 @@
 package gui;
 
-import javafx.scene.control.*;
 import model.participant.Team;
 import model.tournament.Group;
 import model.tournament.Standing;
