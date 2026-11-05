@@ -3,10 +3,14 @@ package gui.controller;
 import gui.MatchEventsView;
 import gui.PenaltyKicksView;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
 import model.match.Match;
 import model.match.PenaltyTaken;
 import model.match.ResolutionCriterion;
@@ -117,8 +121,6 @@ public class MatchDayController {
     private Label penaltyWinnerDetailLabel;
 
     @FXML
-    private Button continueAfterPenaltiesButton;
-    @FXML
     private Button simulateRoundButton;
 
     @FXML
@@ -134,10 +136,25 @@ public class MatchDayController {
     private Match selectedMatch;
 
     private boolean waitingPenaltyResultAcknowledgement;
+    private boolean waitingPhaseAcknowledgement;
+    private TournamentStage reviewedStage;
+    private List<Node> normalMatchPaneChildren;
+    private Runnable onViewTournamentSummary;
+    private Runnable onViewTournamentStats;
 
     public MatchDayController() {
         executionService = new TournamentExecutionService();
         waitingPenaltyResultAcknowledgement = false;
+    }
+
+    @FXML
+    private void initialize() {
+        normalMatchPaneChildren = List.copyOf(normalMatchPane.getChildren());
+    }
+
+    void setNavigationActions(Runnable onViewTournamentSummary, Runnable onViewTournamentStats) {
+        this.onViewTournamentSummary = onViewTournamentSummary;
+        this.onViewTournamentStats = onViewTournamentStats;
     }
 
     void setSession(TournamentSessionService session) {
@@ -151,7 +168,7 @@ public class MatchDayController {
         }
         tournament = session.getTournament();
         selectedMatch = null;
-        waitingPenaltyResultAcknowledgement = false;
+        clearAcknowledgementState();
         refresh();
     }
 
@@ -283,10 +300,6 @@ public class MatchDayController {
         return penaltyWinnerDetailLabel;
     }
 
-    public Button getContinueAfterPenaltiesButton() {
-        return continueAfterPenaltiesButton;
-    }
-
     public Button getSimulateRoundButton() {
         return simulateRoundButton;
     }
@@ -319,6 +332,14 @@ public class MatchDayController {
         return waitingPenaltyResultAcknowledgement;
     }
 
+    public boolean isWaitingPhaseAcknowledgement() {
+        return waitingPhaseAcknowledgement;
+    }
+
+    public TournamentStage getReviewedStage() {
+        return reviewedStage;
+    }
+
     private String getMatchStatus(Match match) {
         if (executionService.requiresPenalties(match)) {
             return "PENALTIES";
@@ -349,9 +370,11 @@ public class MatchDayController {
         if (session == null) {
             return;
         }
-        tournament = session.getTournament();
-        selectedMatch = null;
-        waitingPenaltyResultAcknowledgement = false;
+        if (tournament != session.getTournament()) {
+            tournament = session.getTournament();
+            selectedMatch = null;
+            clearAcknowledgementState();
+        }
         refresh();
     }
 
@@ -359,28 +382,51 @@ public class MatchDayController {
         if (tournament == null) {
             return;
         }
-        currentRoundLabel.setText(executionService.getCurrentRoundName(tournament));
-        int played = executionService.getPlayedMatchesInCurrentPhase(tournament);
-        int total = executionService.getTotalMatchesInCurrentPhase(tournament);
-        int pendingPenalties = executionService.getPendingPenaltyMatches(tournament).size();
-        if (pendingPenalties > 0) {
-            phaseProgressLabel.setText(played + " / " + total + " MATCHES · " + pendingPenalties + " PENALTIES PENDING");
+        if ((waitingPhaseAcknowledgement && reviewedStage != null) || isTournamentFinished()) {
+            TournamentStage displayedStage = getDisplayedStage();
+            List<Match> matches = TournamentExecutionService.getMatchesOfStage(tournament, displayedStage);
+            long played = matches.stream().filter(Match::isPlayed).count();
+            currentRoundLabel.setText(displayedStage.getLabel() + " - FINISHED");
+            phaseProgressLabel.setText(played + " / " + matches.size() + " MATCHES");
         } else {
-            phaseProgressLabel.setText(played + " / " + total + " MATCHES");
+            currentRoundLabel.setText(executionService.getCurrentRoundName(tournament));
+            int played = executionService.getPlayedMatchesInCurrentPhase(tournament);
+            int total = executionService.getTotalMatchesInCurrentPhase(tournament);
+            int pendingPenalties = executionService.getPendingPenaltyMatches(tournament).size();
+            if (pendingPenalties > 0) {
+                phaseProgressLabel.setText(played + " / " + total + " MATCHES · " + pendingPenalties + " PENALTIES PENDING");
+            } else {
+                phaseProgressLabel.setText(played + " / " + total + " MATCHES");
+            }
         }
         refreshMatchList();
+        if (waitingPhaseAcknowledgement || isTournamentFinished()) {
+            renderPhaseAcknowledgement();
+        } else {
+            refreshSelectedMatch();
+        }
         updateActionButtons();
+    }
+
+    private boolean isTournamentFinished() {
+        return executionService.getCurrentStage(tournament) == TournamentStage.FINISHED;
+    }
+
+    private TournamentStage getDisplayedStage() {
+        if (waitingPhaseAcknowledgement && reviewedStage != null) {
+            return reviewedStage;
+        }
+        return isTournamentFinished() ? TournamentStage.FINAL : executionService.getCurrentStage(tournament);
     }
 
     private void refreshMatchList() {
         matchesBox.getChildren().clear();
-        List<Match> matches = executionService.getCurrentPhaseMatches(tournament);
+        List<Match> matches = TournamentExecutionService.getMatchesOfStage(tournament, getDisplayedStage());
         if (matches.isEmpty()) {
             Label empty = new Label("No matches available.");
             empty.getStyleClass().add("muted-text");
             matchesBox.getChildren().add(empty);
             selectedMatch = null;
-            refreshSelectedMatch();
             return;
         }
         if (selectedMatch == null || !matches.contains(selectedMatch)) {
@@ -389,10 +435,20 @@ public class MatchDayController {
         for (Match match : matches) {
             matchesBox.getChildren().add(createMatchButton(match));
         }
-        refreshSelectedMatch();
+        if (waitingPhaseAcknowledgement || isTournamentFinished()) {
+            Button summaryButton = new Button(isTournamentFinished()
+                    ? "TOURNAMENT FINISHED" : "STAGE FINISHED");
+            summaryButton.setMaxWidth(Double.MAX_VALUE);
+            summaryButton.getStyleClass().add("continue-button");
+            summaryButton.setOnAction(event -> renderPhaseAcknowledgement());
+            matchesBox.getChildren().add(summaryButton);
+        }
     }
 
     private Match findDefaultMatch(List<Match> matches) {
+        if (waitingPhaseAcknowledgement || isTournamentFinished()) {
+            return matches.getLast();
+        }
         List<Match> pendingPenalties = executionService.getPendingPenaltyMatches(tournament);
         if (!pendingPenalties.isEmpty()) {
             return pendingPenalties.get(0);
@@ -426,11 +482,13 @@ public class MatchDayController {
             waitingPenaltyResultAcknowledgement = false;
             selectedMatch = match;
             refreshMatchList();
+            refreshSelectedMatch();
         });
         return button;
     }
 
     private void refreshSelectedMatch() {
+        restoreNormalMatchPaneStructure();
         if (selectedMatch == null) {
             showNormalMatchPane();
             selectedMatchTitle.setText("No match selected");
@@ -485,6 +543,78 @@ public class MatchDayController {
         penaltyShootoutPane.setManaged(false);
     }
 
+    private void restoreNormalMatchPaneStructure() {
+        if (!normalMatchPane.getChildren().equals(normalMatchPaneChildren)) {
+            normalMatchPane.getChildren().setAll(normalMatchPaneChildren);
+        }
+    }
+
+    private void renderPhaseAcknowledgement() {
+        showNormalMatchPane();
+        normalMatchPane.getChildren().clear();
+        boolean finished = isTournamentFinished();
+        VBox panel = new VBox(24);
+        panel.setAlignment(Pos.CENTER);
+        panel.setMaxWidth(Double.MAX_VALUE);
+        VBox.setVgrow(panel, Priority.ALWAYS);
+
+        Label title = new Label(finished ? "TOURNAMENT FINISHED" : "STAGE FINISHED");
+        title.getStyleClass().add("section-title-large");
+        title.setStyle("-fx-font-size: 32px;");
+        title.setWrapText(true);
+        title.setTextAlignment(TextAlignment.CENTER);
+        Label subtitle = new Label(finished
+                ? tournament.getChampion().getName() + " are the champions! Review the final from the match list, "
+                        + "or explore the tournament summary and statistics."
+                : reviewedStage.getLabel() + " is complete. Select a match to review its result and events, "
+                        + "or continue when you are ready.");
+        subtitle.getStyleClass().add("muted-text");
+        subtitle.setStyle("-fx-font-size: 16px;");
+        subtitle.setWrapText(true);
+        subtitle.setTextAlignment(TextAlignment.CENTER);
+        panel.getChildren().addAll(title, subtitle);
+
+        if (finished) {
+            Button summaryButton = createAcknowledgementButton("VIEW TOURNAMENT SUMMARY", () -> {
+                clearAcknowledgementState();
+                onViewTournamentSummary.run();
+            });
+            summaryButton.setDisable(onViewTournamentSummary == null);
+            Button statsButton = createAcknowledgementButton("VIEW TOURNAMENT STATS", () -> {
+                clearAcknowledgementState();
+                onViewTournamentStats.run();
+            });
+            statsButton.setDisable(onViewTournamentStats == null);
+            panel.getChildren().addAll(summaryButton, statsButton);
+        } else {
+            panel.getChildren().add(createAcknowledgementButton("CONTINUE TO NEXT STAGE", () -> {
+                clearAcknowledgementState();
+                selectedMatch = null;
+                refresh();
+            }));
+        }
+        normalMatchPane.getChildren().add(panel);
+    }
+
+    private Button createAcknowledgementButton(String text, Runnable action) {
+        Button button = new Button(text);
+        button.getStyleClass().add("continue-button");
+        button.setPrefWidth(420);
+        button.setMaxWidth(Double.MAX_VALUE);
+        button.setMinHeight(56);
+        button.setWrapText(true);
+        button.setStyle("-fx-font-size: 15px; -fx-padding: 16px 24px;");
+        button.setOnAction(event -> action.run());
+        return button;
+    }
+
+    private void clearAcknowledgementState() {
+        waitingPhaseAcknowledgement = false;
+        reviewedStage = null;
+        waitingPenaltyResultAcknowledgement = false;
+        restoreNormalMatchPaneStructure();
+    }
+
     private void showPenaltyShootoutPane() {
         normalMatchPane.setVisible(false);
         normalMatchPane.setManaged(false);
@@ -517,8 +647,6 @@ public class MatchDayController {
         simulatePenaltiesButton.setManaged(!finished);
         penaltyWinnerBox.setVisible(finished);
         penaltyWinnerBox.setManaged(finished);
-        continueAfterPenaltiesButton.setVisible(finished);
-        continueAfterPenaltiesButton.setManaged(finished);
         if (finished) {
             Team winner = match.getWinner();
             if (winner != null) {
@@ -531,14 +659,15 @@ public class MatchDayController {
                             + " ON PENALTIES");
                 }
             }
-            configureContinueButton();
         }
     }
 
     private void updateActionButtons() {
+        boolean isWaiting = waitingPhaseAcknowledgement || waitingPenaltyResultAcknowledgement;
         boolean playable = selectedMatch != null && executionService.isMatchPlayable(tournament, selectedMatch);
-        playSelectedButton.setDisable(!playable);
-        if (waitingPenaltyResultAcknowledgement) {
+        playSelectedButton.setDisable(isWaiting || !playable);
+        simulatePenaltiesButton.setDisable(isWaiting);
+        if (isWaiting) {
             simulateRoundButton.setDisable(true);
             simulatePhaseButton.setDisable(true);
             return;
@@ -562,12 +691,18 @@ public class MatchDayController {
 
     @FXML
     private void handlePlaySelected() {
-        if (selectedMatch == null) {
+        if (selectedMatch == null || waitingPhaseAcknowledgement || waitingPenaltyResultAcknowledgement) {
             return;
         }
         try {
             Match playedMatch = selectedMatch;
+            TournamentStage previousStage = executionService.getCurrentStage(tournament);
             executionService.playMatch(tournament, playedMatch, session.getStadiums());
+            TournamentStage newStage = executionService.getCurrentStage(tournament);
+            if (previousStage != newStage) {
+                waitingPhaseAcknowledgement = true;
+                reviewedStage = previousStage;
+            }
             selectedMatch = playedMatch;
             if (executionService.requiresPenalties(playedMatch)) {
                 localStatus.setText("90 minutes finished. " + "The match must now be decided by penalties.");
@@ -584,7 +719,8 @@ public class MatchDayController {
 
     @FXML
     private void handleSimulatePenalties() {
-        if (selectedMatch == null || !executionService.requiresPenalties(selectedMatch)) {
+        if (selectedMatch == null || waitingPhaseAcknowledgement || waitingPenaltyResultAcknowledgement
+                || !executionService.requiresPenalties(selectedMatch)) {
             return;
         }
         try {
@@ -594,21 +730,23 @@ public class MatchDayController {
             TournamentStage newStage = executionService.getCurrentStage(tournament);
             selectedMatch = penaltyMatch;
             waitingPenaltyResultAcknowledgement = true;
-            renderPenaltyShootout(penaltyMatch);
+            if (previousStage != newStage) {
+                waitingPhaseAcknowledgement = true;
+                reviewedStage = previousStage;
+                refresh();
+                return;
+            }
+            refreshSelectedMatch();
             currentRoundLabel.setText(tournament.getStageOf(penaltyMatch).getLabel() + " - SHOOTOUT COMPLETE");
             Team winner = penaltyMatch.getWinner();
             if (winner != null) {
                 localStatus.setText(winner.getName() + " won the penalty shootout.");
             }
-            if (previousStage != newStage) {
-                phaseProgressLabel.setText("ROUND COMPLETED");
+            int remainingPenalties = executionService.getPendingPenaltyMatches(tournament).size();
+            if (remainingPenalties > 0) {
+                phaseProgressLabel.setText(remainingPenalties + " PENALTY SHOOTOUT(S) PENDING");
             } else {
-                int remainingPenalties = executionService.getPendingPenaltyMatches(tournament).size();
-                if (remainingPenalties > 0) {
-                    phaseProgressLabel.setText(remainingPenalties + " PENALTY SHOOTOUT(S) PENDING");
-                } else {
-                    phaseProgressLabel.setText("SHOOTOUT COMPLETED");
-                }
+                phaseProgressLabel.setText("SHOOTOUT COMPLETED");
             }
             updateActionButtons();
         } catch (Exception exception) {
@@ -617,29 +755,18 @@ public class MatchDayController {
     }
 
     @FXML
-    private void handleContinueAfterPenalties() {
-        waitingPenaltyResultAcknowledgement = false;
-        selectedMatch = null;
-        refresh();
-    }
-
-    private void configureContinueButton() {
-        List<Match> pending = executionService.getPendingPenaltyMatches(tournament);
-        if (!pending.isEmpty()) {
-            continueAfterPenaltiesButton.setText("NEXT PENALTY SHOOTOUT");
-            return;
-        }
-        if (executionService.getCurrentStage(tournament) == TournamentStage.FINISHED) {
-            continueAfterPenaltiesButton.setText("TOURNAMENT FINISHED");
-            return;
-        }
-        continueAfterPenaltiesButton.setText("CONTINUE TO NEXT ROUND");
-    }
-
-    @FXML
     private void handleSimulateRound() {
+        if (waitingPhaseAcknowledgement || waitingPenaltyResultAcknowledgement) {
+            return;
+        }
         try {
+            TournamentStage previousStage = executionService.getCurrentStage(tournament);
             int simulated = executionService.simulateCurrentMatchday(tournament, session.getStadiums());
+            TournamentStage newStage = executionService.getCurrentStage(tournament);
+            if (previousStage != newStage) {
+                waitingPhaseAcknowledgement = true;
+                reviewedStage = previousStage;
+            }
             int pending = executionService.getPendingPenaltyMatches(tournament).size();
             if (pending > 0) {
                 localStatus.setText(simulated + " match(es) simulated. " + pending
@@ -656,10 +783,17 @@ public class MatchDayController {
 
     @FXML
     private void handleSimulatePhase() {
+        if (waitingPhaseAcknowledgement || waitingPenaltyResultAcknowledgement) {
+            return;
+        }
         try {
             TournamentStage previousStage = executionService.getCurrentStage(tournament);
             int simulated = executionService.simulateRemainingPhase(tournament, session.getStadiums());
             TournamentStage newStage = executionService.getCurrentStage(tournament);
+            if (previousStage != newStage) {
+                waitingPhaseAcknowledgement = true;
+                reviewedStage = previousStage;
+            }
             int pending = executionService.getPendingPenaltyMatches(tournament).size();
             if (pending > 0) {
                 localStatus.setText(simulated + " match(es) simulated. " + pending

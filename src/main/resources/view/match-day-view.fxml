@@ -436,14 +436,6 @@
 
             <!-- BOTÓN SIEMPRE FUERA DEL SCROLL -->
 
-            <Button fx:id="continueAfterPenaltiesButton"
-                    text="CONTINUE TO NEXT ROUND"
-                    visible="false"
-                    managed="false"
-                    maxWidth="Infinity"
-                    styleClass="continue-button"
-                    onAction="#handleContinueAfterPenalties"/>
-
         </VBox>
 
     </StackPane>

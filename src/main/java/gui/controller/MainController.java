@@ -198,6 +198,7 @@ public class MainController {
         FXMLLoader matchDayLoader = new FXMLLoader(getClass().getResource("/view/match-day-view.fxml"));
         matchDayView = matchDayLoader.load();
         matchDayController = matchDayLoader.getController();
+        matchDayController.setNavigationActions(this::handleTournament, this::handleReports);
         matchDayController.setSession(session);
         FXMLLoader databaseLoader = new FXMLLoader(getClass().getResource("/view/database-view.fxml"));
         databaseView = databaseLoader.load();
@@ -229,6 +230,7 @@ public class MainController {
         contentHost.getChildren().setAll(tournamentView);
         tournamentController.showReports();
         tournamentController.refreshAll();
+        updateGlobalStatus();
         setActiveButton(reportsButton);
         updateHeader("Analytics, Reports & Bracket", "Comprehensive tournament statistics, bracket tracker and disciplinary logs");
     }
