@@ -65,8 +65,14 @@ public class TournamentExecutionService {
     }
 
     public List<Match> getCurrentPhaseMatches(Tournament tournament) {
+        return getMatchesOfStage(tournament, getCurrentStage(tournament));
+    }
+
+    public static List<Match> getMatchesOfStage(Tournament tournament, TournamentStage stage) {
         List<Match> matches = new ArrayList<>();
-        TournamentStage stage = getCurrentStage(tournament);
+        if (tournament == null || stage == null) {
+            return matches;
+        }
         if (stage == TournamentStage.GROUP_STAGE) {
             for (Group group : tournament.getGroups()) {
                 matches.addAll(group.getMatches());
