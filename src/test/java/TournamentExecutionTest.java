@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TournamentExecutionTest {
     @Test
     void userShouldControlTournamentExecution() throws Exception {
-        TournamentData data = new TournamentDataLoader().load("torneo.json");
+        TournamentData data = new TournamentDataLoader().load("tournament.json");
         Tournament tournament = new Tournament(data.getTeams(), data.getReferees());
         List<Stadium> stadiums = createTestStadiums();
         tournament.drawGroups();

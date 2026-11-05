@@ -77,10 +77,10 @@ public class TournamentDataLoader {
         }
         try (InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
             JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
-            if (!root.has("torneo")) {
+            if (!root.has("tournament")) {
                 throw new InvalidTournamentDataException("The JSON does not contain tournament data.");
             }
-            return root.getAsJsonObject("torneo");
+            return root.getAsJsonObject("tournament");
         } catch (InvalidTournamentDataException e) {
             throw e;
         } catch (Exception e) {
@@ -90,8 +90,8 @@ public class TournamentDataLoader {
 
     private List<Team> loadTeams(JsonObject tournamentJson) {
         List<Team> teams = new ArrayList<>();
-        JsonObject teamsObject = tournamentJson.getAsJsonObject("equipos");
-        JsonArray teamsArray = teamsObject.getAsJsonArray("equipo");
+        JsonObject teamsObject = tournamentJson.getAsJsonObject("teams");
+        JsonArray teamsArray = teamsObject.getAsJsonArray("team");
         if (teamsArray.size() != 16) {
             throw new InvalidTournamentDataException("The tournament must contain exactly 16 teams. Found: "
                     + teamsArray.size());
@@ -104,8 +104,8 @@ public class TournamentDataLoader {
             int editionsPlayed = teamJson.get("editionsPlayed").getAsInt();
             int internationalTitles = teamJson.get("internationalTitles").getAsInt();
             int nationalTitles = teamJson.get("nationalTitles").getAsInt();
-            JsonObject squadJson = teamJson.getAsJsonObject("plantel");
-            Coach coach = loadCoach(squadJson.getAsJsonObject("dt"));
+            JsonObject squadJson = teamJson.getAsJsonObject("squad");
+            Coach coach = loadCoach(squadJson.getAsJsonObject("coach"));
             Team team = new Team(name, country, ranking, coach, editionsPlayed, internationalTitles, nationalTitles,
                     null);
             loadPlayers(team, squadJson);
@@ -116,7 +116,7 @@ public class TournamentDataLoader {
     }
 
     private Coach loadCoach(JsonObject coachJson) {
-        JsonObject personJson = coachJson.getAsJsonObject("persona");
+        JsonObject personJson = coachJson.getAsJsonObject("person");
         String name = personJson.get("name").getAsString();
         int idNumber = personJson.get("idNumber").getAsInt();
         String idType = personJson.get("idType").getAsString();
@@ -131,8 +131,8 @@ public class TournamentDataLoader {
     }
 
     private void loadPlayers(Team team, JsonObject squadJson) {
-        JsonObject playersObject = squadJson.getAsJsonObject("jugadores");
-        JsonArray playersArray = playersObject.getAsJsonArray("jugador");
+        JsonObject playersObject = squadJson.getAsJsonObject("players");
+        JsonArray playersArray = playersObject.getAsJsonArray("player");
         if (playersArray.size() != 18) {
             throw new InvalidTournamentDataException("Team " + team.getName() + " must have exactly 18 players. Found: "
                     + playersArray.size());
@@ -151,9 +151,9 @@ public class TournamentDataLoader {
         } catch (IllegalArgumentException e) {
             throw new InvalidTournamentDataException("Invalid player position: " + positionText);
         }
-        JsonObject personJson = playerJson.getAsJsonObject("persona");
-        JsonObject characteristicsJson = playerJson.getAsJsonObject("caracteristicas");
-        JsonObject statisticsJson = playerJson.getAsJsonObject("estadisticas");
+        JsonObject personJson = playerJson.getAsJsonObject("person");
+        JsonObject characteristicsJson = playerJson.getAsJsonObject("characteristics");
+        JsonObject statisticsJson = playerJson.getAsJsonObject("statistics");
         String name = personJson.get("name").getAsString();
         int idNumber = personJson.get("idNumber").getAsInt();
         String idType = personJson.get("idType").getAsString();
@@ -183,14 +183,14 @@ public class TournamentDataLoader {
 
     private List<Referee> loadReferees(JsonObject tournamentJson) {
         List<Referee> referees = new ArrayList<>();
-        JsonObject refereesObject = tournamentJson.getAsJsonObject("arbitros");
-        JsonArray refereesArray = refereesObject.getAsJsonArray("arbitro");
+        JsonObject refereesObject = tournamentJson.getAsJsonObject("referees");
+        JsonArray refereesArray = refereesObject.getAsJsonArray("referee");
         if (refereesArray.isEmpty()) {
             throw new InvalidTournamentDataException("The tournament must contain referees.");
         }
         for (JsonElement element : refereesArray) {
             JsonObject refereeJson = element.getAsJsonObject();
-            JsonObject personJson = refereeJson.getAsJsonObject("persona");
+            JsonObject personJson = refereeJson.getAsJsonObject("person");
             String name = personJson.get("name").getAsString();
             int idNumber = personJson.get("idNumber").getAsInt();
             String idType = personJson.get("idType").getAsString();

@@ -15,21 +15,21 @@
             "name": "DatabaseTest",
             "request": "launch",
             "mainClass": "run.DatabaseTest",
-            "projectName": "Torneo-Futbol"
+            "projectName": "Football-Championship"
         },
         {
             "type": "java",
             "name": "RunChampionship",
             "request": "launch",
             "mainClass": "run.RunChampionship",
-            "projectName": "Torneo-Futbol"
+            "projectName": "Football-Championship"
         },
         {
             "type": "java",
             "name": "RunGui",
             "request": "launch",
             "mainClass": "run.RunGui",
-            "projectName": "Torneo-Futbol"
+            "projectName": "Football-Championship"
         }
     ]
 }

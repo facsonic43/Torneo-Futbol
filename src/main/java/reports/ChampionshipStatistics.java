@@ -51,7 +51,7 @@ public class ChampionshipStatistics {
     }
 
     public ChampionshipStatistics(ReportData data) {
-        Objects.requireNonNull(data, "El torneo es obligatorio");
+        Objects.requireNonNull(data, "Tournament is required");
         Map<Team, TeamAccumulator> teamTotals = new LinkedHashMap<>();
         Map<Player, PlayerAccumulator> playerTotals = new LinkedHashMap<>();
         Map<Referee, Integer> refereeTotals = new LinkedHashMap<>();
@@ -157,7 +157,7 @@ public class ChampionshipStatistics {
 
     PlayerStats getPlayerStats(Player player) {
         return players.stream().filter(stats -> stats.player() == player).findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("El jugador no pertenece al campeonato"));
+                .orElseThrow(() -> new IllegalArgumentException("The player does not belong to the championship"));
     }
 
     private static Comparator<PlayerStats> playerName() {

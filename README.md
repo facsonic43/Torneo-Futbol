@@ -1,7 +1,7 @@
 # Football Championship
 
-Java 25 / Maven / JavaFX project for the Programación B (UFASTA) 2026 team assignment:
-a management and simulation system for the *Copa Internacional de Clubes*.
+Java 25 / Maven / JavaFX project for the Programming B (UFASTA) 2026 team assignment:
+a management and simulation system for the *International Club Cup*.
 
 ## Requirements
 
@@ -10,13 +10,13 @@ a management and simulation system for the *Copa Internacional de Clubes*.
 
 ## Setup
 
-1. **Database.** Create a PostgreSQL database named `copa_clubes` and run
+1. **Database.** Create a PostgreSQL database named `championship` and run
    `database/schema.sql` (tables `city` and `stadium`). The knockout stage needs at
    least 13 stadiums, so load that many from the application's *Database* screen or with SQL.
 2. **Credentials.** Create `src/main/resources/database.properties` (it is git-ignored):
 
    ```properties
-   db.url=jdbc:postgresql://localhost:5432/copa_clubes
+   db.url=jdbc:postgresql://localhost:5432/championship
    db.user=postgres
    db.password=your-password
    ```
@@ -55,7 +55,7 @@ a management and simulation system for the *Copa Internacional de Clubes*.
 
 ## How it works
 
-The team data (clubs, players, coaches, referees) is read from `src/main/resources/torneo.json`.
+The team data (clubs, players, coaches, referees) is read from `src/main/resources/tournament.json`.
 **New game** creates the draw and the group fixtures; **Continue** restores the tournament saved
 in `saves/tournament.dat` (Java serialization), and the **Save** button writes it. Saves made
 with an older version of the classes may not load: start a new game in that case.

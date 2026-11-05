@@ -15,8 +15,7 @@ import java.util.List;
 public class CityDAO {
     private boolean isCityReferencedByStadium(SQLException exception) {
         for (SQLException current = exception; current != null; current = current.getNextException()) {
-            if ("23503".equals(current.getSQLState()) || (current.getMessage() != null
-                    && current.getMessage().toLowerCase().contains("fk_estadio_ciudad"))) {
+            if ("23503".equals(current.getSQLState())) {
                 return true;
             }
         }

@@ -21,10 +21,10 @@ class ChampionshipStatisticsTest {
     @Test
     void historicalCountersAndUnplayedMatchesDoNotPolluteRankings() {
         Team home = team("Zeta");
-        Team away = team("Alfa");
-        Player historicalScorer = player("Histórico", Position.FORWARD);
+        Team away = team("Alpha");
+        Player historicalScorer = player("Historical scorer", Position.FORWARD);
         home.addPlayer(historicalScorer);
-        Referee referee = referee("Árbitro", 20);
+        Referee referee = referee("Referee", 20);
         ReportData data = new ReportData(new TournamentData(List.of(home, away), List.of(referee)));
         Match pending = match(home, away, referee);
         data.getMatchDetails(pending).setStartingPlayers(List.of(historicalScorer), List.of());
@@ -38,20 +38,20 @@ class ChampionshipStatisticsTest {
         assertEquals(0, stats.getPlayerStats(historicalScorer).matches());
         assertEquals(0, stats.getPlayerStats(historicalScorer).minutes());
         assertEquals(0, stats.getRefereeRanking().getFirst().matches());
-        assertEquals("Alfa", stats.getTeamsAlphabetically().getFirst().team().getName());
+        assertEquals("Alpha", stats.getTeamsAlphabetically().getFirst().team().getName());
         assertEquals(0, stats.getTeamsAlphabetically().getFirst().efficiency());
     }
 
     @Test
     void distinguishesRegulationPenaltiesOwnGoalsAndShootoutsAndTracksBothGoalkeepers() {
-        Team home = team("Local");
-        Team away = team("Visitante");
-        Player scorer = player("Goleador", Position.FORWARD);
-        Player assister = player("Asistente", Position.MIDFIELDER);
-        Player opponent = player("Rival", Position.DEFENDER);
-        Player keeperHome = keeper("Arquero local");
-        Player keeperAway = keeper("Arquero visitante");
-        Player replacement = keeper("Arquero suplente");
+        Team home = team("Home");
+        Team away = team("Visitors");
+        Player scorer = player("Scorer", Position.FORWARD);
+        Player assister = player("Assister", Position.MIDFIELDER);
+        Player opponent = player("Opponent", Position.DEFENDER);
+        Player keeperHome = keeper("Home goalkeeper");
+        Player keeperAway = keeper("Visiting goalkeeper");
+        Player replacement = keeper("Replacement goalkeeper");
         List.of(scorer, assister, keeperHome).forEach(home::addPlayer);
         List.of(opponent, keeperAway, replacement).forEach(away::addPlayer);
         ReportData data = new ReportData(new TournamentData(List.of(home, away), List.of()));
@@ -92,23 +92,23 @@ class ChampionshipStatisticsTest {
         assertEquals(2.0, stats.getPlayerStats(keeperAway).averageGoalsConceded());
         assertEquals(60, stats.getPlayerStats(keeperAway).minutes());
         assertEquals(30, stats.getPlayerStats(replacement).minutes());
-        ChampionshipStatistics.TeamStats local = stats.getTeamsAlphabetically().getFirst();
-        assertEquals(3, local.goalsFor());
-        assertEquals(1, local.goalsAgainst());
-        assertEquals(100.0, local.efficiency());
+        ChampionshipStatistics.TeamStats homeStats = stats.getTeamsAlphabetically().getFirst();
+        assertEquals(3, homeStats.goalsFor());
+        assertEquals(1, homeStats.goalsAgainst());
+        assertEquals(100.0, homeStats.efficiency());
     }
 
     @Test
     void minutesIncludeSubstitutionsExpulsionsInjuriesAndExtraTimeWithoutCountingBench() {
-        Team home = team("Local");
-        Team away = team("Visitante");
-        Player starter = player("Titular", Position.FORWARD);
-        Player substitute = player("Cambio", Position.FORWARD);
-        Player expelled = player("Expulsado", Position.DEFENDER);
-        Player injured = player("Lesionado", Position.MIDFIELDER);
-        Player injurySubstitute = player("Reemplazo lesión", Position.MIDFIELDER);
-        Player lastMinute = player("Último minuto", Position.FORWARD);
-        Player bench = player("Banco", Position.FORWARD);
+        Team home = team("Home");
+        Team away = team("Visitors");
+        Player starter = player("Starter", Position.FORWARD);
+        Player substitute = player("Substitute", Position.FORWARD);
+        Player expelled = player("Sent off", Position.DEFENDER);
+        Player injured = player("Injured", Position.MIDFIELDER);
+        Player injurySubstitute = player("Injury substitute", Position.MIDFIELDER);
+        Player lastMinute = player("Last minute", Position.FORWARD);
+        Player bench = player("Bench", Position.FORWARD);
         List.of(starter, substitute, expelled, injured, injurySubstitute, lastMinute, bench).forEach(home::addPlayer);
         ReportData data = new ReportData(new TournamentData(List.of(home, away), List.of()));
         Match match = match(home, away, null);
@@ -136,10 +136,10 @@ class ChampionshipStatisticsTest {
 
     @Test
     void fairPlayCountsSecondYellowOnceWithNewAndLegacyEvents() {
-        Team home = team("Local");
-        Team away = team("Visitante");
-        Player legacy = player("Anterior", Position.DEFENDER);
-        Player explicit = player("Nuevo", Position.DEFENDER);
+        Team home = team("Home");
+        Team away = team("Visitors");
+        Player legacy = player("Legacy", Position.DEFENDER);
+        Player explicit = player("New", Position.DEFENDER);
         home.addPlayer(legacy);
         away.addPlayer(explicit);
         ReportData data = new ReportData(new TournamentData(List.of(home, away), List.of()));
@@ -162,10 +162,10 @@ class ChampionshipStatisticsTest {
 
     @Test
     void duplicateRegistrationCountsOneMatchAndRefereesUseThisChampionship() {
-        Team home = team("Local");
-        Team away = team("Visitante");
+        Team home = team("Home");
+        Team away = team("Visitors");
         Referee active = referee("Zeta", 10);
-        Referee unused = referee("Alfa", 20);
+        Referee unused = referee("Alpha", 20);
         ReportData data = new ReportData(new TournamentData(List.of(home, away), List.of(active, unused)));
         data.setRefereeExperience(active, 10);
         data.setRefereeExperience(unused, 20);
@@ -187,9 +187,9 @@ class ChampionshipStatisticsTest {
 
     @Test
     void playerFiltersAndEmptyAveragesAreWellDefined() {
-        Team home = team("Local");
+        Team home = team("Home");
         Player goalkeeper = keeper("Zeta");
-        Player striker = player("Alfa", Position.FORWARD);
+        Player striker = player("Alpha", Position.FORWARD);
         home.addPlayer(goalkeeper);
         home.addPlayer(striker);
         ChampionshipStatistics stats = new ChampionshipStatistics(new TournamentData(List.of(home), List.of()));
@@ -199,13 +199,13 @@ class ChampionshipStatisticsTest {
         assertTrue(stats.getPlayers(Position.GOALKEEPER, striker).isEmpty());
         assertEquals(0.0, stats.getPlayerStats(goalkeeper).averageGoalsConceded());
         assertEquals(0.0, stats.getAverageRefereeExperience());
-        assertThrows(IllegalArgumentException.class, () -> stats.getPlayerStats(keeper("Ajeno")));
+        assertThrows(IllegalArgumentException.class, () -> stats.getPlayerStats(keeper("Unregistered")));
     }
 
     @Test
     void snapshotRemainsStableUntilReportIsRebuilt() {
-        Team home = team("Local");
-        Team away = team("Visitante");
+        Team home = team("Home");
+        Team away = team("Visitors");
         ReportData data = new ReportData(new TournamentData(List.of(home, away), List.of()));
         ChampionshipStatistics initial = new ChampionshipStatistics(data);
         Match match = match(home, away, null);
@@ -217,10 +217,10 @@ class ChampionshipStatisticsTest {
 
     @Test
     void missingMetadataIsFlaggedUntilSupplementedWithoutChangingSharedModels() {
-        Team home = team("Local");
-        Team away = team("Visitante");
-        Player scorer = player("Goleador", Position.FORWARD);
-        Player goalkeeper = keeper("Arquero");
+        Team home = team("Home");
+        Team away = team("Visitors");
+        Player scorer = player("Scorer", Position.FORWARD);
+        Player goalkeeper = keeper("Goalkeeper");
         home.addPlayer(scorer);
         away.addPlayer(goalkeeper);
         ReportData data = new ReportData(new TournamentData(List.of(home, away), List.of()));
@@ -252,8 +252,8 @@ class ChampionshipStatisticsTest {
 
     @Test
     void unknownRefereeExperienceIsExcludedFromAverage() {
-        Referee known = referee("Conocido", 20);
-        Referee unknown = referee("Sin metadata", 10);
+        Referee known = referee("Known", 20);
+        Referee unknown = referee("Missing metadata", 10);
         ReportData data = new ReportData(new TournamentData(List.of(), List.of(known, unknown)));
         data.setRefereeExperience(known, 20);
         ChampionshipStatistics stats = new ChampionshipStatistics(data);
@@ -264,9 +264,9 @@ class ChampionshipStatisticsTest {
 
     @Test
     void metadataCopiesLineupsAndDoesNotInferInjuryExitWithoutSubstitution() {
-        Team home = team("Local");
-        Team away = team("Visitante");
-        Player injured = player("Lesionado", Position.FORWARD);
+        Team home = team("Home");
+        Team away = team("Visitors");
+        Player injured = player("Injured", Position.FORWARD);
         Match match = match(home, away, null);
         List<Player> original = new java.util.ArrayList<>(List.of(injured));
         ReportMatchDetails details = new ReportMatchDetails();
@@ -283,8 +283,8 @@ class ChampionshipStatisticsTest {
 
     @Test
     void absentGoalEventsFlagIncompleteStatisticsEvenWithKnownLineups() {
-        Team home = team("Local");
-        Team away = team("Visitante");
+        Team home = team("Home");
+        Team away = team("Visitors");
         ReportData data = new ReportData(new TournamentData(List.of(home, away), List.of()));
         Match match = match(home, away, null);
         data.getMatchDetails(match).setStartingPlayers(List.of(), List.of());
@@ -298,7 +298,7 @@ class ChampionshipStatisticsTest {
     }
 
     private static Team team(String name) {
-        Coach coach = new Coach("DT " + name, 1, "DNI", LocalDate.of(1980, 1, 1), COUNTRY, 2);
+        Coach coach = new Coach("Coach " + name, 1, "DNI", LocalDate.of(1980, 1, 1), COUNTRY, 2);
         return new Team(name, COUNTRY, 1, coach, 0, 0, 0, null);
     }
 

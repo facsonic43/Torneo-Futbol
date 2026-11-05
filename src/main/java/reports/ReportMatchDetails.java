@@ -41,9 +41,9 @@ public class ReportMatchDetails {
     boolean hasStartingPlayers() { return startingPlayersRecorded; }
 
     public void setGoalDetails(Goal goal, boolean penalty, boolean ownGoal, Player receivingGoalkeeper) {
-        Objects.requireNonNull(goal, "El gol es obligatorio");
+        Objects.requireNonNull(goal, "Goal is required");
         if (penalty && ownGoal) {
-            throw new IllegalArgumentException("Un gol en contra no puede ser un gol de penal");
+            throw new IllegalArgumentException("An own goal cannot be a penalty goal");
         }
         goals.put(goal, new GoalDetails(penalty, ownGoal, receivingGoalkeeper));
     }

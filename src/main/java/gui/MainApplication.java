@@ -8,9 +8,16 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import service.TournamentSessionService;
 
+import java.util.Locale;
+
 // Inicia la interfaz JavaFX, carga el menú principal y aplica los estilos de la aplicación.
 
 public class MainApplication extends Application {
+    @Override
+    public void init() {
+        Locale.setDefault(Locale.ENGLISH);
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         TournamentSessionService session = new TournamentSessionService();

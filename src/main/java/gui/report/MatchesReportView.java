@@ -37,10 +37,10 @@ public class MatchesReportView extends ReportView {
     private int getPositionOrder(Position pos) {
         if (pos == null) return 99;
         String name = pos.name().toUpperCase();
-        if (name.contains("GOALKEEPER") || name.contains("GK") || name.contains("ARQUERO")) return 1;
-        if (name.contains("DEFENDER") || name.contains("DEF") || name.contains("DEFENSA")) return 2;
-        if (name.contains("MIDFIELDER") || name.contains("MID") || name.contains("MEDIO")) return 3;
-        if (name.contains("FORWARD") || name.contains("FW") || name.contains("DELANTERO")) return 4;
+        if (name.contains("GOALKEEPER") || name.contains("GK")) return 1;
+        if (name.contains("DEFENDER") || name.contains("DEF")) return 2;
+        if (name.contains("MIDFIELDER") || name.contains("MID")) return 3;
+        if (name.contains("FORWARD") || name.contains("FW")) return 4;
         return 5;
     }
 

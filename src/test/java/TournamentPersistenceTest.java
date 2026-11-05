@@ -21,7 +21,7 @@ public class TournamentPersistenceTest {
     @Test
     void tournamentShouldBeSavedLoadedAndContinued() throws Exception {
         TournamentDataLoader loader = new TournamentDataLoader();
-        TournamentData data = loader.load("torneo.json");
+        TournamentData data = loader.load("tournament.json");
         Tournament tournament = new Tournament(data.getTeams(), data.getReferees());
         List<Stadium> stadiums = createTestStadiums();
         MatchSimulator simulator = new MatchSimulator(20260920L);
