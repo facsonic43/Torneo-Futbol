@@ -22,11 +22,6 @@ public class FinalMatch extends Match {
     }
 
     @Override
-    public boolean requiresTieBreak() {
-        return getResolutionCriterion() == ResolutionCriterion.UNRESOLVED;
-    }
-
-    @Override
     public Team getWinner() {
         return switch (getResolutionCriterion()) {
             case REGULAR_TIME, FORFEIT -> super.getWinner();
@@ -42,6 +37,11 @@ public class FinalMatch extends Match {
             return criterion;
         }
         return getPenaltyWinner() == null ? ResolutionCriterion.UNRESOLVED : ResolutionCriterion.PENALTIES;
+    }
+
+    @Override
+    public boolean requiresTieBreak() {
+        return getResolutionCriterion() == ResolutionCriterion.UNRESOLVED;
     }
 
     @Override

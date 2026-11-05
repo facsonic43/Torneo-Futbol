@@ -34,6 +34,26 @@ public class MatchesReportView extends ReportView {
         super(reportContentHost, reportMetricChip, selectedReportSubtitle, selectedReportTitle, reportsPane);
     }
 
+    private int getPositionOrder(Position pos) {
+        if (pos == null) return 99;
+        String name = pos.name().toUpperCase();
+        if (name.contains("GOALKEEPER") || name.contains("GK") || name.contains("ARQUERO")) return 1;
+        if (name.contains("DEFENDER") || name.contains("DEF") || name.contains("DEFENSA")) return 2;
+        if (name.contains("MIDFIELDER") || name.contains("MID") || name.contains("MEDIO")) return 3;
+        if (name.contains("FORWARD") || name.contains("FW") || name.contains("DELANTERO")) return 4;
+        return 5;
+    }
+
+    private String getMatchStageName(Match match) {
+        if (match == null) return "Unknown Stage";
+        return switch (getTournament().getStageOf(match)) {
+            case FINAL -> "Final";
+            case SEMI_FINALS -> "Semi-Finals";
+            case QUARTER_FINALS -> "Quarter-Finals";
+            default -> match.isKnockout() ? "Knockout Stage" : "Group Stage";
+        };
+    }
+
     @Override
     protected void render() {
         getSelectedReportTitle().setText("Matches Log & Incidences");
@@ -257,25 +277,5 @@ public class MatchesReportView extends ReportView {
         content.getChildren().addAll(heading, formationLabel, startersList);
         pane.setContent(content);
         dialog.showAndWait();
-    }
-
-    private int getPositionOrder(Position pos) {
-        if (pos == null) return 99;
-        String name = pos.name().toUpperCase();
-        if (name.contains("GOALKEEPER") || name.contains("GK") || name.contains("ARQUERO")) return 1;
-        if (name.contains("DEFENDER") || name.contains("DEF") || name.contains("DEFENSA")) return 2;
-        if (name.contains("MIDFIELDER") || name.contains("MID") || name.contains("MEDIO")) return 3;
-        if (name.contains("FORWARD") || name.contains("FW") || name.contains("DELANTERO")) return 4;
-        return 5;
-    }
-
-    private String getMatchStageName(Match match) {
-        if (match == null) return "Unknown Stage";
-        return switch (getTournament().getStageOf(match)) {
-            case FINAL -> "Final";
-            case SEMI_FINALS -> "Semi-Finals";
-            case QUARTER_FINALS -> "Quarter-Finals";
-            default -> match.isKnockout() ? "Knockout Stage" : "Group Stage";
-        };
     }
 }

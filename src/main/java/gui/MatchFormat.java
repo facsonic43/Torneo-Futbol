@@ -24,15 +24,15 @@ public final class MatchFormat {
         return result;
     }
 
-    public static String matchDate(Match match) {
+    static String matchDate(Match match) {
         return match.getMatchDate() == null ? "TBD" : String.valueOf(match.getMatchDate());
     }
 
-    public static String matchStadium(Match match) {
+    static String matchStadium(Match match) {
         return match.getStadium() == null ? "TBD" : match.getStadium().getName();
     }
 
-    public static String matchReferee(Match match) {
+    static String matchReferee(Match match) {
         return match.getReferee() == null ? "TBD" : match.getReferee().getName();
     }
 

@@ -28,6 +28,30 @@ public class TournamentSessionService {
         saveFile = "saves/tournament.dat";
     }
 
+    public boolean isLoadedFromSave() {
+        return loadedFromSave;
+    }
+
+    public Tournament getTournament() {
+        return tournament;
+    }
+
+    public List<Stadium> getStadiums() {
+        return stadiums;
+    }
+
+    public TournamentPersistenceService getPersistenceService() {
+        return persistenceService;
+    }
+
+    public String getSaveFile() {
+        return saveFile;
+    }
+
+    public TournamentStage getStage() {
+        return persistenceService.getStage(tournament);
+    }
+
     public Tournament createNewTournament() throws Exception {
         refreshStadiums();
         TournamentDataLoader loader = new TournamentDataLoader();
@@ -60,22 +84,6 @@ public class TournamentSessionService {
         tournament = persistenceService.loadTournament(saveFile);
         loadedFromSave = true;
         return tournament;
-    }
-
-    public boolean isLoadedFromSave() {
-        return loadedFromSave;
-    }
-
-    public Tournament getTournament() {
-        return tournament;
-    }
-
-    public List<Stadium> getStadiums() {
-        return stadiums;
-    }
-
-    public TournamentStage getStage() {
-        return persistenceService.getStage(tournament);
     }
 
     public boolean saveExists() {

@@ -25,11 +25,6 @@ public abstract class ReportView {
         this.reportsPane = reportsPane;
     }
 
-    public final void show(Tournament tournament) throws Exception {
-        this.tournament = tournament;
-        render();
-    }
-
     protected StackPane getReportContentHost() {
         return reportContentHost;
     }
@@ -52,6 +47,11 @@ public abstract class ReportView {
 
     protected Tournament getTournament() {
         return tournament;
+    }
+
+    public final void show(Tournament tournament) throws Exception {
+        this.tournament = tournament;
+        render();
     }
 
     protected abstract void render() throws Exception;

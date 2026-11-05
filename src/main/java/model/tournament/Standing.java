@@ -18,27 +18,6 @@ public class Standing {
         this.team = team;
     }
 
-    public void update(int gS, int gC) {
-        this.played++;
-        this.scored += gS;
-        this.conceded += gC;
-        if (gS > gC) {
-            this.won++;
-        } else if (gS == gC) {
-            this.drawn++;
-        } else {
-            this.lost++;
-        }
-    }
-
-    public int getPoints() {
-        return (won * 3) + drawn;
-    }
-
-    public int getGoalDifference() {
-        return scored - conceded;
-    }
-
     public Team getTeam() {
         return team;
     }
@@ -65,5 +44,26 @@ public class Standing {
 
     public int getConceded() {
         return conceded;
+    }
+
+    public int getPoints() {
+        return (won * 3) + drawn;
+    }
+
+    public int getGoalDifference() {
+        return scored - conceded;
+    }
+
+    void update(int gS, int gC) {
+        this.played++;
+        this.scored += gS;
+        this.conceded += gC;
+        if (gS > gC) {
+            this.won++;
+        } else if (gS == gC) {
+            this.drawn++;
+        } else {
+            this.lost++;
+        }
     }
 }

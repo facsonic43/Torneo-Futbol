@@ -25,15 +25,52 @@ public final class ReportData {
         this.participants = Objects.requireNonNull(participants, "Tournament participants are required");
     }
 
+    List<Group> getGroups() { return List.copyOf(groups); }
+
+    void setRefereeExperience(Referee referee, int years) {
+        if (years < 0) throw new IllegalArgumentException("Experience cannot be negative");
+        refereeExperience.put(key(referee), years);
+    }
+    Integer getRefereeExperience(Referee referee) { return refereeExperience.get(key(referee)); }
+    public TournamentData getParticipants() {
+        return participants;
+    }
+
+    public Map<Match, ReportMatchDetails> getMatchDetails() {
+        return Collections.unmodifiableMap(matchDetails);
+    }
+
+    public Map<String, Integer> getRefereeExperience() {
+        return Collections.unmodifiableMap(refereeExperience);
+    }
+
+    public List<Team> getTeams() { return participants.getTeams(); }
+
+    public List<Referee> getReferees() { return participants.getReferees(); }
+
+    List<Match> getMatches() {
+        List<Match> result = new ArrayList<>();
+        Set<Match> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (Group group : groups) {
+            for (Match match : group.getMatches()) addOnce(result, seen, match);
+        }
+        for (Match match : matches) addOnce(result, seen, match);
+        return List.copyOf(result);
+    }
+
+    public ReportMatchDetails getMatchDetails(Match match) {
+        ReportMatchDetails details = matchDetails.computeIfAbsent(Objects.requireNonNull(match), ignored -> new ReportMatchDetails());
+        if (!details.hasStartingPlayers() && match.hasRecordedStartingPlayers()) {
+            details.setStartingPlayers(match.getHomeStarters(), match.getAwayStarters());
+        }
+        return details;
+    }
+
     public static ReportData fromInitialData(TournamentData participants) {
         ReportData reports = new ReportData(participants);
         reports.loadInitialProfiles("torneo.json");
         return reports;
     }
-
-    public List<Team> getTeams() { return participants.getTeams(); }
-    public List<Referee> getReferees() { return participants.getReferees(); }
-    public List<Group> getGroups() { return List.copyOf(groups); }
 
     public void addGroup(Group group) {
         Objects.requireNonNull(group, "Group is required");
@@ -45,38 +82,13 @@ public final class ReportData {
         if (!matches.contains(match)) matches.add(match);
     }
 
-    public List<Match> getMatches() {
-        List<Match> result = new ArrayList<>();
-        Set<Match> seen = Collections.newSetFromMap(new IdentityHashMap<>());
-        for (Group group : groups) {
-            for (Match match : group.getMatches()) addOnce(result, seen, match);
-        }
-        for (Match match : matches) addOnce(result, seen, match);
-        return List.copyOf(result);
-    }
-
     private static void addOnce(List<Match> result, Set<Match> seen, Match match) {
         if (match == null || !seen.add(match)) return;
         match.asSecondLeg().ifPresent(second -> addOnce(result, seen, second.getFirstLeg()));
         result.add(match);
     }
 
-    public ReportMatchDetails getMatchDetails(Match match) {
-        ReportMatchDetails details = matchDetails.computeIfAbsent(Objects.requireNonNull(match), ignored -> new ReportMatchDetails());
-        if (!details.hasStartingPlayers() && match.hasRecordedStartingPlayers()) {
-            details.setStartingPlayers(match.getHomeStarters(), match.getAwayStarters());
-        }
-        return details;
-    }
-
-    public void setRefereeExperience(Referee referee, int years) {
-        if (years < 0) throw new IllegalArgumentException("Experience cannot be negative");
-        refereeExperience.put(key(referee), years);
-    }
-
-    public Integer getRefereeExperience(Referee referee) { return refereeExperience.get(key(referee)); }
-
-    public void loadInitialProfiles(String resourceName) {
+    private void loadInitialProfiles(String resourceName) {
         try (InputStream stream = getClass().getClassLoader().getResourceAsStream(resourceName)) {
             if (stream == null) return;
             JsonObject root = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();

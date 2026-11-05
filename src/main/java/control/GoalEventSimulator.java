@@ -20,6 +20,10 @@ class GoalEventSimulator {
         this.random = random;
     }
 
+    public Random getRandom() {
+        return random;
+    }
+
     void simulateGoal(int minute, Team scoringTeam, List<Player> attackingPitch, List<Player> defendingPitch,
             Player goalkeeperConceded, Match match, boolean homeGoal) {
         boolean ownGoal = random.nextDouble() < 0.03;

@@ -13,6 +13,7 @@ import java.io.Serializable;
 // y títulos del entrenador para orientar las simulaciones.
 
 public class Team implements Serializable{
+    private static final long serialVersionUID = 7043864968606219809L;
     private String name;
     private Country country;
     private int ranking;
@@ -57,11 +58,16 @@ public class Team implements Serializable{
 
     public Stadium getStadium() { return stadium; }
 
-    public void addPlayer(Player p){
-        if(squad.size()<18)
-            squad.add(p);
-        else
-            throw new FullSquadException();
+    public int getEditionsPlayed() {
+        return editionsPlayed;
+    }
+
+    public int getInternationalTitles() {
+        return internationalTitles;
+    }
+
+    public int getNationalTitles() {
+        return nationalTitles;
     }
 
     public double getOverall(){
@@ -72,7 +78,7 @@ public class Team implements Serializable{
         return total/squad.size();
     }
 
-    public double getPrestigeRating() {
+    private double getPrestigeRating() {
         double prestige = (internationalTitles * 5.0) + (nationalTitles * 2.0) + (editionsPlayed * 1.0);
         return Math.min(100.0, prestige);
     }
@@ -85,5 +91,12 @@ public class Team implements Serializable{
         double totalPower = (squadRating    * 0.50) + (prestigeRating * 0.25)
                 + (coachRating    * 0.15) + (rankingRating  * 0.10);
         return Math.min(100.0, Math.max(0.0, totalPower));
+    }
+
+    public void addPlayer(Player p){
+        if(squad.size()<18)
+            squad.add(p);
+        else
+            throw new FullSquadException();
     }
 }

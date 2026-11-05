@@ -6,6 +6,7 @@ import java.io.Serializable;
 // incluidos los minutos de entrada y salida que permiten calcular el tiempo jugado.
 
 public class PlayerParticipation implements Serializable{
+    private static final long serialVersionUID = 5740780584945396040L;
     private Player player;
     private Team team;
     private int enterMinute;
@@ -32,6 +33,10 @@ public class PlayerParticipation implements Serializable{
 
     public void setExitMinute(int exitMinute) {
         this.exitMinute = exitMinute;
+    }
+
+    public int getEnterMinute() {
+        return enterMinute;
     }
 
     public int getMinutesPlayed() {

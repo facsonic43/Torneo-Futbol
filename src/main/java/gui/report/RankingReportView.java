@@ -19,6 +19,10 @@ public abstract class RankingReportView extends ReportView {
         this.statisticsReportView = statisticsReportView;
     }
 
+    public StatisticsReportView getStatisticsReportView() {
+        return statisticsReportView;
+    }
+
     protected abstract ReportSection section();
 
     protected abstract String title();

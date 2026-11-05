@@ -20,7 +20,11 @@ public class PenaltyShootoutSimulator {
         this.random = random;
     }
 
-    public void simulate(Match match, List<Player> homePitch, List<Player> awayPitch) {
+    public Random getRandom() {
+        return random;
+    }
+
+    void simulate(Match match, List<Player> homePitch, List<Player> awayPitch) {
         List<Player> homeTakers = prepareTakers(homePitch.isEmpty() ? match.getHomeStarters() : homePitch);
         List<Player> awayTakers = prepareTakers(awayPitch.isEmpty() ? match.getAwayStarters() : awayPitch);
         if (homeTakers.isEmpty() || awayTakers.isEmpty()) {

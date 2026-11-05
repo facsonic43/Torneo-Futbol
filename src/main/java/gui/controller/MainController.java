@@ -72,20 +72,7 @@ public class MainController {
     private MatchDayController matchDayController;
     private DatabaseController databaseController;
 
-    private void updateHeader(String title, String subtitle) {
-        pageTitle.setText(title);
-        if (subtitle == null || subtitle.isBlank()) {
-            pageSubtitle.setText("");
-            pageSubtitle.setVisible(false);
-            pageSubtitle.setManaged(false);
-        } else {
-            pageSubtitle.setText(subtitle);
-            pageSubtitle.setVisible(true);
-            pageSubtitle.setManaged(true);
-        }
-    }
-
-    public void setSession(TournamentSessionService session) {
+    void setSession(TournamentSessionService session) {
         this.session = session;
         try {
             File logoFile = new File("Images/logo.png");
@@ -98,6 +85,109 @@ public class MainController {
             statusLabel.setText(session.isLoadedFromSave() ? "Saved tournament loaded." : "New tournament created.");
         } catch (Exception exception) {
             showError("Error starting interface", exception);
+        }
+    }
+
+    public Button getTournamentButton() {
+        return tournamentButton;
+    }
+
+    public Button getMatchDayButton() {
+        return matchDayButton;
+    }
+
+    public MenuButton getReportsButton() {
+        return reportsButton;
+    }
+
+    public Button getDatabaseButton() {
+        return databaseButton;
+    }
+
+    public Button getThemeButton() {
+        return themeButton;
+    }
+
+    public ImageView getBrandLogo() {
+        return brandLogo;
+    }
+
+    public Label getPageTitle() {
+        return pageTitle;
+    }
+
+    public Label getPageSubtitle() {
+        return pageSubtitle;
+    }
+
+    public Label getStatusLabel() {
+        return statusLabel;
+    }
+
+    public StackPane getContentHost() {
+        return contentHost;
+    }
+
+    public Label getMainStageLabel() {
+        return mainStageLabel;
+    }
+
+    public Label getMainMatchesLabel() {
+        return mainMatchesLabel;
+    }
+
+    public HBox getGlobalTournamentStatusBox() {
+        return globalTournamentStatusBox;
+    }
+
+    public TournamentSessionService getSession() {
+        return session;
+    }
+
+    public Parent getTournamentView() {
+        return tournamentView;
+    }
+
+    public Parent getMatchDayView() {
+        return matchDayView;
+    }
+
+    public Parent getDatabaseView() {
+        return databaseView;
+    }
+
+    public TournamentController getTournamentController() {
+        return tournamentController;
+    }
+
+    public MatchDayController getMatchDayController() {
+        return matchDayController;
+    }
+
+    public DatabaseController getDatabaseController() {
+        return databaseController;
+    }
+
+    private void setActiveButton(javafx.scene.control.Control selectedButton) {
+        tournamentButton.getStyleClass().remove("nav-button-active");
+        matchDayButton.getStyleClass().remove("nav-button-active");
+        if (reportsButton != null) reportsButton.getStyleClass().remove("nav-button-active");
+        databaseButton.getStyleClass().remove("nav-button-active");
+        if (selectedButton != null) {
+            selectedButton.getStyleClass().add("nav-button-active");
+        }
+    }
+
+    private void updateHeader(String title, String subtitle) {
+        pageTitle.setText(title);
+        if (subtitle == null || subtitle.isBlank()) {
+            pageSubtitle.setText("");
+            pageSubtitle.setVisible(false);
+            pageSubtitle.setManaged(false);
+        } else {
+            pageSubtitle.setText(subtitle);
+            pageSubtitle.setVisible(true);
+            pageSubtitle.setManaged(true);
         }
     }
 
@@ -230,22 +320,12 @@ public class MainController {
         }
     }
 
-    private void setActiveButton(javafx.scene.control.Control selectedButton) {
-        tournamentButton.getStyleClass().remove("nav-button-active");
-        matchDayButton.getStyleClass().remove("nav-button-active");
-        if (reportsButton != null) reportsButton.getStyleClass().remove("nav-button-active");
-        databaseButton.getStyleClass().remove("nav-button-active");
-        if (selectedButton != null) {
-            selectedButton.getStyleClass().add("nav-button-active");
-        }
-    }
-
     private void showError(String message, Exception exception) {
         statusLabel.setText(message + ": " + exception.getMessage());
         exception.printStackTrace();
     }
 
-    public void updateGlobalStatus() {
+    private void updateGlobalStatus() {
         if (session == null || session.getTournament() == null) return;
         Tournament tournament = session.getTournament();
         mainStageLabel.setText(session.getStage().getLabel());

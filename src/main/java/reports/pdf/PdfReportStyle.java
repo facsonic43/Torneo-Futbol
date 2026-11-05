@@ -12,9 +12,15 @@ import java.util.Locale;
 // Reúne colores, tablas y formatos de texto comunes a las secciones del reporte PDF.
 
 final class PdfReportStyle {
-    static final DeviceRgb NAVY = new DeviceRgb(25, 48, 75);
-    static final DeviceRgb LIGHT = new DeviceRgb(240, 244, 248);
+    private static final DeviceRgb NAVY = new DeviceRgb(25, 48, 75);
+    private static final DeviceRgb LIGHT = new DeviceRgb(240, 244, 248);
     private PdfReportStyle() { }
+    static DeviceRgb getNavy() {
+        return NAVY;
+    }
+    static DeviceRgb getLight() {
+        return LIGHT;
+    }
     static void heading(Document document, String text) {
         document.add(new Paragraph(text).setFontSize(19).simulateBold().setFontColor(NAVY).setMarginBottom(12));
     }
@@ -36,6 +42,8 @@ final class PdfReportStyle {
     static void empty(Table table, int columns, String message) {
         table.addCell(new Cell(1, columns).add(new Paragraph(message)).setPadding(8));
     }
+
     static String number(double value) { return String.format(Locale.ENGLISH, "%.2f", value); }
+
     static String country(Person person) { return person.getNationality() == null ? "Not specified" : person.getNationality().getName(); }
 }

@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +32,27 @@ public class TournamentDataLoader {
         countries = new HashMap<>();
         documents = new HashSet<>();
         dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    }
+
+    public Map<String, Country> getCountries() {
+        return Collections.unmodifiableMap(countries);
+    }
+
+    public Set<String> getDocuments() {
+        return Collections.unmodifiableSet(documents);
+    }
+
+    public DateTimeFormatter getDateFormatter() {
+        return dateFormatter;
+    }
+
+    private Country getCountry(String countryName) {
+        String cleanName = countryName.trim();
+        String key = cleanName.toLowerCase();
+        if (!countries.containsKey(key)) {
+            countries.put(key, new Country(cleanName));
+        }
+        return countries.get(key);
     }
 
     public TournamentData load(String fileName) {
@@ -184,15 +206,6 @@ public class TournamentDataLoader {
                     yearsOfficiated));
         }
         return referees;
-    }
-
-    private Country getCountry(String countryName) {
-        String cleanName = countryName.trim();
-        String key = cleanName.toLowerCase();
-        if (!countries.containsKey(key)) {
-            countries.put(key, new Country(cleanName));
-        }
-        return countries.get(key);
     }
 
     private LocalDate parseDate(String date) {

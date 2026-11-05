@@ -8,6 +8,7 @@ import java.util.Map;
 // Registra los goles recibidos para las estadísticas y reportes del campeonato.
 
 public class Goalkeeper extends Player {
+    private static final long serialVersionUID = -3494408344082799670L;
     private int speed;
     private int jumping;
     private int passing;
@@ -31,6 +32,35 @@ public class Goalkeeper extends Player {
     }
 
     @Override
+    public int getGoalsConceded() {
+        return goalsConceded;
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
+
+    public int getJumping() {
+        return jumping;
+    }
+
+    public int getPassing() {
+        return passing;
+    }
+
+    public int getReflexes() {
+        return reflexes;
+    }
+
+    public int getOneOnOne() {
+        return oneOnOne;
+    }
+
+    public int getKicking() {
+        return kicking;
+    }
+
+    @Override
     public double getOverall() {
         return (speed + jumping + passing + reflexes + oneOnOne + kicking) / 6.0;
     }
@@ -46,16 +76,6 @@ public class Goalkeeper extends Player {
     }
 
     @Override
-    public void addGoalConceded() {
-        goalsConceded++;
-    }
-
-    @Override
-    public int getGoalsConceded() {
-        return goalsConceded;
-    }
-
-    @Override
     public Map<String, Integer> getTechnicalAttributes() {
         Map<String, Integer> attributes = new LinkedHashMap<>();
         attributes.put("Reflexes", reflexes);
@@ -65,5 +85,10 @@ public class Goalkeeper extends Player {
         attributes.put("Speed", speed);
         attributes.put("Jumping", jumping);
         return attributes;
+    }
+
+    @Override
+    public void addGoalConceded() {
+        goalsConceded++;
     }
 }

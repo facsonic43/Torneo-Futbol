@@ -23,6 +23,22 @@ class TournamentFixtureBuilder {
         this.tournament = tournament;
     }
 
+    public Tournament getTournament() {
+        return tournament;
+    }
+
+    private LocalDate getLastGroupDate() {
+        LocalDate lastDate = LocalDate.now();
+        for (Group group : tournament.getGroups()) {
+            for (GroupMatch match : group.getMatches()) {
+                if (match.getMatchDate().isAfter(lastDate)) {
+                    lastDate = match.getMatchDate();
+                }
+            }
+        }
+        return lastDate;
+    }
+
     List<Group> drawGroups() {
         if (tournament.getTeams().size() != 16) {
             throw new IllegalStateException( "The tournament must contain exactly 16 teams." );
@@ -140,18 +156,6 @@ class TournamentFixtureBuilder {
                 firstLegHome), tournament.nextKnockoutStadium(), secondLegDate, firstLeg);
         firstLegMatches.add( firstLeg );
         secondLegMatches.add( secondLeg );
-    }
-
-    private LocalDate getLastGroupDate() {
-        LocalDate lastDate = LocalDate.now();
-        for (Group group : tournament.getGroups()) {
-            for (GroupMatch match : group.getMatches()) {
-                if (match.getMatchDate().isAfter(lastDate)) {
-                    lastDate = match.getMatchDate();
-                }
-            }
-        }
-        return lastDate;
     }
 
     private Team requireWinner(SecondLegMatch match) {

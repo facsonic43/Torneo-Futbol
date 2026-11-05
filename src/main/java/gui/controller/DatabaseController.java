@@ -56,6 +56,59 @@ public class DatabaseController {
 
     private TournamentSessionService session;
 
+    void setSession(TournamentSessionService session) {
+        this.session = session;
+        refreshData();
+    }
+
+    public ListView<City> getCityList() {
+        return cityList;
+    }
+
+    public ListView<Stadium> getStadiumList() {
+        return stadiumList;
+    }
+
+    public TextField getCityNameField() {
+        return cityNameField;
+    }
+
+    public TextField getCityCountryField() {
+        return cityCountryField;
+    }
+
+    public TextField getStadiumNameField() {
+        return stadiumNameField;
+    }
+
+    public ComboBox<City> getStadiumCityCombo() {
+        return stadiumCityCombo;
+    }
+
+    public Label getCityCount() {
+        return cityCount;
+    }
+
+    public Label getStadiumCount() {
+        return stadiumCount;
+    }
+
+    public Label getDatabaseStatus() {
+        return databaseStatus;
+    }
+
+    public CityDAO getCityDAO() {
+        return cityDAO;
+    }
+
+    public StadiumDAO getStadiumDAO() {
+        return stadiumDAO;
+    }
+
+    public TournamentSessionService getSession() {
+        return session;
+    }
+
     @FXML
     public void initialize() {
         cityDAO = new CityDAO();
@@ -72,12 +125,7 @@ public class DatabaseController {
         });
     }
 
-    public void setSession(TournamentSessionService session) {
-        this.session = session;
-        refreshData();
-    }
-
-    public void refreshFromMain() {
+    void refreshFromMain() {
         refreshData();
     }
 

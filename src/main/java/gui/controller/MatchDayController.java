@@ -140,7 +140,7 @@ public class MatchDayController {
         waitingPenaltyResultAcknowledgement = false;
     }
 
-    public void setSession(TournamentSessionService session) {
+    void setSession(TournamentSessionService session) {
         this.session = session;
         if (matchEventsView == null) {
             matchEventsView = new MatchEventsView(eventsBox);
@@ -155,7 +155,197 @@ public class MatchDayController {
         refresh();
     }
 
-    public void refreshFromMain() {
+    public Label getCurrentRoundLabel() {
+        return currentRoundLabel;
+    }
+
+    public Label getPhaseProgressLabel() {
+        return phaseProgressLabel;
+    }
+
+    public VBox getMatchesBox() {
+        return matchesBox;
+    }
+
+    public VBox getNormalMatchPane() {
+        return normalMatchPane;
+    }
+
+    public Label getSelectedMatchTitle() {
+        return selectedMatchTitle;
+    }
+
+    public Label getSelectedScore() {
+        return selectedScore;
+    }
+
+    public Label getSelectedDate() {
+        return selectedDate;
+    }
+
+    public Label getSelectedStadium() {
+        return selectedStadium;
+    }
+
+    public Label getSelectedReferee() {
+        return selectedReferee;
+    }
+
+    public Label getSelectedResolution() {
+        return selectedResolution;
+    }
+
+    public VBox getEventsBox() {
+        return eventsBox;
+    }
+
+    public Button getPlaySelectedButton() {
+        return playSelectedButton;
+    }
+
+    public VBox getPenaltyShootoutPane() {
+        return penaltyShootoutPane;
+    }
+
+    public Label getPenaltyRoundLabel() {
+        return penaltyRoundLabel;
+    }
+
+    public Label getPenaltyStatusLabel() {
+        return penaltyStatusLabel;
+    }
+
+    public Label getPenaltyContextLabel() {
+        return penaltyContextLabel;
+    }
+
+    public Label getPenaltyHomeTeamLabel() {
+        return penaltyHomeTeamLabel;
+    }
+
+    public Label getPenaltyAwayTeamLabel() {
+        return penaltyAwayTeamLabel;
+    }
+
+    public Label getPenaltyHomeGoalkeeperLabel() {
+        return penaltyHomeGoalkeeperLabel;
+    }
+
+    public Label getPenaltyAwayGoalkeeperLabel() {
+        return penaltyAwayGoalkeeperLabel;
+    }
+
+    public Label getPenaltyHomeScoreLabel() {
+        return penaltyHomeScoreLabel;
+    }
+
+    public Label getPenaltyAwayScoreLabel() {
+        return penaltyAwayScoreLabel;
+    }
+
+    public HBox getPenaltyColumnHeaderBox() {
+        return penaltyColumnHeaderBox;
+    }
+
+    public HBox getPenaltyHomeKicksBox() {
+        return penaltyHomeKicksBox;
+    }
+
+    public HBox getPenaltyAwayKicksBox() {
+        return penaltyAwayKicksBox;
+    }
+
+    public VBox getPenaltyKickDetailsBox() {
+        return penaltyKickDetailsBox;
+    }
+
+    public PenaltyKicksView getPenaltyKicksView() {
+        return penaltyKicksView;
+    }
+
+    public MatchEventsView getMatchEventsView() {
+        return matchEventsView;
+    }
+
+    public Button getSimulatePenaltiesButton() {
+        return simulatePenaltiesButton;
+    }
+
+    public VBox getPenaltyWinnerBox() {
+        return penaltyWinnerBox;
+    }
+
+    public Label getPenaltyWinnerLabel() {
+        return penaltyWinnerLabel;
+    }
+
+    public Label getPenaltyWinnerDetailLabel() {
+        return penaltyWinnerDetailLabel;
+    }
+
+    public Button getContinueAfterPenaltiesButton() {
+        return continueAfterPenaltiesButton;
+    }
+
+    public Button getSimulateRoundButton() {
+        return simulateRoundButton;
+    }
+
+    public Button getSimulatePhaseButton() {
+        return simulatePhaseButton;
+    }
+
+    public Label getLocalStatus() {
+        return localStatus;
+    }
+
+    public TournamentSessionService getSession() {
+        return session;
+    }
+
+    public TournamentExecutionService getExecutionService() {
+        return executionService;
+    }
+
+    public Tournament getTournament() {
+        return tournament;
+    }
+
+    public Match getSelectedMatch() {
+        return selectedMatch;
+    }
+
+    public boolean isWaitingPenaltyResultAcknowledgement() {
+        return waitingPenaltyResultAcknowledgement;
+    }
+
+    private String getMatchStatus(Match match) {
+        if (executionService.requiresPenalties(match)) {
+            return "PENALTIES";
+        }
+        if (match.isPlayed()) {
+            if (hasPenaltyResult(match)) {
+                return "PENALTIES FINISHED";
+            }
+            return "FINISHED";
+        }
+        if (executionService.isMatchPlayable(tournament, match)) {
+            return "PLAY";
+        }
+        return "LOCKED";
+    }
+
+    private boolean hasPenaltyResult(Match match) {
+        return match != null && match.getResolutionCriterion() == ResolutionCriterion.PENALTIES;
+    }
+
+    private void setResolution(String text, String styleClass) {
+        selectedResolution.setText(text);
+        selectedResolution.getStyleClass().removeAll("ready-chip", "blocked-chip", "purple-chip");
+        selectedResolution.getStyleClass().add(styleClass);
+    }
+
+    void refreshFromMain() {
         if (session == null) {
             return;
         }
@@ -238,22 +428,6 @@ public class MatchDayController {
             refreshMatchList();
         });
         return button;
-    }
-
-    private String getMatchStatus(Match match) {
-        if (executionService.requiresPenalties(match)) {
-            return "PENALTIES";
-        }
-        if (match.isPlayed()) {
-            if (hasPenaltyResult(match)) {
-                return "PENALTIES FINISHED";
-            }
-            return "FINISHED";
-        }
-        if (executionService.isMatchPlayable(tournament, match)) {
-            return "PLAY";
-        }
-        return "LOCKED";
     }
 
     private void refreshSelectedMatch() {
@@ -359,16 +533,6 @@ public class MatchDayController {
             }
             configureContinueButton();
         }
-    }
-
-    private boolean hasPenaltyResult(Match match) {
-        return match != null && match.getResolutionCriterion() == ResolutionCriterion.PENALTIES;
-    }
-
-    private void setResolution(String text, String styleClass) {
-        selectedResolution.setText(text);
-        selectedResolution.getStyleClass().removeAll("ready-chip", "blocked-chip", "purple-chip");
-        selectedResolution.getStyleClass().add(styleClass);
     }
 
     private void updateActionButtons() {

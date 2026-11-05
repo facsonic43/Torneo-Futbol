@@ -18,6 +18,10 @@ public class BracketReportView extends ReportView {
         this.bracketSection = bracketSection;
     }
 
+    public BracketSection getBracketSection() {
+        return bracketSection;
+    }
+
     @Override
     protected void render() {
         getSelectedReportTitle().setText("Championship Bracket");

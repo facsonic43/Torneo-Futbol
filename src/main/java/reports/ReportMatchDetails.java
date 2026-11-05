@@ -8,6 +8,7 @@ import model.match.RedCard;
 import model.match.Substitution;
 import model.participant.Player;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
@@ -27,17 +28,17 @@ public class ReportMatchDetails {
     private boolean startingPlayersRecorded;
     private final Map<Goal, GoalDetails> goals = new IdentityHashMap<>();
 
-    public void setStartingPlayers(List<Player> homeStarters, List<Player> awayStarters) {
+    void setStartingPlayers(List<Player> homeStarters, List<Player> awayStarters) {
         this.homeStarters = List.copyOf(homeStarters);
         this.awayStarters = List.copyOf(awayStarters);
         startingPlayersRecorded = true;
     }
 
-    public List<Player> getHomeStarters() { return homeStarters; }
+    List<Player> getHomeStarters() { return homeStarters; }
 
-    public List<Player> getAwayStarters() { return awayStarters; }
+    List<Player> getAwayStarters() { return awayStarters; }
 
-    public boolean hasStartingPlayers() { return startingPlayersRecorded; }
+    boolean hasStartingPlayers() { return startingPlayersRecorded; }
 
     public void setGoalDetails(Goal goal, boolean penalty, boolean ownGoal, Player receivingGoalkeeper) {
         Objects.requireNonNull(goal, "El gol es obligatorio");
@@ -47,9 +48,13 @@ public class ReportMatchDetails {
         goals.put(goal, new GoalDetails(penalty, ownGoal, receivingGoalkeeper));
     }
 
-    public GoalDetails getGoalDetails(Goal goal) { return goals.get(goal); }
+    GoalDetails getGoalDetails(Goal goal) { return goals.get(goal); }
 
-    public Map<Player, Integer> getPlayerMinutes(Match match) {
+    public Map<Goal, GoalDetails> getGoals() {
+        return Collections.unmodifiableMap(goals);
+    }
+
+    Map<Player, Integer> getPlayerMinutes(Match match) {
         Map<Player, Integer> minutes = new LinkedHashMap<>();
         Map<Player, Integer> entered = new LinkedHashMap<>();
         homeStarters.forEach(player -> entered.put(player, 0));

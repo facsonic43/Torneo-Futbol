@@ -35,6 +35,22 @@ public class MainMenuController {
         loadLogo();
     }
 
+    public ImageView getMenuLogo() {
+        return menuLogo;
+    }
+
+    public Button getContinueButton() {
+        return continueButton;
+    }
+
+    public Button getThemeButton() {
+        return themeButton;
+    }
+
+    public TournamentSessionService getSession() {
+        return session;
+    }
+
     private void loadLogo() {
         File logoFile = new File("Images/logo.png");
         if (logoFile.exists()) {
