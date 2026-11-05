@@ -464,7 +464,7 @@ public class TournamentController {
             if (tournament.getChampion() != null) {
                 overviewChampionName.setText(tournament.getChampion().getName().toUpperCase());
                 overviewChampionName.setStyle("-fx-font-size: 24px; -fx-font-weight: 900; -fx-text-fill: -status-qualified-text;");
-                File trophyFile = new File("Images/trophy.png");
+                File trophyFile = new File("Images/Tournament/trophy.png");
                 if (trophyFile.exists() && overviewTrophyImage != null) {
                     overviewTrophyImage.setImage(new javafx.scene.image.Image(trophyFile.toURI().toString()));
                     overviewTrophyImage.setVisible(true);

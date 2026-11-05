@@ -52,7 +52,7 @@ public class MainMenuController {
     }
 
     private void loadLogo() {
-        File logoFile = new File("Images/logo.png");
+        File logoFile = new File("Images/Tournament/logo.png");
         if (logoFile.exists()) {
             menuLogo.setImage(new Image(logoFile.toURI().toString()));
         }
