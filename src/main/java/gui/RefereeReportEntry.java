@@ -1,7 +1,5 @@
 package gui;
 
-import javafx.scene.control.*;
-
 // Agrupa los datos de identificación, experiencia y partidos dirigidos de un árbitro.
 
 public class RefereeReportEntry {

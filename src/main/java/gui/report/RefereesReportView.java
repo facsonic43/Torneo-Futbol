@@ -9,14 +9,12 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import model.match.Match;
 import model.participant.Referee;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import gui.RefereeReportEntry;
 import static gui.TableCells.createIntegerCenterCell;
-import static gui.TableCells.createCenterStringCell;
 import static gui.TableCells.createRankBadgeCell;
 import static gui.TableCells.createBoldCell;
 import static gui.TableCells.createHighlightStatCell;
@@ -67,7 +65,7 @@ public class RefereesReportView extends ReportView {
                 String nat = ref.getNationality() != null ? ref.getNationality().getName() : "-";
                 totalYears += ref.getYearsOfficiated();
                 list.add(new RefereeReportEntry(ref.getName(), nat, ref.getBirthDate(), ref.getIdType() != null
-                        ? ref.getIdType().toString() : "-", ref.getIdNumber(), ref.getYearsOfficiated(),
+                        ? ref.getIdType() : "-", ref.getIdNumber(), ref.getYearsOfficiated(),
                         ref.getMatchesOfficiated()));
             }
         }

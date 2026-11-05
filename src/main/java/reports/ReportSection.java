@@ -5,6 +5,5 @@ package reports;
 public enum ReportSection {
     TOP_SCORERS,
     FAIR_PLAY,
-    MOST_MINUTES,
-    BRACKET
+    MOST_MINUTES
 }

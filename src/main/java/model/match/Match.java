@@ -279,10 +279,6 @@ public abstract class Match implements Serializable {
         playerParticipations.add(participation);
     }
 
-    public Optional<GroupMatch> asGroupMatch() {
-        return Optional.empty();
-    }
-
     public Optional<FirstLegMatch> asFirstLeg() {
         return Optional.empty();
     }
@@ -321,10 +317,6 @@ public abstract class Match implements Serializable {
     }
 
     public Optional<SecondLegMatch> asSecondLeg() {
-        return Optional.empty();
-    }
-
-    public Optional<FinalMatch> asFinal() {
         return Optional.empty();
     }
 

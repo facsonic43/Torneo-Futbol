@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import gui.CoachReportEntry;
-import static gui.TableCells.createCenterStringCell;
 import static gui.TableCells.createBoldCell;
 import static gui.TableCells.createHighlightStatCell;
 

@@ -1,7 +1,6 @@
 package gui.controller;
 
 import java.io.File;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -235,15 +234,12 @@ public class MainController {
     }
 
     @FXML
-    private void handleShowReportsPane(ActionEvent event) {
+    private void handleShowReportsPane() {
         handleReports();
-        if (tournamentController != null) {
-            tournamentController.handleShowReportsPane(event);
-        }
     }
 
     @FXML
-    private void handleGeneratePdf(ActionEvent event) {
+    private void handleGeneratePdf() {
         if (tournamentController != null) {
             tournamentController.handleGeneratePdf(contentHost.getScene().getWindow());
         }

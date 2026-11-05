@@ -2,7 +2,6 @@ package gui.controller;
 
 import gui.StatisticsReportView;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -382,10 +381,6 @@ public class TournamentController {
         showPane(reportsPane);
     }
 
-    public void showBracket() {
-        showPane(bracketPane);
-    }
-
     private void showPane(Node selectedPane) {
         if (overviewPane != null) {
             overviewPane.setVisible(selectedPane == overviewPane);
@@ -756,12 +751,11 @@ public class TournamentController {
         }
         if (goalkeeperInformation != null) {
             if (player.isGoalkeeper()) {
-                Player goalkeeper = player;
                 double average = 0.0;
-                if (goalkeeper.getMatchesPlayed() > 0) {
-                    average = (double) goalkeeper.getGoalsConceded() / goalkeeper.getMatchesPlayed();
+                if (player.getMatchesPlayed() > 0) {
+                    average = (double) player.getGoalsConceded() / player.getMatchesPlayed();
                 }
-                goalkeeperInformation.setText(goalkeeper.getGoalsConceded() + " goals conceded | "
+                goalkeeperInformation.setText(player.getGoalsConceded() + " goals conceded | "
                         + String.format("%.2f", average) + " per match");
                 goalkeeperInformation.setVisible(true);
                 goalkeeperInformation.setManaged(true);
@@ -846,12 +840,6 @@ public class TournamentController {
         }
     }
 
-    @FXML
-    public void handleShowReportsPane(ActionEvent event) {
-        showPane(reportsPane);
-        handleRefreshReport();
-    }
-
     private void generateReport() {
         if (tournament == null || reportList == null) return;
         String selected = reportList.getSelectionModel().getSelectedItem();
@@ -875,7 +863,4 @@ public class TournamentController {
         }
     }
 
-    private String formatStage() {
-        return session.getStage().getLabel();
-    }
 }

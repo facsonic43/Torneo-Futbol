@@ -1,7 +1,5 @@
 package model.match;
 
-import java.util.Optional;
-
 import model.participant.Referee;
 import model.participant.Team;
 
@@ -44,8 +42,4 @@ public class FinalMatch extends Match {
         return getResolutionCriterion() == ResolutionCriterion.UNRESOLVED;
     }
 
-    @Override
-    public Optional<FinalMatch> asFinal() {
-        return Optional.of(this);
-    }
 }
