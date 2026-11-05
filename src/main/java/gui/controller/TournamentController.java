@@ -24,6 +24,7 @@ import service.TournamentSessionService;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -173,6 +174,188 @@ public class TournamentController {
     private final BracketView bracketView = new BracketView();
     private BracketSection bracketSection;
 
+    void setSession(TournamentSessionService session) {
+        this.session = session;
+        tournament = session.getTournament();
+        refreshAll();
+    }
+
+    public VBox getOverviewPane() {
+        return overviewPane;
+    }
+
+    public HBox getTeamsPane() {
+        return teamsPane;
+    }
+
+    public VBox getBracketPane() {
+        return bracketPane;
+    }
+
+    public HBox getReportsPane() {
+        return reportsPane;
+    }
+
+    public VBox getOverviewQuarterBox() {
+        return overviewQuarterBox;
+    }
+
+    public VBox getOverviewSemiBox() {
+        return overviewSemiBox;
+    }
+
+    public VBox getOverviewFinalBox() {
+        return overviewFinalBox;
+    }
+
+    public Label getOverviewChampionName() {
+        return overviewChampionName;
+    }
+
+    public ImageView getOverviewTrophyImage() {
+        return overviewTrophyImage;
+    }
+
+    public HBox getAllGroupsContainer() {
+        return allGroupsContainer;
+    }
+
+    public ListView<Team> getTeamList() {
+        return teamList;
+    }
+
+    public TableView<Player> getPlayerTable() {
+        return playerTable;
+    }
+
+    public TableColumn<Player, String> getPlayerNameColumn() {
+        return playerNameColumn;
+    }
+
+    public TableColumn<Player, String> getPlayerPositionColumn() {
+        return playerPositionColumn;
+    }
+
+    public TableColumn<Player, String> getPlayerOverallColumn() {
+        return playerOverallColumn;
+    }
+
+    public TableColumn<Player, String> getPlayerMatchesColumn() {
+        return playerMatchesColumn;
+    }
+
+    public TableColumn<Player, String> getPlayerMinutesColumn() {
+        return playerMinutesColumn;
+    }
+
+    public TableColumn<Player, String> getPlayerGoalsColumn() {
+        return playerGoalsColumn;
+    }
+
+    public Label getTeamName() {
+        return teamName;
+    }
+
+    public Label getTeamCountry() {
+        return teamCountry;
+    }
+
+    public Label getTeamRanking() {
+        return teamRanking;
+    }
+
+    public Label getTeamOverall() {
+        return teamOverall;
+    }
+
+    public Label getCoachName() {
+        return coachName;
+    }
+
+    public Label getCoachDetails() {
+        return coachDetails;
+    }
+
+    public Label getPlayerName() {
+        return playerName;
+    }
+
+    public Label getPlayerPosition() {
+        return playerPosition;
+    }
+
+    public Label getPlayerNationality() {
+        return playerNationality;
+    }
+
+    public Label getPlayerDocument() {
+        return playerDocument;
+    }
+
+    public Label getPlayerAge() {
+        return playerAge;
+    }
+
+    public Label getPlayerRating() {
+        return playerRating;
+    }
+
+    public Label getPlayerStats() {
+        return playerStats;
+    }
+
+    public Label getPlayerDiscipline() {
+        return playerDiscipline;
+    }
+
+    public Label getPlayerAvailability() {
+        return playerAvailability;
+    }
+
+    public Label getGoalkeeperInformation() {
+        return goalkeeperInformation;
+    }
+
+    public ListView<String> getReportList() {
+        return reportList;
+    }
+
+    public StackPane getReportContentHost() {
+        return reportContentHost;
+    }
+
+    public Label getSelectedReportSubtitle() {
+        return selectedReportSubtitle;
+    }
+
+    public Label getReportMetricChip() {
+        return reportMetricChip;
+    }
+
+    public Label getSelectedReportTitle() {
+        return selectedReportTitle;
+    }
+
+    public TournamentSessionService getSession() {
+        return session;
+    }
+
+    public Tournament getTournament() {
+        return tournament;
+    }
+
+    public Map<String, ReportView> getReportViews() {
+        return Collections.unmodifiableMap(reportViews);
+    }
+
+    public BracketView getBracketView() {
+        return bracketView;
+    }
+
+    public BracketSection getBracketSection() {
+        return bracketSection;
+    }
+
     @FXML
     public void initialize() {
         bracketSection = new BracketSection(bracketView, reportsPane, () -> session.getStage());
@@ -181,13 +364,7 @@ public class TournamentController {
         configureReports();
     }
 
-    public void setSession(TournamentSessionService session) {
-        this.session = session;
-        tournament = session.getTournament();
-        refreshAll();
-    }
-
-    public void refreshAll() {
+    void refreshAll() {
         if (session == null) {
             return;
         }
@@ -197,11 +374,11 @@ public class TournamentController {
         refreshReports();
     }
 
-    public void showOverview() {
+    void showOverview() {
         showPane(overviewPane);
     }
 
-    public void showReports() {
+    void showReports() {
         showPane(reportsPane);
     }
 
@@ -640,7 +817,7 @@ public class TournamentController {
         generateReport();
     }
 
-    public void handleGeneratePdf(Window owner) {
+    void handleGeneratePdf(Window owner) {
         if (tournament == null) return;
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Save participant report");

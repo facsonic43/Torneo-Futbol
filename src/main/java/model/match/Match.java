@@ -9,6 +9,7 @@ import model.participant.Team;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.io.Serializable;
 
@@ -49,74 +50,13 @@ public abstract class Match implements Serializable {
         this.matchDate = matchDate;
     }
 
-    public abstract boolean isKnockout();
-
-    public abstract boolean requiresTieBreak();
-
-    public Team getWinner() {
-        Team winner = null;
-        if (played) {
-            if (homeGoals > awayGoals) {
-                winner = homeTeam;
-            } else if (awayGoals > homeGoals) {
-                winner = awayTeam;
-            }
-        }
-        return winner;
-    }
-
-    public final String getResolutionCriteria() {
-        return getResolutionCriterion().name();
-    }
-
-    public ResolutionCriterion getResolutionCriterion() {
-        if (!played) {
-            return ResolutionCriterion.NOT_PLAYED;
-        }
-        if (forfeited) {
-            return ResolutionCriterion.FORFEIT;
-        }
-        return homeGoals == awayGoals ? ResolutionCriterion.DRAW : ResolutionCriterion.REGULAR_TIME;
-    }
-
-    protected Team getPenaltyWinner() {
-        if (homePenalties == null || awayPenalties == null || homePenalties < 0 || awayPenalties < 0
-                || homePenalties.equals(awayPenalties)) {
-            return null;
-        }
-        return homePenalties > awayPenalties ? homeTeam : awayTeam;
-    }
-
     public boolean isForfeited() {
         return forfeited;
-    }
-
-    public void forfeit(Team losingTeam) {
-        if (played) {
-            throw new IllegalStateException("This match has already been played.");
-        }
-        if (losingTeam != homeTeam && losingTeam != awayTeam) {
-            throw new IllegalArgumentException("The losing team must belong to the match.");
-        }
-        homeGoals = losingTeam == homeTeam ? 0 : 3;
-        awayGoals = losingTeam == awayTeam ? 0 : 3;
-        homePenalties = null;
-        awayPenalties = null;
-        forfeited = true;
-        played = true;
-    }
-
-    public void addEvent(Event event) {
-        events.add(event);
     }
 
     public void setStartingLineups(List<Player> homeStarters, List<Player> awayStarters) {
         this.homeStarters = new ArrayList<>(homeStarters);
         this.awayStarters = new ArrayList<>(awayStarters);
-    }
-
-    public void addPlayerParticipation(PlayerParticipation participation) {
-        playerParticipations.add(participation);
     }
 
     public Team getHomeTeam() {
@@ -216,24 +156,44 @@ public abstract class Match implements Serializable {
         return events;
     }
 
+    public abstract boolean isKnockout();
+
+    public Team getWinner() {
+        Team winner = null;
+        if (played) {
+            if (homeGoals > awayGoals) {
+                winner = homeTeam;
+            } else if (awayGoals > homeGoals) {
+                winner = awayTeam;
+            }
+        }
+        return winner;
+    }
+
+    public final String getResolutionCriteria() {
+        return getResolutionCriterion().name();
+    }
+
+    public ResolutionCriterion getResolutionCriterion() {
+        if (!played) {
+            return ResolutionCriterion.NOT_PLAYED;
+        }
+        if (forfeited) {
+            return ResolutionCriterion.FORFEIT;
+        }
+        return homeGoals == awayGoals ? ResolutionCriterion.DRAW : ResolutionCriterion.REGULAR_TIME;
+    }
+
+    protected Team getPenaltyWinner() {
+        if (homePenalties == null || awayPenalties == null || homePenalties < 0 || awayPenalties < 0
+                || homePenalties.equals(awayPenalties)) {
+            return null;
+        }
+        return homePenalties > awayPenalties ? homeTeam : awayTeam;
+    }
+
     public boolean hasRecordedStartingPlayers() {
         return !homeStarters.isEmpty() || !awayStarters.isEmpty();
-    }
-
-    public Optional<GroupMatch> asGroupMatch() {
-        return Optional.empty();
-    }
-
-    public Optional<FirstLegMatch> asFirstLeg() {
-        return Optional.empty();
-    }
-
-    public Optional<SecondLegMatch> asSecondLeg() {
-        return Optional.empty();
-    }
-
-    public Optional<FinalMatch> asFinal() {
-        return Optional.empty();
     }
 
     public List<Goal> getGoals() {
@@ -248,35 +208,6 @@ public abstract class Match implements Serializable {
         return collectEvents().penaltyKicks;
     }
 
-    private EventCollector collectEvents() {
-        EventCollector collector = new EventCollector();
-        for (Event event : events) {
-            event.accept(collector);
-        }
-        return collector;
-    }
-
-    private static final class EventCollector implements EventVisitor {
-        private final List<Goal> goals = new ArrayList<>();
-        private final List<YellowCard> yellowCards = new ArrayList<>();
-        private final List<PenaltyTaken> penaltyKicks = new ArrayList<>();
-
-        @Override
-        public void visit(Goal goal) {
-            goals.add(goal);
-        }
-
-        @Override
-        public void visit(YellowCard yellowCard) {
-            yellowCards.add(yellowCard);
-        }
-
-        @Override
-        public void visit(PenaltyTaken penaltyTaken) {
-            penaltyKicks.add(penaltyTaken);
-        }
-    }
-
     public List<PenaltyTaken> getPenaltyKicks(Team team) {
         List<PenaltyTaken> penalties = new ArrayList<>();
         for (PenaltyTaken penalty : getPenaltyKicks()) {
@@ -287,7 +218,7 @@ public abstract class Match implements Serializable {
         return penalties;
     }
 
-    public List<Player> getPlayersOnPitchAtEnd(Team team) {
+    private List<Player> getPlayersOnPitchAtEnd(Team team) {
         List<Player> players = new ArrayList<>();
         for (PlayerParticipation participation : getPlayerParticipations()) {
             if (participation.getTeam() == team && participation.getExitMinute() >= 90) {
@@ -321,5 +252,87 @@ public abstract class Match implements Serializable {
             }
         }
         return emergencyGoalkeeper;
+    }
+
+    public abstract boolean requiresTieBreak();
+
+    public void forfeit(Team losingTeam) {
+        if (played) {
+            throw new IllegalStateException("This match has already been played.");
+        }
+        if (losingTeam != homeTeam && losingTeam != awayTeam) {
+            throw new IllegalArgumentException("The losing team must belong to the match.");
+        }
+        homeGoals = losingTeam == homeTeam ? 0 : 3;
+        awayGoals = losingTeam == awayTeam ? 0 : 3;
+        homePenalties = null;
+        awayPenalties = null;
+        forfeited = true;
+        played = true;
+    }
+
+    public void addEvent(Event event) {
+        events.add(event);
+    }
+
+    public void addPlayerParticipation(PlayerParticipation participation) {
+        playerParticipations.add(participation);
+    }
+
+    public Optional<GroupMatch> asGroupMatch() {
+        return Optional.empty();
+    }
+
+    public Optional<FirstLegMatch> asFirstLeg() {
+        return Optional.empty();
+    }
+
+    private static final class EventCollector implements EventVisitor {
+        private final List<Goal> goals = new ArrayList<>();
+        private final List<YellowCard> yellowCards = new ArrayList<>();
+        private final List<PenaltyTaken> penaltyKicks = new ArrayList<>();
+
+        public List<Goal> getGoals() {
+            return Collections.unmodifiableList(goals);
+        }
+
+        public List<YellowCard> getYellowCards() {
+            return Collections.unmodifiableList(yellowCards);
+        }
+
+        public List<PenaltyTaken> getPenaltyKicks() {
+            return Collections.unmodifiableList(penaltyKicks);
+        }
+
+        @Override
+        public void visit(Goal goal) {
+            goals.add(goal);
+        }
+
+        @Override
+        public void visit(YellowCard yellowCard) {
+            yellowCards.add(yellowCard);
+        }
+
+        @Override
+        public void visit(PenaltyTaken penaltyTaken) {
+            penaltyKicks.add(penaltyTaken);
+        }
+    }
+
+    public Optional<SecondLegMatch> asSecondLeg() {
+        return Optional.empty();
+    }
+
+    public Optional<FinalMatch> asFinal() {
+        return Optional.empty();
+    }
+
+    private EventCollector collectEvents() {
+        EventCollector collector = new EventCollector();
+        for (Event event : events) {
+            event.accept(collector);
+        }
+        return collector;
     }
 }

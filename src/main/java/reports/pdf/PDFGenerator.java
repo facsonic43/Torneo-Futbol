@@ -64,6 +64,10 @@ public class PDFGenerator {
     private static class PageFooter extends AbstractPdfDocumentEventHandler {
         private final PdfFont font;
         PageFooter(PdfFont font) { this.font = font; }
+        public PdfFont getFont() {
+            return font;
+        }
+
         @Override
         protected void onAcceptedEvent(AbstractPdfDocumentEvent event) {
             PdfDocumentEvent pageEvent = (PdfDocumentEvent) event;

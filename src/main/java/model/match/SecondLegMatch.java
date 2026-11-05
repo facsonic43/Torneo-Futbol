@@ -33,11 +33,6 @@ public class SecondLegMatch extends Match {
     }
 
     @Override
-    public boolean requiresTieBreak() {
-        return !isForfeited() && getResolutionCriterion() == ResolutionCriterion.UNRESOLVED;
-    }
-
-    @Override
     public Team getWinner() {
         return switch (getResolutionCriterion()) {
             case SERIES_POINTS -> getSeriesPoints(getHomeTeam()) > getSeriesPoints(getAwayTeam()) ? getHomeTeam() : getAwayTeam();
@@ -124,6 +119,11 @@ public class SecondLegMatch extends Match {
         int teamGoals = team == match.getHomeTeam() ? match.getHomeGoals() : match.getAwayGoals();
         int opponentGoals = team == match.getHomeTeam() ? match.getAwayGoals() : match.getHomeGoals();
         return teamGoals > opponentGoals ? 3 : teamGoals == opponentGoals ? 1 : 0;
+    }
+
+    @Override
+    public boolean requiresTieBreak() {
+        return !isForfeited() && getResolutionCriterion() == ResolutionCriterion.UNRESOLVED;
     }
 
     @Override

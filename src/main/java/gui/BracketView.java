@@ -17,13 +17,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
+import java.util.Collections;
 import java.util.List;
 
 // Dibuja el cuadro eliminatorio con las tarjetas de cada ronda y sus conexiones.
 // Ajusta la distribución al tamaño disponible y resalta la ronda activa y el camino del campeón.
 
 public class BracketView extends StackPane {
-    public static final String CHAMPION_PATH = "championPath";
+    private static final String CHAMPION_PATH = "championPath";
 
     private static final int BODY_ROWS = 8;
     private static final double ROW_HEIGHT = 68;
@@ -68,16 +69,68 @@ public class BracketView extends StackPane {
         heightProperty().addListener((obs, oldValue, newValue) -> requestRedraw());
     }
 
-    public void setMatches(List<? extends Region> quarters, List<? extends Region> semis, Region finalMatch) {
+    void setMatches(List<? extends Region> quarters, List<? extends Region> semis, Region finalMatch) {
         this.quarters = List.copyOf(quarters);
         this.semis = List.copyOf(semis);
         this.finalMatch = finalMatch;
         rebuild();
     }
 
-    public void setActiveRound(int round) {
+    void setActiveRound(int round) {
         this.activeRound = round;
         applyActiveRound();
+    }
+
+    static String getChampionPath() {
+        return CHAMPION_PATH;
+    }
+
+    public static int getBodyRows() {
+        return BODY_ROWS;
+    }
+
+    public static double getRowHeight() {
+        return ROW_HEIGHT;
+    }
+
+    public static String[] getHeaderTitles() {
+        return HEADER_TITLES.clone();
+    }
+
+    public GridPane getGrid() {
+        return grid;
+    }
+
+    public Pane getLinesLayer() {
+        return linesLayer;
+    }
+
+    public Label[] getHeaders() {
+        return headers.clone();
+    }
+
+    public List<Region> getQuarters() {
+        return Collections.unmodifiableList(quarters);
+    }
+
+    public List<Region> getSemis() {
+        return Collections.unmodifiableList(semis);
+    }
+
+    public Region getFinalMatch() {
+        return finalMatch;
+    }
+
+    public int getActiveRound() {
+        return activeRound;
+    }
+
+    public boolean isRedrawPending() {
+        return redrawPending;
+    }
+
+    private boolean isChampionPath(Node node) {
+        return Boolean.TRUE.equals(node.getProperties().get(CHAMPION_PATH));
     }
 
     private void applyActiveRound() {
@@ -171,10 +224,6 @@ public class BracketView extends StackPane {
             gold.getStyleClass().add("bracket-line-champion");
             linesLayer.getChildren().add(gold);
         }
-    }
-
-    private boolean isChampionPath(Node node) {
-        return Boolean.TRUE.equals(node.getProperties().get(CHAMPION_PATH));
     }
 
     private Bounds toLayer(Node node) {

@@ -18,7 +18,7 @@ import java.util.*;
 public class ChampionshipStatistics {
     public record PlayerStats(Player player, Team team, int matches, int minutes, int goals, int penaltyGoals,
             int assists, int yellowCards, int redCards, int goalsConceded) {
-        public double averageGoalsConceded() {
+        double averageGoalsConceded() {
             return matches == 0 ? 0.0 : (double) goalsConceded / matches;
         }
     }
@@ -27,11 +27,11 @@ public class ChampionshipStatistics {
             int yellowCards, int redCards) {
         public int points() { return 3 * won + drawn; }
 
-        public double efficiency() { return played == 0 ? 0.0 : points() * 100.0 / (3 * played); }
+        double efficiency() { return played == 0 ? 0.0 : points() * 100.0 / (3 * played); }
 
         public int fairPlayScore() { return yellowCards + 3 * redCards; }
 
-        public double averageAge() {
+        double averageAge() {
             return team.getSquad().stream().mapToInt(Player::getAge).average().orElse(0.0);
         }
     }
@@ -103,6 +103,18 @@ public class ChampionshipStatistics {
 
     public boolean hasCompleteGoalInformation() { return completeGoalInformation; }
 
+    public List<PlayerStats> getPlayers() {
+        return Collections.unmodifiableList(players);
+    }
+
+    public List<TeamStats> getTeams() {
+        return Collections.unmodifiableList(teams);
+    }
+
+    public List<RefereeStats> getReferees() {
+        return Collections.unmodifiableList(referees);
+    }
+
     public List<PlayerStats> getTopScorers() {
         return players.stream().filter(stats -> stats.goals() > 0)
                 .sorted(Comparator.comparingInt(PlayerStats::goals).reversed() .thenComparing(playerName()).thenComparing(stats -> stats.team().getName()))
@@ -128,69 +140,28 @@ public class ChampionshipStatistics {
                 String.CASE_INSENSITIVE_ORDER)).toList();
     }
 
-    public double getAverageRefereeExperience() {
+    double getAverageRefereeExperience() {
         return referees.stream().filter(stats -> stats.yearsOfExperience() != null)
                 .mapToInt(RefereeStats::yearsOfExperience).average().orElse(0.0);
     }
 
-    public int getRefereesWithKnownExperienceCount() {
+    int getRefereesWithKnownExperienceCount() {
         return (int) referees.stream().filter(stats -> stats.yearsOfExperience() != null).count();
     }
 
-    public List<PlayerStats> getPlayers(Position position, Player selectedPlayer) {
+    List<PlayerStats> getPlayers(Position position, Player selectedPlayer) {
         return players.stream().filter(stats -> position == null || stats.player().getPosition() == position)
                 .filter(stats -> selectedPlayer == null || stats.player() == selectedPlayer)
                 .sorted(playerName().thenComparing(stats -> stats.team().getName())).toList();
     }
 
-    public PlayerStats getPlayerStats(Player player) {
+    PlayerStats getPlayerStats(Player player) {
         return players.stream().filter(stats -> stats.player() == player).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("El jugador no pertenece al campeonato"));
     }
 
     private static Comparator<PlayerStats> playerName() {
         return Comparator.comparing(stats -> stats.player().getName(), String.CASE_INSENSITIVE_ORDER);
-    }
-
-    private static void registerTeam(Team team, Map<Team, TeamAccumulator> teams, Map<Player,
-            PlayerAccumulator> players) {
-        teams.computeIfAbsent(team, TeamAccumulator::new);
-        team.getSquad().forEach(player -> players.putIfAbsent(player, new PlayerAccumulator(player, team)));
-    }
-
-    private static void addPlayerParticipations(Match match, ReportMatchDetails details, Map<Player,
-            PlayerAccumulator> totals) {
-        Map<Player, Integer> minutes = details.getPlayerMinutes(match);
-        Set<Player> participants = new LinkedHashSet<>(minutes.keySet());
-        for (Event event : match.getEvents()) {
-            participants.add(event.getPlayer());
-            event.accept(new EventVisitor() {
-                @Override
-                public void visit(Substitution substitution) {
-                    participants.add(substitution.getPlayerIn());
-                }
-                @Override
-                public void visit(Goal goal) {
-                    if (goal.getAssistPlayer() != null) participants.add(goal.getAssistPlayer());
-                    ReportMatchDetails.GoalDetails goalDetails = details.getGoalDetails(goal);
-                    if (goalDetails != null && goalDetails.receivingGoalkeeper() != null) {
-                        participants.add(goalDetails.receivingGoalkeeper());
-                    }
-                }
-            });
-        }
-        for (Player player : participants) {
-            PlayerAccumulator total = totals.get(player);
-            if (total != null) {
-                total.matches++;
-                total.minutes += minutes.getOrDefault(player, 0);
-            }
-        }
-    }
-
-    private static boolean addEvents(Match match, ReportMatchDetails details, Map<Team, TeamAccumulator> teams,
-            Map<Player, PlayerAccumulator> players) {
-        return new EventProcessor(match, details, teams, players).process();
     }
 
     private static final class EventProcessor implements EventVisitor {
@@ -215,6 +186,46 @@ public class ChampionshipStatistics {
             onPitch.put(match.getAwayTeam(), new LinkedHashSet<>(details.getAwayStarters()));
             events = match.getEvents().stream().sorted(Comparator.comparingInt(Event::getMinute)).toList();
             yellowCards = match.getYellowCards();
+        }
+
+        public Match getMatch() {
+            return match;
+        }
+
+        public ReportMatchDetails getDetails() {
+            return details;
+        }
+
+        public Map<Team, TeamAccumulator> getTeams() {
+            return Collections.unmodifiableMap(teams);
+        }
+
+        public Map<Player, PlayerAccumulator> getPlayers() {
+            return Collections.unmodifiableMap(players);
+        }
+
+        public List<Event> getEvents() {
+            return Collections.unmodifiableList(events);
+        }
+
+        public List<YellowCard> getYellowCards() {
+            return Collections.unmodifiableList(yellowCards);
+        }
+
+        public Map<Team, Set<Player>> getOnPitch() {
+            return Collections.unmodifiableMap(onPitch);
+        }
+
+        public boolean isIncomplete() {
+            return incomplete;
+        }
+
+        public PlayerAccumulator getPlayer() {
+            return player;
+        }
+
+        public TeamAccumulator getTeam() {
+            return team;
         }
 
         boolean process() {
@@ -283,11 +294,51 @@ public class ChampionshipStatistics {
     }
 
     private static class PlayerAccumulator {
-        final Player player;
-        final Team team;
-        int matches, minutes, goals, penaltyGoals, assists, yellowCards, redCards, goalsConceded;
+        private final Player player;
+        private final Team team;
+        private int matches, minutes, goals, penaltyGoals, assists, yellowCards, redCards, goalsConceded;
 
         PlayerAccumulator(Player player, Team team) { this.player = player; this.team = team; }
+
+        public Player getPlayer() {
+            return player;
+        }
+
+        public Team getTeam() {
+            return team;
+        }
+
+        public int getMatches() {
+            return matches;
+        }
+
+        public int getMinutes() {
+            return minutes;
+        }
+
+        public int getGoals() {
+            return goals;
+        }
+
+        public int getPenaltyGoals() {
+            return penaltyGoals;
+        }
+
+        public int getAssists() {
+            return assists;
+        }
+
+        public int getYellowCards() {
+            return yellowCards;
+        }
+
+        public int getRedCards() {
+            return redCards;
+        }
+
+        public int getGoalsConceded() {
+            return goalsConceded;
+        }
 
         PlayerStats snapshot() {
             return new PlayerStats(player, team, matches, minutes, goals, penaltyGoals, assists, yellowCards, redCards,
@@ -296,10 +347,46 @@ public class ChampionshipStatistics {
     }
 
     private static class TeamAccumulator {
-        final Team team;
-        int played, won, drawn, lost, goalsFor, goalsAgainst, yellowCards, redCards;
+        private final Team team;
+        private int played, won, drawn, lost, goalsFor, goalsAgainst, yellowCards, redCards;
 
         TeamAccumulator(Team team) { this.team = team; }
+
+        public Team getTeam() {
+            return team;
+        }
+
+        public int getPlayed() {
+            return played;
+        }
+
+        public int getWon() {
+            return won;
+        }
+
+        public int getDrawn() {
+            return drawn;
+        }
+
+        public int getLost() {
+            return lost;
+        }
+
+        public int getGoalsFor() {
+            return goalsFor;
+        }
+
+        public int getGoalsAgainst() {
+            return goalsAgainst;
+        }
+
+        public int getYellowCards() {
+            return yellowCards;
+        }
+
+        public int getRedCards() {
+            return redCards;
+        }
 
         void addResult(int scored, int conceded) {
             played++;
@@ -313,5 +400,46 @@ public class ChampionshipStatistics {
         TeamStats snapshot() {
             return new TeamStats(team, played, won, drawn, lost, goalsFor, goalsAgainst, yellowCards, redCards);
         }
+    }
+
+    private static void registerTeam(Team team, Map<Team, TeamAccumulator> teams, Map<Player,
+            PlayerAccumulator> players) {
+        teams.computeIfAbsent(team, TeamAccumulator::new);
+        team.getSquad().forEach(player -> players.putIfAbsent(player, new PlayerAccumulator(player, team)));
+    }
+
+    private static void addPlayerParticipations(Match match, ReportMatchDetails details, Map<Player,
+            PlayerAccumulator> totals) {
+        Map<Player, Integer> minutes = details.getPlayerMinutes(match);
+        Set<Player> participants = new LinkedHashSet<>(minutes.keySet());
+        for (Event event : match.getEvents()) {
+            participants.add(event.getPlayer());
+            event.accept(new EventVisitor() {
+                @Override
+                public void visit(Substitution substitution) {
+                    participants.add(substitution.getPlayerIn());
+                }
+                @Override
+                public void visit(Goal goal) {
+                    if (goal.getAssistPlayer() != null) participants.add(goal.getAssistPlayer());
+                    ReportMatchDetails.GoalDetails goalDetails = details.getGoalDetails(goal);
+                    if (goalDetails != null && goalDetails.receivingGoalkeeper() != null) {
+                        participants.add(goalDetails.receivingGoalkeeper());
+                    }
+                }
+            });
+        }
+        for (Player player : participants) {
+            PlayerAccumulator total = totals.get(player);
+            if (total != null) {
+                total.matches++;
+                total.minutes += minutes.getOrDefault(player, 0);
+            }
+        }
+    }
+
+    private static boolean addEvents(Match match, ReportMatchDetails details, Map<Team, TeamAccumulator> teams,
+            Map<Player, PlayerAccumulator> players) {
+        return new EventProcessor(match, details, teams, players).process();
     }
 }

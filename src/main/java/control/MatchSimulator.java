@@ -39,6 +39,36 @@ public class MatchSimulator {
         penaltySimulator = new PenaltyShootoutSimulator(random);
     }
 
+    public static int getMatchLastMinute() {
+        return MATCH_LAST_MINUTE;
+    }
+
+    public static int getMaxSubstitutions() {
+        return MAX_SUBSTITUTIONS;
+    }
+
+    public MatchEventSimulator getEventSimulator() {
+        return eventSimulator;
+    }
+
+    public PenaltyShootoutSimulator getPenaltySimulator() {
+        return penaltySimulator;
+    }
+
+    private List<Player> getPlayersAvailableForShootout(Match match, Team team, List<Player> fallbackPlayers) {
+        List<Player> players = new ArrayList<>();
+        for (PlayerParticipation participation : match.getPlayerParticipations()) {
+            if (participation.getTeam() == team && participation.getExitMinute() >= MATCH_LAST_MINUTE
+                    && !players.contains(participation.getPlayer())) {
+                players.add(participation.getPlayer());
+            }
+        }
+        if (players.isEmpty()) {
+            players.addAll(fallbackPlayers);
+        }
+        return players;
+    }
+
     public void simulateMatch(Match match) {
         if (match == null) {
             throw new IllegalArgumentException("Match cannot be null.");
@@ -119,20 +149,6 @@ public class MatchSimulator {
 
     public void simulatePenaltyShootout(Match match, List<Player> homePitch, List<Player> awayPitch) {
         penaltySimulator.simulate(match, homePitch, awayPitch);
-    }
-
-    private List<Player> getPlayersAvailableForShootout(Match match, Team team, List<Player> fallbackPlayers) {
-        List<Player> players = new ArrayList<>();
-        for (PlayerParticipation participation : match.getPlayerParticipations()) {
-            if (participation.getTeam() == team && participation.getExitMinute() >= MATCH_LAST_MINUTE
-                    && !players.contains(participation.getPlayer())) {
-                players.add(participation.getPlayer());
-            }
-        }
-        if (players.isEmpty()) {
-            players.addAll(fallbackPlayers);
-        }
-        return players;
     }
 
     private void registerStartingPlayers(Team team, List<Player> starters, Map<Player,

@@ -16,6 +16,7 @@ import model.tournament.Group;
 import model.tournament.Tournament;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
@@ -32,6 +33,15 @@ import static gui.MatchFormat.matchReferee;
 // Conserva el orden de los equipos al mostrar penales y resalta el recorrido del campeón.
 
 public class BracketSection {
+    private static final int[][] QUARTER_SEEDS = {
+            {0, 0, 3, 1},
+            {1, 0, 2, 1},
+            {2, 0, 0, 1},
+            {3, 0, 1, 1}
+    };
+
+    private static final String[] ROMAN = {"I", "II", "III", "IV", "V", "VI"};
+
     private final BracketView bracketView;
     private final Node ownerPane;
     private final Supplier<TournamentStage> stage;
@@ -47,37 +57,24 @@ public class BracketSection {
         return bracketView;
     }
 
-    public Team load(Tournament tournament) {
-        this.tournament = tournament;
-        Team champion = tournament.getChampion();
-        bracketView.setMatches(buildRound(tournament.getQuarterFinalFirstLegs(), tournament.getQuarterFinalSecondLegs(),
-                4, 0, "QUARTER-FINAL", champion, this::quarterPlaceholder),
-                buildRound(tournament.getSemiFinalFirstLegs(), tournament.getSemiFinalSecondLegs(), 2, 4, "SEMI-FINAL",
-                champion, this::semiPlaceholder), buildFinalCard(champion));
-        bracketView.setActiveRound(activeRound());
-        return champion;
+    public Node getOwnerPane() {
+        return ownerPane;
     }
 
-    private static final int[][] QUARTER_SEEDS = {
-            {0, 0, 3, 1},
-            {1, 0, 2, 1},
-            {2, 0, 0, 1},
-            {3, 0, 1, 1}
-    };
+    public Supplier<TournamentStage> getStage() {
+        return stage;
+    }
 
-    private static final String[] ROMAN = {"I", "II", "III", "IV", "V", "VI"};
+    public Tournament getTournament() {
+        return tournament;
+    }
 
-    private int activeRound() {
-        switch (stage.get()) {
-            case QUARTER_FINALS:
-                return 0;
-            case SEMI_FINALS:
-                return 1;
-            case FINAL:
-                return 2;
-            default:
-                return -1;
-        }
+    public static int[][] getQuarterSeeds() {
+        return Arrays.stream(QUARTER_SEEDS).map(int[]::clone).toArray(int[][]::new);
+    }
+
+    public static String[] getRoman() {
+        return ROMAN.clone();
     }
 
     private boolean isGroupFinished(Group group) {
@@ -90,6 +87,30 @@ public class BracketSection {
             }
         }
         return true;
+    }
+
+    public Team load(Tournament tournament) {
+        this.tournament = tournament;
+        Team champion = tournament.getChampion();
+        bracketView.setMatches(buildRound(tournament.getQuarterFinalFirstLegs(), tournament.getQuarterFinalSecondLegs(),
+                4, 0, "QUARTER-FINAL", champion, this::quarterPlaceholder),
+                buildRound(tournament.getSemiFinalFirstLegs(), tournament.getSemiFinalSecondLegs(), 2, 4, "SEMI-FINAL",
+                champion, this::semiPlaceholder), buildFinalCard(champion));
+        bracketView.setActiveRound(activeRound());
+        return champion;
+    }
+
+    private int activeRound() {
+        switch (stage.get()) {
+            case QUARTER_FINALS:
+                return 0;
+            case SEMI_FINALS:
+                return 1;
+            case FINAL:
+                return 2;
+            default:
+                return -1;
+        }
     }
 
     private List<Region> buildRound(List<? extends Match> firstLegs, List<? extends Match> secondLegs, int slots,
@@ -125,7 +146,7 @@ public class BracketSection {
             card.getChildren().add(criterionLabel);
         }
         card.getStyleClass().addAll("bracket-card", decided ? "bracket-card-played" : "bracket-card-ready");
-        card.getProperties().put(BracketView.CHAMPION_PATH, decided && winner.equals(champion));
+        card.getProperties().put(BracketView.getChampionPath(), decided && winner.equals(champion));
         makeClickable(card, title, first, second, decided ? "WINNER: " + winner.getName() + " · " + criterion : null);
         return card;
     }

@@ -34,10 +34,6 @@ public class Group implements Serializable{
         return matches;
     }
 
-    public void addMatch(GroupMatch match) {
-        matches.add(match);
-    }
-
     public List<Standing> getStandings() {
         Map<Team, Standing> table = new HashMap<>();
         for (Team team : teams) {
@@ -52,6 +48,20 @@ public class Group implements Serializable{
         List<Standing> standings = new ArrayList<>(table.values());
         standings.sort(this::compareStandings);
         return standings;
+    }
+
+    public List<Team> getQualifiedTeams() {
+        List<Standing> standings = getStandings();
+        List<Team> qualified = new ArrayList<>();
+        if (standings.size() >= 2) {
+            qualified.add(standings.get(0).getTeam());
+            qualified.add(standings.get(1).getTeam());
+        }
+        return qualified;
+    }
+
+    public void addMatch(GroupMatch match) {
+        matches.add(match);
     }
 
     private int compareStandings(Standing standing1, Standing standing2) {
@@ -98,15 +108,5 @@ public class Group implements Serializable{
             }
         }
         return 0;
-    }
-
-    public List<Team> getQualifiedTeams() {
-        List<Standing> standings = getStandings();
-        List<Team> qualified = new ArrayList<>();
-        if (standings.size() >= 2) {
-            qualified.add(standings.get(0).getTeam());
-            qualified.add(standings.get(1).getTeam());
-        }
-        return qualified;
     }
 }

@@ -26,6 +26,22 @@ public class PenaltyKicksView {
         this.penaltyKickDetailsBox = penaltyKickDetailsBox;
     }
 
+    public HBox getPenaltyColumnHeaderBox() {
+        return penaltyColumnHeaderBox;
+    }
+
+    public HBox getPenaltyHomeKicksBox() {
+        return penaltyHomeKicksBox;
+    }
+
+    public HBox getPenaltyAwayKicksBox() {
+        return penaltyAwayKicksBox;
+    }
+
+    public VBox getPenaltyKickDetailsBox() {
+        return penaltyKickDetailsBox;
+    }
+
     public void renderColumns(List<PenaltyTaken> homePenalties, List<PenaltyTaken> awayPenalties, boolean finished) {
         penaltyColumnHeaderBox.getChildren().clear();
         penaltyHomeKicksBox.getChildren().clear();

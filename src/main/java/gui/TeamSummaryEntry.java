@@ -4,6 +4,7 @@ import javafx.scene.control.*;
 import model.participant.Team;
 import model.tournament.Group;
 import model.tournament.Standing;
+import java.util.Collections;
 import java.util.List;
 
 // Prepara el resumen de un equipo: plantel, entrenador, goles y rendimiento en los grupos.
@@ -23,12 +24,24 @@ public class TeamSummaryEntry {
         this.tournamentGroups = groups;
     }
 
+    public double getSquadAverageAge() { return squadAverageAge; }
+    public int getTotalGoalsScored() { return totalGoalsScored; }
+    public int getTotalGoalsConceded() { return totalGoalsConceded; }
+    public Team getTeam() {
+        return team;
+    }
+    public List<Group> getTournamentGroups() {
+        return tournamentGroups == null ? null : Collections.unmodifiableList(tournamentGroups);
+    }
+
     public String getTeamName() { return team.getName(); }
+
     public String getCountryName() { return team.getCountry() != null ? team.getCountry().getName() : "-"; }
+
     public int getRanking() { return team.getRanking(); }
+
     public double getOverall() { return team.getOverall(); }
     public String getCoachName() { return team.getCoach() != null ? team.getCoach().getName() : "-"; }
-
     public String getCoachAge() {
         return team.getCoach() != null ? String.valueOf(team.getCoach().getAge()) : "-";
     }
@@ -55,8 +68,4 @@ public class TeamSummaryEntry {
         if (matchesPlayed == 0) return 0.0;
         return ((double) points / (matchesPlayed * 3)) * 100.0;
     }
-
-    public double getSquadAverageAge() { return squadAverageAge; }
-    public int getTotalGoalsScored() { return totalGoalsScored; }
-    public int getTotalGoalsConceded() { return totalGoalsConceded; }
 }

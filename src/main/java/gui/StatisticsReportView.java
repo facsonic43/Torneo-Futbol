@@ -46,6 +46,10 @@ public final class StatisticsReportView extends VBox {
         });
     }
 
+    public Task<Content> getCurrentTask() {
+        return currentTask;
+    }
+
     public void showReport(Tournament tournament, ReportSection section) throws IOException {
         Objects.requireNonNull(tournament, "Tournament is required");
         Objects.requireNonNull(section, "Report section is required");

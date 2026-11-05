@@ -17,6 +17,32 @@ import java.nio.file.Path;
 public class TournamentPersistenceService {
     private static final String INVALID_SAVE = "The save file does not contain a valid tournament.";
 
+    public static String getInvalidSave() {
+        return INVALID_SAVE;
+    }
+
+    public TournamentStage getStage(Tournament tournament) {
+        if (tournament == null) {
+            return TournamentStage.NOT_STARTED;
+        }
+        if (tournament.getChampion() != null) {
+            return TournamentStage.FINISHED;
+        }
+        if (tournament.getFinalMatch() != null) {
+            return TournamentStage.FINAL;
+        }
+        if (!tournament.getSemiFinalSecondLegs().isEmpty()) {
+            return TournamentStage.SEMI_FINALS;
+        }
+        if (!tournament.getQuarterFinalSecondLegs().isEmpty()) {
+            return TournamentStage.QUARTER_FINALS;
+        }
+        if (!tournament.getGroups().isEmpty()) {
+            return TournamentStage.GROUP_STAGE;
+        }
+        return TournamentStage.NOT_STARTED;
+    }
+
     public void saveTournament(Tournament tournament, String fileName) throws IOException {
         if (tournament == null) {
             throw new IllegalArgumentException("The tournament cannot be null.");
@@ -56,27 +82,5 @@ public class TournamentPersistenceService {
 
     public void deleteSave(String fileName) throws IOException {
         Files.deleteIfExists(Path.of(fileName));
-    }
-
-    public TournamentStage getStage(Tournament tournament) {
-        if (tournament == null) {
-            return TournamentStage.NOT_STARTED;
-        }
-        if (tournament.getChampion() != null) {
-            return TournamentStage.FINISHED;
-        }
-        if (tournament.getFinalMatch() != null) {
-            return TournamentStage.FINAL;
-        }
-        if (!tournament.getSemiFinalSecondLegs().isEmpty()) {
-            return TournamentStage.SEMI_FINALS;
-        }
-        if (!tournament.getQuarterFinalSecondLegs().isEmpty()) {
-            return TournamentStage.QUARTER_FINALS;
-        }
-        if (!tournament.getGroups().isEmpty()) {
-            return TournamentStage.GROUP_STAGE;
-        }
-        return TournamentStage.NOT_STARTED;
     }
 }

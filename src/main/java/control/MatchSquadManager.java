@@ -24,6 +24,10 @@ class MatchSquadManager {
         this.random = random;
     }
 
+    public Random getRandom() {
+        return random;
+    }
+
     void sendOffPlayer(int minute, Team team, Player player, List<Player> pitch, List<Player> subs,
             Player[] activeGoalkeeper, int[] substitutionsCount, int maxSubs, Match match, Map<Player,
             PlayerParticipation> participations) {
@@ -162,7 +166,7 @@ class MatchSquadManager {
         return null;
     }
 
-    public Player findActiveGoalkeeper(List<Player> pitch) {
+    Player findActiveGoalkeeper(List<Player> pitch) {
         for (Player player : pitch) {
             if (player.isGoalkeeper()) {
                 return player;

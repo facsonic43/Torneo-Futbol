@@ -7,11 +7,16 @@ import model.participant.Team;
 // y procesarla como incidencia.
 
 public class Injury extends Event {
+    private static final long serialVersionUID = 6087856104520587795L;
     private int matchesOut;
 
     public Injury(int minute, Team team, Player player, int matchesOut) {
         super(minute, team, player);
         this.matchesOut = matchesOut;
+    }
+
+    public int getMatchesOut() {
+        return matchesOut;
     }
 
     @Override

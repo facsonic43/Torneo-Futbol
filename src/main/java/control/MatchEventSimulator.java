@@ -27,7 +27,19 @@ public class MatchEventSimulator {
         this.squadManager = new MatchSquadManager(random);
     }
 
-    public void simulateMinutesRange(int startMinute, int endMinute, Match match, List<Player> homePitch,
+    public Random getRandom() {
+        return random;
+    }
+
+    public GoalEventSimulator getGoalSimulator() {
+        return goalSimulator;
+    }
+
+    public MatchSquadManager getSquadManager() {
+        return squadManager;
+    }
+
+    void simulateMinutesRange(int startMinute, int endMinute, Match match, List<Player> homePitch,
             List<Player> awayPitch, List<Player> homeSubs, List<Player> awaySubs, Player[] homeGoalkeeper,
             Player[] awayGoalkeeper, Set<Player> matchYellows, int[] homeSubsCount, int[] awaySubsCount, int maxSubs,
             Map<Player, PlayerParticipation> participations) {
@@ -163,7 +175,7 @@ public class MatchEventSimulator {
         }
     }
 
-    public Player findActiveGoalkeeper(List<Player> pitch) {
+    Player findActiveGoalkeeper(List<Player> pitch) {
         return squadManager.findActiveGoalkeeper(pitch);
     }
 }

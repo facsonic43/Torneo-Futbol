@@ -41,6 +41,42 @@ public class FieldPlayer extends Player {
     }
 
     @Override
+    public Position getPosition() {
+        return position;
+    }
+
+    @Override
+    public int getFinishing(){ return finishing; }
+
+    public int getDribbling() {
+        return dribbling;
+    }
+
+    public int getDefensiveSkills() {
+        return defensiveSkills;
+    }
+
+    public int getStamina() {
+        return stamina;
+    }
+
+    public int getVision() {
+        return vision;
+    }
+
+    public int getHeading() {
+        return heading;
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
+
+    public int getPassing() {
+        return passing;
+    }
+
+    @Override
     public double getOverall() {
         return switch (position) {
             case DEFENDER -> (dribbling * 0.05) + (defensiveSkills * 0.35) + (finishing * 0.05) + (stamina * 0.10)
@@ -52,14 +88,6 @@ public class FieldPlayer extends Player {
             case GOALKEEPER -> throw new IllegalStateException("A field player cannot be a goalkeeper");
         };
     }
-
-    @Override
-    public Position getPosition() {
-        return position;
-    }
-
-    @Override
-    public int getFinishing(){ return finishing; }
 
     @Override
     public Map<String, Integer> getTechnicalAttributes() {

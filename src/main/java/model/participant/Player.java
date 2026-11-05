@@ -8,6 +8,7 @@ import java.util.Map;
 // los goles recibidos se registran únicamente en los arqueros.
 
 public abstract class Player extends Person {
+    private static final long serialVersionUID = -2969312433436641080L;
     private int matchesPlayed;
     private int minutesPlayed;
     private int yellowCards;
@@ -30,6 +31,42 @@ public abstract class Player extends Person {
         this.assists = assists;
     }
 
+    public int getMatchesPlayed() {
+        return matchesPlayed;
+    }
+
+    public int getMinutesPlayed() {
+        return minutesPlayed;
+    }
+
+    public int getYellowCards() {
+        return yellowCards;
+    }
+
+    public int getRedCards() {
+        return redCards;
+    }
+
+    public int getGoals() {
+        return goals;
+    }
+
+    public int getAssists() {
+        return assists;
+    }
+
+    public int getSuspensionMatchesLeft() {
+        return suspensionMatchesLeft;
+    }
+
+    public int getInjuryMatchesLeft() {
+        return injuryMatchesLeft;
+    }
+
+    public int getTournamentYellowCards() {
+        return tournamentYellowCards;
+    }
+
     public abstract double getOverall();
 
     public abstract Position getPosition();
@@ -42,9 +79,6 @@ public abstract class Player extends Person {
         return 0;
     }
 
-    public void addGoalConceded() {
-    }
-
     public boolean isAvailable() {
         return suspensionMatchesLeft == 0 && injuryMatchesLeft == 0;
     }
@@ -55,6 +89,13 @@ public abstract class Player extends Person {
 
     public boolean isSuspended() {
         return suspensionMatchesLeft > 0;
+    }
+
+    public int getFinishing(){ return 0; }
+
+    public abstract Map<String, Integer> getTechnicalAttributes();
+
+    public void addGoalConceded() {
     }
 
     public void injure(int matches) {
@@ -99,40 +140,4 @@ public abstract class Player extends Person {
     public void addMinutesPlayed(int minutes) {
         minutesPlayed += minutes;
     }
-
-    public int getMatchesPlayed() {
-        return matchesPlayed;
-    }
-
-    public int getMinutesPlayed() {
-        return minutesPlayed;
-    }
-
-    public int getYellowCards() {
-        return yellowCards;
-    }
-
-    public int getRedCards() {
-        return redCards;
-    }
-
-    public int getGoals() {
-        return goals;
-    }
-
-    public int getAssists() {
-        return assists;
-    }
-
-    public int getSuspensionMatchesLeft() {
-        return suspensionMatchesLeft;
-    }
-
-    public int getInjuryMatchesLeft() {
-        return injuryMatchesLeft;
-    }
-
-    public int getFinishing(){ return 0; }
-
-    public abstract Map<String, Integer> getTechnicalAttributes();
 }

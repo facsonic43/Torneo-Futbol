@@ -81,7 +81,7 @@ public final class BracketReport {
     public List<MatchResult> getUnassignedMatches() { return unassignedMatches; }
     public Team getChampion() { return nodes.get(6).winner(); }
 
-    public String getText() {
+    String getText() {
         StringBuilder text = new StringBuilder("V. Championship bracket\n\n");
         for (int i = 0; i < qualifiers.size(); i++) {
             GroupQualification q = qualifiers.get(i);
@@ -256,11 +256,27 @@ public final class BracketReport {
     }
     private static int points(int scored, int conceded) { return scored > conceded ? 3 : scored == conceded ? 1 : 0; }
     private static final class Row {
-        final Team team;
-        int points;
-        int scored;
-        int conceded;
+        private final Team team;
+        private int points;
+        private int scored;
+        private int conceded;
         Row(Team team) { this.team = team; }
+        public Team getTeam() {
+            return team;
+        }
+
+        public int getPoints() {
+            return points;
+        }
+
+        public int getScored() {
+            return scored;
+        }
+
+        public int getConceded() {
+            return conceded;
+        }
+
         void add(int gf, int ga) { points += BracketReport.points(gf, ga); scored += gf; conceded += ga; }
     }
 }

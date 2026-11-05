@@ -16,6 +16,14 @@ public class Referee extends Person {
         this.yearsOfficiated = yearsOfficiated;
     }
 
+    public int getMatchesOfficiated() {
+        return matchesOfficiated;
+    }
+
+    public int getYearsOfficiated() {
+        return yearsOfficiated;
+    }
+
     public boolean canOfficiate(Team team1, Team team2) {
         if (team1.getCountry().equals(team2.getCountry())) {
             return true;
@@ -25,13 +33,5 @@ public class Referee extends Person {
 
     public void addMatchOfficiated() {
         matchesOfficiated++;
-    }
-
-    public int getMatchesOfficiated() {
-        return matchesOfficiated;
-    }
-
-    public int getYearsOfficiated() {
-        return yearsOfficiated;
     }
 }

@@ -29,6 +29,10 @@ import java.util.Locale;
 final class IdentificationPdfSection {
     private static final float PHOTO_HEIGHT = 120;
 
+    public static float getPhotoHeight() {
+        return PHOTO_HEIGHT;
+    }
+
     void addTo(Document document, ReportData data, Path photosDirectory) throws IOException {
         PdfReportStyle.heading(document, "I. Participant identification cards");
         PdfReportStyle.note(document, "Control-point identifier: document type and number, encoded as Code 128. "
@@ -60,14 +64,46 @@ final class IdentificationPdfSection {
         }
     }
 
+    static final class PhotoCellRenderer extends CellRenderer {
+        private final PdfImageXObject image;
+        PhotoCellRenderer(Cell cell, PdfImageXObject image) {
+            super(cell);
+            this.image = image;
+        }
+
+        public PdfImageXObject getImage() {
+            return image;
+        }
+
+        @Override
+        public IRenderer getNextRenderer() {
+            return new PhotoCellRenderer((Cell) getModelElement(), image);
+        }
+
+        @Override
+        public void drawBackground(DrawContext context) {
+            super.drawBackground(context);
+            Rectangle frame = getOccupiedAreaBBox();
+            float scale = Math.max(frame.getWidth() / image.getWidth(), frame.getHeight() / image.getHeight());
+            float width = image.getWidth() * scale;
+            float height = image.getHeight() * scale;
+            Rectangle placement = new Rectangle(frame.getX() + (frame.getWidth() - width) / 2, frame.getY()
+                    + (frame.getHeight() - height) / 2, width, height);
+            PdfCanvas canvas = context.getCanvas();
+            canvas.saveState().rectangle(frame).clip().endPath();
+            canvas.addXObjectFittedIntoRectangle(image, placement);
+            canvas.restoreState();
+        }
+    }
+
     private Cell card(PdfDocument pdf, Person person, String role, Team team, Path photograph) throws IOException {
         Cell card = new Cell().setPadding(9).setKeepTogether(true);
         card.add(new Paragraph("CONTINENTAL CUP | "
-                + role).setFontSize(8).simulateBold().setFontColor(PdfReportStyle.NAVY).setMargin(0));
+                + role).setFontSize(8).simulateBold().setFontColor(PdfReportStyle.getNavy()).setMargin(0));
         card.add(new Paragraph(person.getName()).simulateBold().setFontSize(11).setMarginTop(4).setMarginBottom(5));
         Table details = new Table(UnitValue.createPercentArray(new float[]{1, 2.2f})).useAllAvailableWidth();
         Cell photo = new Cell().setBorder(Border.NO_BORDER).setPadding(0)
-                .setMinHeight(PHOTO_HEIGHT).setBackgroundColor(PdfReportStyle.LIGHT)
+                .setMinHeight(PHOTO_HEIGHT).setBackgroundColor(PdfReportStyle.getLight())
                 .setVerticalAlignment(VerticalAlignment.MIDDLE);
         if (photograph != null) {
             try {
@@ -97,34 +133,6 @@ final class IdentificationPdfSection {
         details.addCell(information);
         card.add(details);
         return card;
-    }
-
-    static final class PhotoCellRenderer extends CellRenderer {
-        private final PdfImageXObject image;
-        PhotoCellRenderer(Cell cell, PdfImageXObject image) {
-            super(cell);
-            this.image = image;
-        }
-
-        @Override
-        public IRenderer getNextRenderer() {
-            return new PhotoCellRenderer((Cell) getModelElement(), image);
-        }
-
-        @Override
-        public void drawBackground(DrawContext context) {
-            super.drawBackground(context);
-            Rectangle frame = getOccupiedAreaBBox();
-            float scale = Math.max(frame.getWidth() / image.getWidth(), frame.getHeight() / image.getHeight());
-            float width = image.getWidth() * scale;
-            float height = image.getHeight() * scale;
-            Rectangle placement = new Rectangle(frame.getX() + (frame.getWidth() - width) / 2, frame.getY()
-                    + (frame.getHeight() - height) / 2, width, height);
-            PdfCanvas canvas = context.getCanvas();
-            canvas.saveState().rectangle(frame).clip().endPath();
-            canvas.addXObjectFittedIntoRectangle(image, placement);
-            canvas.restoreState();
-        }
     }
 
     static String identifier(Person person) {

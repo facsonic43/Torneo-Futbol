@@ -48,6 +48,82 @@ public class Tournament implements Serializable {
         this.referees = new ArrayList<>(referees);
     }
 
+    public List<Team> getTeams() {
+        return teams;
+    }
+
+    public List<Referee> getReferees() {
+        return referees;
+    }
+
+    public List<Group> getGroups() {
+        return groups;
+    }
+
+    public List<FirstLegMatch> getQuarterFinalFirstLegs() {
+        return quarterFinalFirstLegs;
+    }
+
+    public List<SecondLegMatch> getQuarterFinalSecondLegs() {
+        return quarterFinalSecondLegs;
+    }
+
+    public List<FirstLegMatch> getSemiFinalFirstLegs() {
+        return semiFinalFirstLegs;
+    }
+
+    public List<SecondLegMatch> getSemiFinalSecondLegs() {
+        return semiFinalSecondLegs;
+    }
+
+    public FinalMatch getFinalMatch() {
+        return finalMatch;
+    }
+
+    public Team getChampion() {
+        return champion;
+    }
+
+    public List<Stadium> getKnockoutStadiums() {
+        return Collections.unmodifiableList(knockoutStadiums);
+    }
+
+    public int getKnockoutStadiumIndex() {
+        return knockoutStadiumIndex;
+    }
+
+    public int getRefereeIndex() {
+        return refereeIndex;
+    }
+
+    public List<Match> getAllMatches() {
+        List<Match> allMatches = new ArrayList<>();
+        for (Group group : groups) {
+            allMatches.addAll( group.getMatches() );
+        }
+        allMatches.addAll( quarterFinalFirstLegs );
+        allMatches.addAll( quarterFinalSecondLegs );
+        allMatches.addAll( semiFinalFirstLegs );
+        allMatches.addAll( semiFinalSecondLegs );
+        if (finalMatch != null) {
+            allMatches.add(finalMatch);
+        }
+        return allMatches;
+    }
+
+    public TournamentStage getStageOf(Match match) {
+        if (match == getFinalMatch()) {
+            return TournamentStage.FINAL;
+        }
+        if (contains(getSemiFinalFirstLegs(), match) || contains(getSemiFinalSecondLegs(), match)) {
+            return TournamentStage.SEMI_FINALS;
+        }
+        if (contains(getQuarterFinalFirstLegs(), match) || contains(getQuarterFinalSecondLegs(), match)) {
+            return TournamentStage.QUARTER_FINALS;
+        }
+        return TournamentStage.GROUP_STAGE;
+    }
+
     public List<Group> drawGroups() {
         groups = new TournamentFixtureBuilder(this).drawGroups();
         return groups;
@@ -138,70 +214,6 @@ public class Tournament implements Serializable {
         Stadium stadium = knockoutStadiums.get( knockoutStadiumIndex );
         knockoutStadiumIndex++;
         return stadium;
-    }
-
-    public List<Match> getAllMatches() {
-        List<Match> allMatches = new ArrayList<>();
-        for (Group group : groups) {
-            allMatches.addAll( group.getMatches() );
-        }
-        allMatches.addAll( quarterFinalFirstLegs );
-        allMatches.addAll( quarterFinalSecondLegs );
-        allMatches.addAll( semiFinalFirstLegs );
-        allMatches.addAll( semiFinalSecondLegs );
-        if (finalMatch != null) {
-            allMatches.add(finalMatch);
-        }
-        return allMatches;
-    }
-
-    public List<Team> getTeams() {
-        return teams;
-    }
-
-    public List<Referee> getReferees() {
-        return referees;
-    }
-
-    public List<Group> getGroups() {
-        return groups;
-    }
-
-    public List<FirstLegMatch> getQuarterFinalFirstLegs() {
-        return quarterFinalFirstLegs;
-    }
-
-    public List<SecondLegMatch> getQuarterFinalSecondLegs() {
-        return quarterFinalSecondLegs;
-    }
-
-    public List<FirstLegMatch> getSemiFinalFirstLegs() {
-        return semiFinalFirstLegs;
-    }
-
-    public List<SecondLegMatch> getSemiFinalSecondLegs() {
-        return semiFinalSecondLegs;
-    }
-
-    public FinalMatch getFinalMatch() {
-        return finalMatch;
-    }
-
-    public Team getChampion() {
-        return champion;
-    }
-
-    public TournamentStage getStageOf(Match match) {
-        if (match == getFinalMatch()) {
-            return TournamentStage.FINAL;
-        }
-        if (contains(getSemiFinalFirstLegs(), match) || contains(getSemiFinalSecondLegs(), match)) {
-            return TournamentStage.SEMI_FINALS;
-        }
-        if (contains(getQuarterFinalFirstLegs(), match) || contains(getQuarterFinalSecondLegs(), match)) {
-            return TournamentStage.QUARTER_FINALS;
-        }
-        return TournamentStage.GROUP_STAGE;
     }
 
     private static boolean contains(List<? extends Match> matches, Match match) {

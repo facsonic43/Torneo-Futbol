@@ -54,6 +54,22 @@ public class Lineup {
         }
     }
 
+    public List<Player> getStarters() {
+        return starters;
+    }
+
+    public List<Player> getSubs() {
+        return subs;
+    }
+
+    public Formation getFormation() {
+        return formation;
+    }
+
+    public boolean hasCompleteFormation() {
+        return starters.size() == 11;
+    }
+
     private Formation findCompatibleFormation(Formation preferredFormation, List<Player> availablePlayers) {
         if (canComplete(preferredFormation, availablePlayers)) {
             return preferredFormation;
@@ -97,21 +113,5 @@ public class Lineup {
         boolean goalCovered = goalkeepers >= 1
                 || defenders + midfielders + forwards > outfieldNeeded;
         return outfieldCovered && goalCovered;
-    }
-
-    public List<Player> getStarters() {
-        return starters;
-    }
-
-    public boolean hasCompleteFormation() {
-        return starters.size() == 11;
-    }
-
-    public List<Player> getSubs() {
-        return subs;
-    }
-
-    public Formation getFormation() {
-        return formation;
     }
 }

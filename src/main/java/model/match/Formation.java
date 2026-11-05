@@ -38,15 +38,15 @@ public enum Formation {
         return label;
     }
 
-    public int getDefenders() {
+    int getDefenders() {
         return defenders;
     }
 
-    public int getMidfielders() {
+    int getMidfielders() {
         return midfielders;
     }
 
-    public int getForwards() {
+    int getForwards() {
         return forwards;
     }
 }

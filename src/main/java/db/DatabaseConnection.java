@@ -18,6 +18,26 @@ public class DatabaseConnection {
     private DatabaseConnection() {
     }
 
+    public static Connection getConnection() throws SQLException {
+        loadConfiguration();
+        if (connection == null || connection.isClosed()) {
+            connection = DriverManager.getConnection(url, user, password);
+        }
+        return connection;
+    }
+
+    public static String getUrl() {
+        return url;
+    }
+
+    public static String getUser() {
+        return user;
+    }
+
+    public static String getPassword() {
+        return password;
+    }
+
     private static void loadConfiguration() throws SQLException {
         if (url != null) {
             return;
@@ -39,14 +59,6 @@ public class DatabaseConnection {
         } catch (Exception exception) {
             throw new SQLException("Error reading database configuration: " + exception.getMessage());
         }
-    }
-
-    public static Connection getConnection() throws SQLException {
-        loadConfiguration();
-        if (connection == null || connection.isClosed()) {
-            connection = DriverManager.getConnection(url, user, password);
-        }
-        return connection;
     }
 
     public static void closeConnection() {

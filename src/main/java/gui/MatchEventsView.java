@@ -14,6 +14,10 @@ public class MatchEventsView {
         this.eventsBox = eventsBox;
     }
 
+    public VBox getEventsBox() {
+        return eventsBox;
+    }
+
     public void render(Match match) {
         eventsBox.getChildren().clear();
         if (match.getEvents().isEmpty()) {

@@ -29,37 +29,8 @@ public class TournamentExecutionService {
         simulator = new MatchSimulator(seed);
     }
 
-    public Match playMatch(Tournament tournament, Match match, List<Stadium> stadiums) {
-        validateTournamentAndMatch(tournament, match);
-        if (match.isPlayed()) {
-            throw new IllegalStateException("This match has already been played.");
-        }
-        if (!isMatchPlayable(tournament, match)) {
-            throw new IllegalStateException("This match is currently locked.");
-        }
-        simulator.simulateRegularTime(match);
-        if (match == tournament.getFinalMatch()) {
-            tournament.simulateFinal(simulator);
-        }
-        synchronizeTournament(tournament, stadiums);
-        return match;
-    }
-
-    public Match simulatePenalties(Tournament tournament, Match match, List<Stadium> stadiums) {
-        validateTournamentAndMatch(tournament, match);
-        if (!requiresPenalties(match)) {
-            throw new IllegalStateException("This match does not have a pending penalty shootout.");
-        }
-        simulator.simulatePenaltyShootout(match);
-        if (match == tournament.getFinalMatch()) {
-            tournament.simulateFinal(simulator);
-        }
-        synchronizeTournament(tournament, stadiums);
-        return match;
-    }
-
-    public boolean requiresPenalties(Match match) {
-        return match != null && match.isPlayed() && match.requiresTieBreak();
+    public MatchSimulator getSimulator() {
+        return simulator;
     }
 
     public List<Match> getPendingPenaltyMatches(Tournament tournament) {
@@ -70,30 +41,6 @@ public class TournamentExecutionService {
             }
         }
         return pending;
-    }
-
-    public int simulateCurrentMatchday(Tournament tournament, List<Stadium> stadiums) {
-        List<Match> playableMatches = new ArrayList<>(getCurrentPlayableMatches(tournament));
-        for (Match match : playableMatches) {
-            playMatch(tournament, match, stadiums);
-        }
-        return playableMatches.size();
-    }
-
-    public int simulateRemainingPhase(Tournament tournament, List<Stadium> stadiums) {
-        if (getCurrentStage(tournament) == TournamentStage.FINISHED) {
-            return 0;
-        }
-        List<Match> phaseMatches = new ArrayList<>(getCurrentPhaseMatches(tournament));
-        phaseMatches.sort(Comparator.comparing(Match::getMatchDate));
-        int simulated = 0;
-        for (Match match : phaseMatches) {
-            if (!match.isPlayed()) {
-                playMatch(tournament, match, stadiums);
-                simulated++;
-            }
-        }
-        return simulated;
     }
 
     public List<Match> getCurrentPlayableMatches(Tournament tournament) {
@@ -156,27 +103,6 @@ public class TournamentExecutionService {
             }
         }
         return false;
-    }
-
-    public void synchronizeTournament(Tournament tournament, List<Stadium> stadiums) {
-        if (tournament == null) {
-            return;
-        }
-        if (allGroupMatchesPlayed(tournament) && tournament.getQuarterFinalFirstLegs().isEmpty()) {
-            tournament.generateQuarterFinals(stadiums);
-            return;
-        }
-        if (!tournament.getQuarterFinalSecondLegs().isEmpty() && allMatchesPlayed(tournament.getQuarterFinalFirstLegs())
-                && allKnockoutSeriesResolved(tournament.getQuarterFinalSecondLegs())
-                && tournament.getSemiFinalFirstLegs().isEmpty()) {
-            tournament.generateSemiFinals();
-            return;
-        }
-        if (!tournament.getSemiFinalSecondLegs().isEmpty() && allMatchesPlayed(tournament.getSemiFinalFirstLegs())
-                && allKnockoutSeriesResolved(tournament.getSemiFinalSecondLegs())
-                && tournament.getFinalMatch() == null) {
-            tournament.generateFinal();
-        }
     }
 
     public TournamentStage getCurrentStage(Tournament tournament) {
@@ -259,6 +185,84 @@ public class TournamentExecutionService {
             }
         }
         return "GROUP STAGE";
+    }
+
+    public Match playMatch(Tournament tournament, Match match, List<Stadium> stadiums) {
+        validateTournamentAndMatch(tournament, match);
+        if (match.isPlayed()) {
+            throw new IllegalStateException("This match has already been played.");
+        }
+        if (!isMatchPlayable(tournament, match)) {
+            throw new IllegalStateException("This match is currently locked.");
+        }
+        simulator.simulateRegularTime(match);
+        if (match == tournament.getFinalMatch()) {
+            tournament.simulateFinal(simulator);
+        }
+        synchronizeTournament(tournament, stadiums);
+        return match;
+    }
+
+    public Match simulatePenalties(Tournament tournament, Match match, List<Stadium> stadiums) {
+        validateTournamentAndMatch(tournament, match);
+        if (!requiresPenalties(match)) {
+            throw new IllegalStateException("This match does not have a pending penalty shootout.");
+        }
+        simulator.simulatePenaltyShootout(match);
+        if (match == tournament.getFinalMatch()) {
+            tournament.simulateFinal(simulator);
+        }
+        synchronizeTournament(tournament, stadiums);
+        return match;
+    }
+
+    public boolean requiresPenalties(Match match) {
+        return match != null && match.isPlayed() && match.requiresTieBreak();
+    }
+
+    public int simulateCurrentMatchday(Tournament tournament, List<Stadium> stadiums) {
+        List<Match> playableMatches = new ArrayList<>(getCurrentPlayableMatches(tournament));
+        for (Match match : playableMatches) {
+            playMatch(tournament, match, stadiums);
+        }
+        return playableMatches.size();
+    }
+
+    public int simulateRemainingPhase(Tournament tournament, List<Stadium> stadiums) {
+        if (getCurrentStage(tournament) == TournamentStage.FINISHED) {
+            return 0;
+        }
+        List<Match> phaseMatches = new ArrayList<>(getCurrentPhaseMatches(tournament));
+        phaseMatches.sort(Comparator.comparing(Match::getMatchDate));
+        int simulated = 0;
+        for (Match match : phaseMatches) {
+            if (!match.isPlayed()) {
+                playMatch(tournament, match, stadiums);
+                simulated++;
+            }
+        }
+        return simulated;
+    }
+
+    private void synchronizeTournament(Tournament tournament, List<Stadium> stadiums) {
+        if (tournament == null) {
+            return;
+        }
+        if (allGroupMatchesPlayed(tournament) && tournament.getQuarterFinalFirstLegs().isEmpty()) {
+            tournament.generateQuarterFinals(stadiums);
+            return;
+        }
+        if (!tournament.getQuarterFinalSecondLegs().isEmpty() && allMatchesPlayed(tournament.getQuarterFinalFirstLegs())
+                && allKnockoutSeriesResolved(tournament.getQuarterFinalSecondLegs())
+                && tournament.getSemiFinalFirstLegs().isEmpty()) {
+            tournament.generateSemiFinals();
+            return;
+        }
+        if (!tournament.getSemiFinalSecondLegs().isEmpty() && allMatchesPlayed(tournament.getSemiFinalFirstLegs())
+                && allKnockoutSeriesResolved(tournament.getSemiFinalSecondLegs())
+                && tournament.getFinalMatch() == null) {
+            tournament.generateFinal();
+        }
     }
 
     private boolean allGroupMatchesPlayed(Tournament tournament) {

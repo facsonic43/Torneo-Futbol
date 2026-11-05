@@ -13,6 +13,16 @@ import java.util.List;
 // Valida nombres duplicados e impide eliminar ciudades que tienen estadios asociados.
 
 public class CityDAO {
+    private boolean isCityReferencedByStadium(SQLException exception) {
+        for (SQLException current = exception; current != null; current = current.getNextException()) {
+            if ("23503".equals(current.getSQLState()) || (current.getMessage() != null
+                    && current.getMessage().toLowerCase().contains("fk_estadio_ciudad"))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void add(City city) throws SQLException {
         if (exists(city.getName(), 0)) {
             throw new DuplicateLocationException("A city with this name already exists.");
@@ -65,16 +75,6 @@ public class CityDAO {
             }
             throw exception;
         }
-    }
-
-    private boolean isCityReferencedByStadium(SQLException exception) {
-        for (SQLException current = exception; current != null; current = current.getNextException()) {
-            if ("23503".equals(current.getSQLState()) || (current.getMessage() != null
-                    && current.getMessage().toLowerCase().contains("fk_estadio_ciudad"))) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private boolean exists(String name, int excludedId) throws SQLException {
