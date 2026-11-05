@@ -74,7 +74,7 @@ public class MainController {
     void setSession(TournamentSessionService session) {
         this.session = session;
         try {
-            File logoFile = new File("Images/logo.png");
+            File logoFile = new File("Images/Tournament/logo.png");
             if (logoFile.exists()) {
                 brandLogo.setImage(new Image(logoFile.toURI().toString()));
             }
