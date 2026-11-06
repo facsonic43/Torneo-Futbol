@@ -81,6 +81,7 @@ public class TournamentSessionService {
         if (!persistenceService.saveExists(saveFile)) {
             throw new IllegalStateException("There is no saved tournament.");
         }
+        refreshStadiums();
         tournament = persistenceService.loadTournament(saveFile);
         loadedFromSave = true;
         return tournament;
