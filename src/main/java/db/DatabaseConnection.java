@@ -66,7 +66,7 @@ public class DatabaseConnection {
             try {
                 connection.close();
             } catch (SQLException exception) {
-                throw new IllegalStateException("Could not close the database connection.", exception);
+                System.out.println("Error closing database connection: " + exception.getMessage());
             }
         }
     }

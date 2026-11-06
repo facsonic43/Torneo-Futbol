@@ -2,7 +2,6 @@ package dao;
 
 import db.DatabaseConnection;
 import exceptions.DuplicateLocationException;
-import exceptions.InsufficientStadiumsException;
 import model.match.Stadium;
 
 import java.sql.*;
@@ -43,10 +42,6 @@ public class StadiumDAO {
     }
 
     public void delete(int stadiumId) throws SQLException {
-        int remainingStadiums = findAll().size() - 1;
-        if (remainingStadiums < 13) {
-            throw new InsufficientStadiumsException(13, remainingStadiums);
-        }
         String sql = "DELETE FROM stadium " + "WHERE id_stadium = ?";
         try (PreparedStatement statement = DatabaseConnection.getConnection().prepareStatement(sql)) {
             statement.setInt(1, stadiumId);

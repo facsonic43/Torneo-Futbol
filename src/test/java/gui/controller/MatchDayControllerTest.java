@@ -236,11 +236,16 @@ class MatchDayControllerTest {
     }
 
     private static Button findButton(Parent parent, String text) {
-        return parent.lookupAll("Button").stream()
-                .map(node -> (Button) node)
-                .filter(button -> button.getText().equals(text))
-                .findFirst()
-                .orElse(null);
+        for (Node child : parent.getChildrenUnmodifiable()) {
+            if (child instanceof Button button && button.getText().equals(text)) {
+                return button;
+            }
+            if (child instanceof Parent nested) {
+                Button button = findButton(nested, text);
+                if (button != null) return button;
+            }
+        }
+        return null;
     }
 
     private static void onFxThread(Scenario scenario) throws Exception {
