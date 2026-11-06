@@ -19,16 +19,21 @@ public class MainApplication extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        TournamentSessionService session = new TournamentSessionService();
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/main-menu-view.fxml"));
-        Parent root = loader.load();
-        MainMenuController menuController = loader.getController();
-        menuController.setSession(session);
-        Scene scene = new Scene(root, 1280, 720);
-        scene.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
-        primaryStage.setTitle("International Club Cup 2026");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+    public void start(Stage primaryStage) {
+        ErrorDialogs.installUncaughtExceptionHandler(primaryStage);
+        try {
+            TournamentSessionService session = new TournamentSessionService();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/main-menu-view.fxml"));
+            Parent root = loader.load();
+            MainMenuController menuController = loader.getController();
+            menuController.setSession(session);
+            Scene scene = new Scene(root, 1280, 720);
+            scene.getStylesheets().add(getClass().getResource("/css/main.css").toExternalForm());
+            primaryStage.setTitle("International Club Cup 2026");
+            primaryStage.setScene(scene);
+            primaryStage.show();
+        } catch (Exception exception) {
+            ErrorDialogs.show(primaryStage, "Could not start the application", exception);
+        }
     }
 }
