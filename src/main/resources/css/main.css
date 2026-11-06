@@ -24,7 +24,6 @@
 
     -accent-primary: #a835dd;
     -accent-primary-gradient: linear-gradient(to right, #6b21a8, #db2777);
-    -accent-hover: #c026d3;
     -accent-text: #f472b6;
 
     -badge-bg: #1c273e;
@@ -35,7 +34,6 @@
     -status-danger-bg: #4c1d24;
     -status-danger-text: #fda4af;
 
-    -accent-gold: #facc15;
     -accent-cyan-bg: #0e3742;
     -accent-cyan-text: #38bdf8;
 
@@ -67,7 +65,6 @@
 
     -accent-primary: #0d9488;
     -accent-primary-gradient: linear-gradient(to right, #032926, #0d9488);
-    -accent-hover: #115e59;
     -accent-text: #0f766e;
 
     -badge-bg: #e2e8f0;
@@ -78,7 +75,6 @@
     -status-danger-bg: #ffe4e6;
     -status-danger-text: #9f1239;
 
-    -accent-gold: #b45309;
     -accent-cyan-bg: #e0f2fe;
     -accent-cyan-text: #0369a1;
 
@@ -205,7 +201,6 @@
 }
 
 .muted-text,
-.muted-label,
 .status-text {
     -fx-text-fill: -text-muted;
     -fx-font-size: 11px;
@@ -228,7 +223,6 @@
     -fx-font-weight: 700;
 }
 
-.team-title,
 .player-title {
     -fx-text-fill: -text-main;
     -fx-font-size: 20px;
@@ -578,16 +572,6 @@
     -fx-padding: 8px 10px;
 }
 
-.stat-card {
-    -fx-background-color: -bg-panel;
-    -fx-border-color: -border-card;
-    -fx-border-radius: 10;
-    -fx-background-radius: 10;
-    -fx-padding: 14px;
-    -fx-spacing: 6px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 8, 0, 0, 2);
-}
-
 .bracket-container {
     -fx-background-color: -bg-input;
     -fx-background-radius: 10;
@@ -605,49 +589,10 @@
     -fx-padding: 10px;
 }
 
-.bracket-score,
 .champion-text {
     -fx-text-fill: -status-qualified-text;
     -fx-font-size: 18px;
     -fx-font-weight: 900;
-}
-
-.bracket-stage {
-    -fx-text-fill: -text-muted;
-    -fx-font-size: 11px;
-    -fx-font-weight: 700;
-}
-
-.group-button {
-    -fx-background-color: -bg-panel-secondary;
-    -fx-text-fill: -text-secondary;
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
-    -fx-padding: 8px 12px;
-    -fx-font-weight: 700;
-    -fx-cursor: hand;
-}
-
-.group-button:hover {
-    -fx-background-color: -bg-hover;
-}
-
-.group-button-active {
-    -fx-background-color: -accent-primary;
-    -fx-text-fill: white;
-}
-
-.table-header {
-    -fx-background-color: -bg-input;
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
-    -fx-padding: 8px 12px;
-}
-
-.table-header .label {
-    -fx-text-fill: -text-muted;
-    -fx-font-size: 10px;
-    -fx-font-weight: 700;
 }
 
 /* Posiciones 1° y 2° en Grupos (Verde Adaptable) */
@@ -691,17 +636,6 @@
 .team-neutral {
     -fx-text-fill: -text-main;
     -fx-font-weight: 700;
-}
-
-.report-area {
-    -fx-control-inner-background: -bg-input;
-    -fx-background-color: -bg-input;
-    -fx-text-fill: -text-main;
-    -fx-highlight-fill: -accent-primary;
-    -fx-font-family: "Consolas", monospace;
-    -fx-border-color: -border-card;
-    -fx-border-radius: 6;
-    -fx-background-radius: 6;
 }
 
 .status-bar {
@@ -855,10 +789,6 @@
     -fx-font-size: 12px;
     -fx-font-weight: 600;
 }
-.team-name-cell {
-    -fx-text-fill: -text-secondary;
-    -fx-font-weight: 600;
-}
 /* =========================================================
    REPORTES VISUALES
    ========================================================= */
@@ -916,15 +846,41 @@
    OVERVIEW - GRUPOS EN PARALELO Y HEADER UNIFICADO
    ========================================================= */
 
-/* Contenedor con scroll horizontal suave para los grupos */
-.groups-scroll-pane {
+/* Divisor horizontal para ajustar el espacio entre grupos y eliminatorias. */
+.overview-split-pane {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.overview-split-pane > .split-pane-divider {
+    -fx-background-color: -border-subtle;
+    -fx-background-insets: 3 0;
+    /* JavaFX calcula el grosor en ambas orientaciones a partir del ancho preferido. */
+    -fx-padding: 6;
+    -fx-cursor: v-resize;
+}
+
+.overview-split-pane > .split-pane-divider:hover {
+    -fx-background-color: -accent-primary;
+}
+
+.overview-split-pane > .split-pane-divider > .vertical-grabber {
+    -fx-background-color: -text-muted;
+    -fx-background-radius: 2;
+    -fx-padding: 1 20;
+}
+
+/* Scroll independiente para cada sección del resumen. */
+.groups-scroll-pane,
+.knockout-scroll-pane {
     -fx-background-color: transparent;
     -fx-background: transparent;
     -fx-border-color: transparent;
     -fx-padding: 4 0;
 }
 
-.groups-scroll-pane > .viewport {
+.groups-scroll-pane > .viewport,
+.knockout-scroll-pane > .viewport {
     -fx-background-color: transparent;
 }
 
