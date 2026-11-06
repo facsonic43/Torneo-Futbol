@@ -1,7 +1,6 @@
 package gui.controller;
 
 import java.io.File;
-import gui.ErrorDialogs;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -320,7 +319,8 @@ public class MainController {
     }
 
     private void showError(String message, Exception exception) {
-        ErrorDialogs.show(contentHost, message, exception);
+        statusLabel.setText(message + ": " + exception.getMessage());
+        exception.printStackTrace();
     }
 
     private void updateGlobalStatus() {

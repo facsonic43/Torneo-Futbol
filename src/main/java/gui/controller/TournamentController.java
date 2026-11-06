@@ -1,6 +1,5 @@
 package gui.controller;
 
-import gui.ErrorDialogs;
 import gui.StatisticsReportView;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
@@ -832,7 +831,12 @@ public class TournamentController {
             success.initOwner(owner);
             success.showAndWait();
         } catch (IOException | RuntimeException ex) {
-            ErrorDialogs.show(owner, "Could not generate the participant report", ex);
+            Alert error = new Alert(Alert.AlertType.ERROR);
+            error.setTitle("PDF export failed");
+            error.setHeaderText("Could not generate the participant report");
+            error.setContentText(ex.getMessage());
+            error.initOwner(owner);
+            error.showAndWait();
         }
     }
 
@@ -851,9 +855,11 @@ public class TournamentController {
             }
         } catch (Exception ex) {
             if (reportContentHost != null) {
-                reportContentHost.getChildren().clear();
+                Label errorLabel = new Label("Error loading visual report: " + ex.getMessage());
+                errorLabel.getStyleClass().add("muted-text");
+                reportContentHost.getChildren().setAll(errorLabel);
             }
-            ErrorDialogs.show(reportsPane, "Could not load the visual report", ex);
+            ex.printStackTrace();
         }
     }
 
