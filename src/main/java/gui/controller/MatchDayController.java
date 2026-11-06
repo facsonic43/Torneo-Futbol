@@ -1,5 +1,6 @@
 package gui.controller;
 
+import gui.ErrorDialogs;
 import gui.MatchEventsView;
 import gui.PenaltyKicksView;
 import javafx.fxml.FXML;
@@ -145,11 +146,6 @@ public class MatchDayController {
     public MatchDayController() {
         executionService = new TournamentExecutionService();
         waitingPenaltyResultAcknowledgement = false;
-    }
-
-    @FXML
-    private void initialize() {
-        normalMatchPaneChildren = List.copyOf(normalMatchPane.getChildren());
     }
 
     void setNavigationActions(Runnable onViewTournamentSummary, Runnable onViewTournamentStats) {
@@ -338,6 +334,23 @@ public class MatchDayController {
 
     public TournamentStage getReviewedStage() {
         return reviewedStage;
+    }
+
+    public List<Node> getNormalMatchPaneChildren() {
+        return normalMatchPaneChildren;
+    }
+
+    public Runnable getOnViewTournamentSummary() {
+        return onViewTournamentSummary;
+    }
+
+    public Runnable getOnViewTournamentStats() {
+        return onViewTournamentStats;
+    }
+
+    @FXML
+    private void initialize() {
+        normalMatchPaneChildren = List.copyOf(normalMatchPane.getChildren());
     }
 
     private String getMatchStatus(Match match) {
@@ -809,7 +822,6 @@ public class MatchDayController {
     }
 
     private void showError(Exception exception) {
-        localStatus.setText("Error: " + exception.getMessage());
-        exception.printStackTrace();
+        ErrorDialogs.show(localStatus, "Could not simulate the match or stage", exception);
     }
 }

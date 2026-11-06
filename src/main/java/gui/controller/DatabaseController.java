@@ -2,17 +2,12 @@ package gui.controller;
 
 import dao.CityDAO;
 import dao.StadiumDAO;
+import gui.ErrorDialogs;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
 import model.match.City;
 import model.match.Stadium;
 import service.TournamentSessionService;
@@ -303,45 +298,8 @@ public class DatabaseController {
     }
 
     private void showDatabaseError(String title, Exception exception) {
-        exception.printStackTrace();
         databaseStatus.setText("Database operation failed.");
-        String message = exception.getMessage();
-        if (message == null || message.isBlank()) {
-            message = exception.getClass().getSimpleName();
-        }
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Database error");
-        dialog.setHeaderText(null);
-        DialogPane pane = dialog.getDialogPane();
-        pane.getButtonTypes().add(ButtonType.CLOSE);
-        pane.setMinWidth(460);
-        Scene scene = databaseStatus.getScene();
-        if (scene != null) {
-            dialog.initOwner(scene.getWindow());
-            pane.getStylesheets().addAll(scene.getStylesheets());
-            if (scene.getRoot().getStyleClass().contains("light-theme")) {
-                pane.getStyleClass().add("light-theme");
-            }
-        }
-        pane.getStyleClass().add("app-root");
-        Button closeButton = (Button) pane.lookupButton(ButtonType.CLOSE);
-        closeButton.setText("Close");
-        closeButton.getStyleClass().add("utility-button");
-        Label errorType = new Label("DATABASE ERROR");
-        errorType.getStyleClass().add("blocked-chip");
-        Label heading = new Label(title);
-        heading.getStyleClass().add("section-title");
-        heading.setWrapText(true);
-        Label details = new Label(message);
-        details.getStyleClass().add("info-value");
-        details.setWrapText(true);
-        details.setMaxWidth(500);
-        VBox errorCard = new VBox(12, errorType, heading, details);
-        errorCard.getStyleClass().add("info-card");
-        VBox content = new VBox(14, errorCard);
-        content.getStyleClass().add("page-content");
-        pane.setContent(content);
-        dialog.showAndWait();
+        ErrorDialogs.show(databaseStatus, title, exception);
     }
 
     private void clearCity() {

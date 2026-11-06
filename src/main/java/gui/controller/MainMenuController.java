@@ -1,6 +1,7 @@
 package gui.controller;
 
 import java.io.File;
+import gui.ErrorDialogs;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -139,9 +140,6 @@ public class MainMenuController {
     }
 
     private void showError(String message, Exception ex) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, message + ": " + ex.getMessage(), ButtonType.OK);
-        alert.setTitle("Error");
-        alert.setHeaderText(null);
-        alert.showAndWait();
+        ErrorDialogs.show(continueButton, message, ex);
     }
 }

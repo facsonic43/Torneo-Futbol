@@ -74,8 +74,8 @@ public final class StatisticsReportView extends VBox {
         task.setOnFailed(event -> {
             if (currentTask != task) return;
             currentTask = null;
-            String detail = task.getException().getMessage();
-            getChildren().setAll(note("Could not display this report." + (detail == null ? "" : "\n" + detail)));
+            getChildren().clear();
+            ErrorDialogs.show(this, "Could not display this report", task.getException());
         });
         Thread worker = new Thread(task, "statistics-report");
         worker.setDaemon(true);
