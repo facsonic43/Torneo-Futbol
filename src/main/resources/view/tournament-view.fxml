@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.image.ImageView?>
@@ -22,78 +23,96 @@
          OVERVIEW PANE
          =================================================== -->
     <VBox fx:id="overviewPane"
-          spacing="18"
+          minHeight="0"
           styleClass="page-content">
 
-        <VBox spacing="10" styleClass="panel">
-            <Label text="GROUP STAGE STANDINGS"
-                   styleClass="section-caption"/>
+        <SplitPane orientation="VERTICAL"
+                   dividerPositions="0.45"
+                   minHeight="0"
+                   minWidth="0"
+                   VBox.vgrow="ALWAYS"
+                   styleClass="overview-split-pane">
 
-            <ScrollPane fitToHeight="true"
-                        styleClass="groups-scroll-pane">
-                <HBox fx:id="allGroupsContainer"
-                      spacing="16"
-                      alignment="TOP_LEFT"/>
-            </ScrollPane>
-        </VBox>
+            <VBox minHeight="100" minWidth="0" spacing="10" styleClass="panel">
+                <Label text="GROUP STAGE STANDINGS"
+                       styleClass="section-caption"/>
 
-        <VBox VBox.vgrow="ALWAYS" spacing="10">
-            <Label text="KNOCKOUT ROUNDS &amp; CHAMPION"
-                   styleClass="section-caption"/>
+                <ScrollPane fitToHeight="true"
+                            minHeight="0"
+                            VBox.vgrow="ALWAYS"
+                            styleClass="groups-scroll-pane">
+                    <HBox fx:id="allGroupsContainer"
+                          minHeight="-Infinity"
+                          spacing="16"
+                          alignment="TOP_LEFT"/>
+                </ScrollPane>
+            </VBox>
 
-            <HBox spacing="16" VBox.vgrow="ALWAYS">
+            <VBox minHeight="100" minWidth="0" spacing="10">
+                <Label text="KNOCKOUT ROUNDS &amp; CHAMPION"
+                       styleClass="section-caption"/>
 
-                <VBox HBox.hgrow="ALWAYS"
-                      spacing="8"
-                      styleClass="panel">
-                    <Label text="QUARTER-FINALS"
-                           styleClass="small-text"/>
-                    <VBox fx:id="overviewQuarterBox"
-                          VBox.vgrow="ALWAYS"
-                          spacing="6"/>
-                </VBox>
+                <ScrollPane fitToWidth="true"
+                            fitToHeight="true"
+                            minHeight="0"
+                            VBox.vgrow="ALWAYS"
+                            styleClass="knockout-scroll-pane">
+                    <HBox spacing="16" minHeight="-Infinity">
 
-                <VBox HBox.hgrow="ALWAYS"
-                      spacing="8"
-                      styleClass="panel">
-                    <Label text="SEMI-FINALS"
-                           styleClass="small-text"/>
-                    <VBox fx:id="overviewSemiBox"
-                          VBox.vgrow="ALWAYS"
-                          spacing="6"/>
-                </VBox>
+                        <VBox HBox.hgrow="ALWAYS"
+                              spacing="8"
+                              styleClass="panel">
+                            <Label text="QUARTER-FINALS"
+                                   styleClass="small-text"/>
+                            <VBox fx:id="overviewQuarterBox"
+                                  VBox.vgrow="ALWAYS"
+                                  spacing="6"/>
+                        </VBox>
 
-                <VBox HBox.hgrow="ALWAYS"
-                      spacing="8"
-                      styleClass="panel">
-                    <Label text="FINAL"
-                           styleClass="small-text"/>
-                    <VBox fx:id="overviewFinalBox"
-                          VBox.vgrow="ALWAYS"
-                          spacing="6"/>
-                </VBox>
+                        <VBox HBox.hgrow="ALWAYS"
+                              spacing="8"
+                              styleClass="panel">
+                            <Label text="SEMI-FINALS"
+                                   styleClass="small-text"/>
+                            <VBox fx:id="overviewSemiBox"
+                                  VBox.vgrow="ALWAYS"
+                                  spacing="6"/>
+                        </VBox>
 
-                <VBox HBox.hgrow="ALWAYS"
-                      spacing="10"
-                      alignment="CENTER"
-                      styleClass="panel">
-                    <Label text="CHAMPION"
-                           styleClass="small-text"/>
-                    <Label fx:id="overviewChampionName"
-                           text="NOT WINNER YET"
-                           styleClass="champion-text"
-                           wrapText="true"
-                           alignment="CENTER"/>
+                        <VBox HBox.hgrow="ALWAYS"
+                              spacing="8"
+                              styleClass="panel">
+                            <Label text="FINAL"
+                                   styleClass="small-text"/>
+                            <VBox fx:id="overviewFinalBox"
+                                  VBox.vgrow="ALWAYS"
+                                  spacing="6"/>
+                        </VBox>
 
-                    <ImageView fx:id="overviewTrophyImage"
-                               fitHeight="220"
-                               preserveRatio="true"
-                               visible="false"
-                               managed="false"/>
-                </VBox>
+                        <VBox HBox.hgrow="ALWAYS"
+                              spacing="10"
+                              alignment="CENTER"
+                              styleClass="panel">
+                            <Label text="CHAMPION"
+                                   styleClass="small-text"/>
+                            <Label fx:id="overviewChampionName"
+                                   text="NOT WINNER YET"
+                                   styleClass="champion-text"
+                                   wrapText="true"
+                                   alignment="CENTER"/>
 
-            </HBox>
-        </VBox>
+                            <ImageView fx:id="overviewTrophyImage"
+                                       fitHeight="220"
+                                       preserveRatio="true"
+                                       visible="false"
+                                       managed="false"/>
+                        </VBox>
+
+                    </HBox>
+                </ScrollPane>
+            </VBox>
+
+        </SplitPane>
 
     </VBox>
 
@@ -326,8 +345,7 @@
                 <Label text="CHAMPION"
                        styleClass="small-text"/>
 
-                <Label fx:id="championName"
-                       text="NOT DEFINED"
+                <Label text="NOT DEFINED"
                        styleClass="champion-text"/>
 
             </VBox>
@@ -338,8 +356,7 @@
                     fitToHeight="true"
                     VBox.vgrow="ALWAYS">
 
-            <StackPane fx:id="bracketHost"
-                       styleClass="bracket-container"/>
+            <StackPane styleClass="bracket-container"/>
 
         </ScrollPane>
 
